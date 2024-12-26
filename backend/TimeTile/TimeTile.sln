@@ -5,6 +5,10 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTile.API", "TimeTile.API\TimeTile.API.csproj", "{FA8F42F8-4B2A-4CA5-AC77-24B00BCB6C01}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTile.Core", "TimeTile.Core\TimeTile.Core.csproj", "{C3A58DA3-808B-4F36-99E8-1F6EAC46C5D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTile.Storage", "TimeTile.Storage\TimeTile.Storage.csproj", "{F23B7E35-3703-451C-86D9-8659A3F48521}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{FA8F42F8-4B2A-4CA5-AC77-24B00BCB6C01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA8F42F8-4B2A-4CA5-AC77-24B00BCB6C01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA8F42F8-4B2A-4CA5-AC77-24B00BCB6C01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3A58DA3-808B-4F36-99E8-1F6EAC46C5D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3A58DA3-808B-4F36-99E8-1F6EAC46C5D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3A58DA3-808B-4F36-99E8-1F6EAC46C5D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3A58DA3-808B-4F36-99E8-1F6EAC46C5D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F23B7E35-3703-451C-86D9-8659A3F48521}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F23B7E35-3703-451C-86D9-8659A3F48521}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F23B7E35-3703-451C-86D9-8659A3F48521}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F23B7E35-3703-451C-86D9-8659A3F48521}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

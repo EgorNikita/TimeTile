@@ -399,9 +399,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# VisualStudio
-*.csproj
-
 # Rider
 node_modules/ 
 .idea/

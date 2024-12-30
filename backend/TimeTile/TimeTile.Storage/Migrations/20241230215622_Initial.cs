@@ -127,8 +127,7 @@ namespace TimeTile.Storage.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false),
                     title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    institution_id = table.Column<int>(type: "integer", nullable: false),
-                    AuditableEntityId = table.Column<int>(type: "integer", nullable: false)
+                    institution_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -247,7 +246,7 @@ namespace TimeTile.Storage.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "lesson_status_institutions",
+                name: "lesson_statuses_institutions",
                 columns: table => new
                 {
                     lesson_status_id = table.Column<int>(type: "integer", nullable: false),
@@ -291,7 +290,7 @@ namespace TimeTile.Storage.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "role_permissions",
+                name: "roles_permissions",
                 columns: table => new
                 {
                     role_id = table.Column<int>(type: "integer", nullable: false),
@@ -354,7 +353,7 @@ namespace TimeTile.Storage.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false),
-                    GroupId = table.Column<int>(type: "integer", nullable: false)
+                    group_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -367,7 +366,7 @@ namespace TimeTile.Storage.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "students_group_id_fkey",
-                        column: x => x.GroupId,
+                        column: x => x.group_id,
                         principalTable: "groups",
                         principalColumn: "id");
                 });
@@ -394,17 +393,11 @@ namespace TimeTile.Storage.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false),
-                    group_id = table.Column<int>(type: "integer", nullable: false),
-                    TeacherId = table.Column<int>(type: "integer", nullable: true)
+                    group_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_class_teachers", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_class_teachers_teachers_TeacherId",
-                        column: x => x.TeacherId,
-                        principalTable: "teachers",
-                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_class_teachers_teachers_id",
                         column: x => x.id,
@@ -581,11 +574,6 @@ namespace TimeTile.Storage.Migrations
                 column: "group_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_class_teachers_TeacherId",
-                table: "class_teachers",
-                column: "TeacherId");
-
-            migrationBuilder.CreateIndex(
                 name: "classrooms_institution_title_key",
                 table: "classrooms",
                 columns: new[] { "institution_id", "title" },
@@ -647,15 +635,15 @@ namespace TimeTile.Storage.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_lesson_status_institutions_institution_id",
-                table: "lesson_status_institutions",
-                column: "institution_id");
-
-            migrationBuilder.CreateIndex(
                 name: "lesson_statuses_description_key",
                 table: "lesson_statuses",
                 column: "description",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_lesson_statuses_institutions_institution_id",
+                table: "lesson_statuses_institutions",
+                column: "institution_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_lessons_classroom_id",
@@ -708,25 +696,25 @@ namespace TimeTile.Storage.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_role_permissions_permission_id",
-                table: "role_permissions",
-                column: "permission_id");
-
-            migrationBuilder.CreateIndex(
                 name: "roles_title_institution_key",
                 table: "roles",
                 columns: new[] { "institution_id", "title" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_students_GroupId",
+                name: "IX_roles_permissions_permission_id",
+                table: "roles_permissions",
+                column: "permission_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_students_group_id",
                 table: "students",
-                column: "GroupId");
+                column: "group_id");
 
             migrationBuilder.CreateIndex(
                 name: "students_id_group_key",
                 table: "students",
-                columns: new[] { "id", "GroupId" },
+                columns: new[] { "id", "group_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -791,13 +779,13 @@ namespace TimeTile.Storage.Migrations
                 name: "courses_students");
 
             migrationBuilder.DropTable(
-                name: "lesson_status_institutions");
+                name: "lesson_statuses_institutions");
 
             migrationBuilder.DropTable(
                 name: "lessons_students");
 
             migrationBuilder.DropTable(
-                name: "role_permissions");
+                name: "roles_permissions");
 
             migrationBuilder.DropTable(
                 name: "subjects_institutions");

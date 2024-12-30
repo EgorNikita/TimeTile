@@ -12,8 +12,6 @@ public sealed partial class TimetileDbContext : DbContext
     public TimetileDbContext(DbContextOptions<TimetileDbContext> options)
         : base(options)
     {
-        Database.EnsureDeleted();
-        Database.EnsureCreated();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -21,43 +19,43 @@ public sealed partial class TimetileDbContext : DbContext
             .UseLazyLoadingProxies()
             .EnableSensitiveDataLogging();
 
-    public DbSet<AuditableEntity> AuditableEntities { get; set; } = null!; //✅
+    public DbSet<AuditableEntity> AuditableEntities { get; set; } = null!; 
 
-    public DbSet<ClassTeacher> ClassTeachers { get; set; } = null!; //✅
+    public DbSet<ClassTeacher> ClassTeachers { get; set; } = null!; 
 
-    public DbSet<Classroom> Classrooms { get; set; } = null!; //✅
+    public DbSet<Classroom> Classrooms { get; set; } = null!; 
 
-    public DbSet<Course> Courses { get; set; } = null!; //✅
+    public DbSet<Course> Courses { get; set; } = null!; 
 
-    public DbSet<CourseToStudent> CoursesStudents { get; set; } = null!; //✅
+    public DbSet<CourseToStudent> CoursesStudents { get; set; } = null!; 
 
-    public DbSet<Grade> Grades { get; set; } = null!; //✅
+    public DbSet<Grade> Grades { get; set; } = null!; 
 
-    public DbSet<Group> Groups { get; set; } = null!; //✅
+    public DbSet<Group> Groups { get; set; } = null!; 
 
-    public DbSet<Institution> Institutions { get; set; } = null!; //✅
+    public DbSet<Institution> Institutions { get; set; } = null!; 
 
-    public DbSet<Lesson> Lessons { get; set; } = null!; //✅
+    public DbSet<Lesson> Lessons { get; set; } = null!; 
 
-    public DbSet<LessonStatus> LessonStatuses { get; set; } = null!; //✅
+    public DbSet<LessonStatus> LessonStatuses { get; set; } = null!; 
 
-    public DbSet<LessonToStudent> LessonsStudents { get; set; } = null!; //✅
+    public DbSet<LessonToStudent> LessonsStudents { get; set; } = null!; 
 
-    public DbSet<Permission> Permissions { get; set; } = null!; //✅
+    public DbSet<Permission> Permissions { get; set; } = null!; 
     
-    public DbSet<Role> Roles { get; set; } = null!; //✅
+    public DbSet<Role> Roles { get; set; } = null!; 
 
-    public DbSet<Student> Students { get; set; } = null!; //✅
+    public DbSet<Student> Students { get; set; } = null!; 
 
-    public DbSet<Subject> Subjects { get; set; } = null!; //✅
+    public DbSet<Subject> Subjects { get; set; } = null!; 
 
-    public DbSet<Teacher> Teachers { get; set; } = null!; //✅
+    public DbSet<Teacher> Teachers { get; set; } = null!; 
 
-    public DbSet<Term> Terms { get; set; } = null!; //✅
+    public DbSet<Term> Terms { get; set; } = null!; 
     
-    public DbSet<TimetableUnit> TimetableUnits { get; set; } = null!; //✅
+    public DbSet<TimetableUnit> TimetableUnits { get; set; } = null!; 
 
-    public DbSet<User> Users { get; set; } = null!; //✅
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -389,7 +387,7 @@ public sealed partial class TimetileDbContext : DbContext
                         .HasConstraintName("lesson_status_institution_lesson_status_id_fkey"),
                     j =>
                     {
-                        j.ToTable("lesson_status_institutions");
+                        j.ToTable("lesson_statuses_institutions");
                         j.HasKey("lesson_status_id", "institution_id")
                             .HasName("lesson_status_institution_pkey");
                     });
@@ -488,7 +486,7 @@ public sealed partial class TimetileDbContext : DbContext
                         .HasConstraintName("role_permissions_permission_id_fkey"),  // Foreign key constraint name
                     j =>
                     {
-                        j.ToTable("role_permissions");  // Name of the join table
+                        j.ToTable("roles_permissions");  // Name of the join table
                         j.HasKey("role_id", "permission_id")  // Composite primary key
                             .HasName("role_permissions_pkey");  // Name of the composite primary key
                     });
@@ -527,6 +525,10 @@ public sealed partial class TimetileDbContext : DbContext
                 .IsUnique();
             
             // Property Configuration
+            entity.Property(e => e.GroupId)
+                .HasColumnName("group_id");
+            
+            // Relationship Configuration
             entity.HasOne(d => d.Group).WithMany(p => p.Students)
                 .HasForeignKey(d => d.GroupId)
                 .OnDelete(DeleteBehavior.NoAction)

@@ -14,9 +14,6 @@ var connectionString = connectionStringTemplate?
     .Replace("${POSTGRES_PASSWORD}", Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"));
 
 // Add services to the container.
-
-Console.WriteLine(Environment.GetEnvironmentVariable("POSTGRES_HOST"));
-
 builder.Services.AddDbContext<TimetileDbContext>(options =>
     options.UseNpgsql(connectionString));
 

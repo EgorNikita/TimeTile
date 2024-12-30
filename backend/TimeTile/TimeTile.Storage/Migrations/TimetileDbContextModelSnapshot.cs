@@ -38,7 +38,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("institution_id");
 
-                    b.ToTable("lesson_status_institutions", (string)null);
+                    b.ToTable("lesson_statuses_institutions", (string)null);
                 });
 
             modelBuilder.Entity("RolePermissions", b =>
@@ -54,7 +54,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("permission_id");
 
-                    b.ToTable("role_permissions", (string)null);
+                    b.ToTable("roles_permissions", (string)null);
                 });
 
             modelBuilder.Entity("SubjectInstitution", b =>
@@ -196,9 +196,6 @@ namespace TimeTile.Storage.Migrations
             modelBuilder.Entity("TimeTile.Core.Models.Classroom", b =>
                 {
                     b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
-
-                    b.Property<int>("AuditableEntityId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("InstitutionId")
                         .HasColumnType("integer")
@@ -593,7 +590,8 @@ namespace TimeTile.Storage.Migrations
                     b.HasBaseType("TimeTile.Core.Models.User");
 
                     b.Property<int>("GroupId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
 
                     b.HasIndex("GroupId");
 
@@ -619,12 +617,7 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("group_id");
 
-                    b.Property<int?>("TeacherId")
-                        .HasColumnType("integer");
-
                     b.HasIndex("GroupId");
-
-                    b.HasIndex("TeacherId");
 
                     b.ToTable("class_teachers", (string)null);
                 });
@@ -1040,10 +1033,6 @@ namespace TimeTile.Storage.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TimeTile.Core.Models.Teacher", null)
-                        .WithMany("ClassTeachers")
-                        .HasForeignKey("TeacherId");
-
                     b.Navigation("Group");
                 });
 
@@ -1131,8 +1120,6 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.Teacher", b =>
                 {
-                    b.Navigation("ClassTeachers");
-
                     b.Navigation("Courses");
                 });
 #pragma warning restore 612, 618

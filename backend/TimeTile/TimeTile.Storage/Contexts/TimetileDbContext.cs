@@ -108,7 +108,11 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Classroom>(entity =>
         {
             // Table configuration
-            entity.ToTable("classrooms");
+            entity.ToTable("classrooms", t =>
+                t.HasCheckConstraint(
+                    "CHK_Classroom_Title_Valid",
+                    "\"title\" ~ '^[a-zA-Z \\d-]+$'"
+                ));
 
             // Unique index for InstitutionId and Title
             entity.HasIndex(e => new { e.InstitutionId, e.Title })
@@ -133,7 +137,11 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Course>(entity =>
         {
             // Table configuration
-            entity.ToTable("courses");
+            entity.ToTable("courses", t =>
+                t.HasCheckConstraint(
+                    "CHK_Course_Title_Valid",
+                    "\"title\"  ~ '^[\\w -.*+,]+$'"
+                ));
             
             entity.HasIndex(e => new {e.Title, e.SubjectId, e.TeacherId, e.InstitutionId, e.TermId })
                 .IsUnique()
@@ -232,8 +240,12 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Grade>(entity =>
         {
             // Table and Key Configuration
-            entity.ToTable("grades");
-
+            entity.ToTable("grades", t =>
+            {
+                t.HasCheckConstraint("CHK_Grade_Value_Positive", "\"value\" > 0");
+                t.HasCheckConstraint("CHK_Grade_Weight_Positive", "\"weight\" > 0");
+            });
+            
             // Property Configurations
             entity.Property(e => e.Value)
                 .HasColumnName("value");
@@ -246,7 +258,11 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Group>(entity =>
         {
             // Table and Index Configuration
-            entity.ToTable("groups");
+            entity.ToTable("groups", t =>
+                t.HasCheckConstraint(
+                    "CHK_Group_Title_Valid",
+                    "\"title\"  ~ '^[\\w -.*]+$'"
+                ));
 
             entity.HasIndex(e => new { e.InstitutionId, e.Title })
                 .HasDatabaseName("groups_institution_title_key")
@@ -271,7 +287,24 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Institution>(entity =>
         {
             // Table Configuration
-            entity.ToTable("institutions");
+            entity.ToTable("institutions", t =>
+            {
+                // Check constraint for Title to allow only letters, digits, spaces, and special characters
+                t.HasCheckConstraint("CHK_Institution_Title_NotEmpty", 
+                    "\"title\" ~ '^[\\w \\-.*&\"'',\\/\\\\|]+$'");
+
+                // Check constraint for Address to allow only letters, digits, spaces, and special characters
+                t.HasCheckConstraint("CHK_Institution_Address_NotEmpty", 
+                    "\"address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+
+                // Check constraint for Email (valid format)
+                t.HasCheckConstraint("CHK_Institution_Email_Valid", 
+                    "\"email\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
+
+                // Check constraint for PhoneNumber (digits and optional formatting characters)
+                t.HasCheckConstraint("CHK_Institution_Phone_Valid",
+                    "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
+            });
 
             entity.HasIndex(e => e.Title)
                 .HasDatabaseName("institutions_title_key")
@@ -357,7 +390,11 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<LessonStatus>(entity =>
         {
             // Table Configuration
-            entity.ToTable("lesson_statuses");
+            entity.ToTable("lesson_statuses", t => 
+                t.HasCheckConstraint(
+                    "CHK_LessonStatus_Description_Valid",
+                    "\"description\"  ~ '^[a-zA-Z\\d ]+$'"
+                ));
 
             entity.HasIndex(e => e.Description)
                 .HasDatabaseName("lesson_statuses_description_key")
@@ -399,7 +436,17 @@ public sealed partial class TimetileDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("lessons_students_pkey");
 
             // Map to table and create index
-            entity.ToTable("lessons_students");
+            entity.ToTable("lessons_students", t =>
+            {
+                t.HasCheckConstraint(
+                    "CHK_LessonToStudent_CameAt_LessThan_LeftAt",
+                    "(\"came_at\" < \"left_at\") OR (\"left_at\" IS NULL)"
+                );
+                t.HasCheckConstraint(
+                    "CHK_LessonToStudent_CameAt_IsNotNull_OR_CameAt_LeftAt_IsNull",
+                    "(\"came_at\" IS NULL AND \"left_at\" IS NULL) OR (\"came_at\" IS NOT NULL)"
+                );
+            });
             
             entity.HasIndex(e => new { e.LessonId, e.StudentId }, "lessons_students_lesson_id_student_id_key")
                 .IsUnique();
@@ -459,7 +506,11 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Permission>(entity =>
         {
             // Table Configuration
-            entity.ToTable("permissions");
+            entity.ToTable("permissions", t => 
+                t.HasCheckConstraint(
+                    "CHK_Permission_Description_Valid",
+                    "\"description\"  ~ '^[\\w -]+$'"
+                ));
             
             entity.HasIndex(e => e.Description, "permissions_description_key").IsUnique();
             
@@ -495,7 +546,11 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Role>(entity =>
         {
             // Table Configuration
-            entity.ToTable("roles");
+            entity.ToTable("roles", t => 
+                t.HasCheckConstraint(
+                    "CHK_Role_Title_Valid",
+                    "\"title\"  ~ '^[\\w -]+$'"
+                ));
             
             entity.HasIndex(e => new {e.InstitutionId, e.Title}, "roles_title_institution_key").IsUnique();
             
@@ -538,7 +593,11 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Subject>(entity =>
         {
             // Table Configuration
-            entity.ToTable("subjects");
+            entity.ToTable("subjects", t => 
+                t.HasCheckConstraint(
+                    "CHK_Subject_Title_Valid",
+                    "\"title\" ~ '^[\\w -]+$'"
+                ));
             
             entity.HasIndex(e => e.Title, "subjects_title_key").IsUnique();
 
@@ -583,7 +642,17 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<Term>(entity =>
         {
             // Table Configuration
-            entity.ToTable("terms");
+            entity.ToTable("terms", t =>
+            {
+                t.HasCheckConstraint(
+                    "CHK_Term_Title_Valid",
+                    "\"title\" ~ '^[\\w -.*+,]+$'"
+                );
+                t.HasCheckConstraint(
+                    "CHK_Term_StartDate_LessThan_EndDate",
+                    "\"start_date\" < \"end_date\""
+                );
+            });
 
             entity.HasIndex(e => new { e.InstitutionId, e.Title })
                 .HasDatabaseName("terms_institution_title_key")
@@ -617,7 +686,17 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<TimetableUnit>(entity =>
         {
             // Table Configuration
-            entity.ToTable("timetable_units");
+            entity.ToTable("timetable_units", t =>
+            {
+                t.HasCheckConstraint(
+                    "CHK_TimetableUnit_Title_Valid", 
+                    "\"title\" ~ '^[\\w ]+$'"
+                );
+                t.HasCheckConstraint(
+                    "CHK_TimetableUnit_StartTime_LessThan_EndTime",
+                    "\"start_time\" < \"end_time\""
+                );
+            });
 
             entity.HasIndex(e => new { e.InstitutionId, e.Title })
                 .HasDatabaseName("timetable_units_institution_title_key")
@@ -645,7 +724,42 @@ public sealed partial class TimetileDbContext : DbContext
         modelBuilder.Entity<User>(entity =>
         {
             // Table Configuration
-            entity.ToTable("users");
+            entity.ToTable("users", t =>
+            {
+                // Check constraint for Firstname to allow only letters and spaces
+                t.HasCheckConstraint(
+                    "CHK_User_Firstname_Valid",
+                    "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'"
+                );
+                
+                // Check constraint for Lastname to allow only letters and spaces
+                t.HasCheckConstraint(
+                    "CHK_User_Lastname_Valid",
+                    "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'"
+                );
+                
+                // Check constraint for Login to allow only letters, digits, spaces, and hyphens
+                t.HasCheckConstraint(
+                    "CHK_User_Login_Valid",
+                    "\"login\" ~ '^[\\w -]+$'"
+                );
+
+                // Check constraint for BirthDate to ensure it's not in the future
+                t.HasCheckConstraint(
+                    "CHK_User_BirthDate_Valid",
+                    "\"birth_date\" <= NOW()"
+                );
+
+                // Check constraint for PhoneNumber (digits and optional formatting characters)
+                t.HasCheckConstraint(
+                    "CHK_User_PhoneNumber_Valid",
+                    "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'"
+                );
+                
+                // Check constraint for HomeAddress to allow only letters, digits, spaces, and hyphens
+                t.HasCheckConstraint("CHK_User_HomeAddress_Valid", 
+                    "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+            });
             
             entity.UseTptMappingStrategy();
             

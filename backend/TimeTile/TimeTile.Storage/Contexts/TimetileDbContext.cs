@@ -73,17 +73,17 @@ public sealed partial class TimetileDbContext : DbContext
                 .HasColumnName("id");
 
             entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("created_at")
                 .IsRequired();
 
             entity.Property(e => e.UpdatedAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("updated_at")
                 .IsRequired();
 
             entity.Property(e => e.DeletedAt)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("deleted_at")
                 .IsRequired(false); // Nullable for soft deletion
         });
@@ -345,6 +345,7 @@ public sealed partial class TimetileDbContext : DbContext
                 .HasColumnName("course_id");
 
             entity.Property(e => e.Date)
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("date");
 
             entity.Property(e => e.Description)
@@ -463,10 +464,12 @@ public sealed partial class TimetileDbContext : DbContext
             
             entity.Property(e => e.CameAt)
                 .HasColumnName("came_at")
+                .HasColumnType("time with time zone")
                 .IsRequired(false);
             
             entity.Property(e => e.LeftAt)
                 .HasColumnName("left_at")
+                .HasColumnType("time with time zone")
                 .IsRequired(false);
             
             entity.Property(e => e.ClassworkGradeId)
@@ -670,9 +673,11 @@ public sealed partial class TimetileDbContext : DbContext
                 .HasColumnName("title");
 
             entity.Property(e => e.StartDate)
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("start_date");
             
             entity.Property(e => e.EndDate)
+                .HasColumnType("timestamp with time zone")
                 .HasColumnName("end_date");
             
             // Relationships
@@ -707,9 +712,17 @@ public sealed partial class TimetileDbContext : DbContext
                 .IsUnique();
             
             // Property Configuration
-            entity.Property(e => e.StartTime).HasColumnName("start_time");
-            entity.Property(e => e.EndTime).HasColumnName("end_time");
-            entity.Property(e => e.InstitutionId).HasColumnName("institution_id");
+            entity.Property(e => e.StartTime)
+                .HasColumnName("start_time")
+                .HasColumnType("time with time zone");
+
+            entity.Property(e => e.EndTime)
+                .HasColumnName("end_time")
+                .HasColumnType("time with time zone");
+
+            entity.Property(e => e.InstitutionId)
+                .HasColumnName("institution_id");
+
             entity.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");

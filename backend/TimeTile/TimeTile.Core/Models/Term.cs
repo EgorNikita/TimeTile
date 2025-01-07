@@ -6,9 +6,9 @@ public partial class Term : AuditableEntity
     
     public string Title { get; set; } = null!;
     
-    public DateOnly StartDate { get; set; }
+    public DateTimeOffset StartDate { get; set; }
     
-    public DateOnly EndDate { get; set; }
+    public DateTimeOffset EndDate { get; set; }
     
     public virtual Institution Institution { get; set; } = null!;
     

@@ -8,9 +8,9 @@ public partial class LessonToStudent
 
     public int StudentId { get; set; }
 
-    public TimeOnly? CameAt { get; set; }
+    public DateTimeOffset? CameAt { get; set; }
 
-    public TimeOnly? LeftAt { get; set; }
+    public DateTimeOffset? LeftAt { get; set; }
 
     public int? ClassworkGradeId { get; set; }
 

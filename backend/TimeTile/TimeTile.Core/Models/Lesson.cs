@@ -10,7 +10,7 @@ public partial class Lesson : AuditableEntity
 
     public int LessonStatusId { get; set; }
 
-    public DateOnly Date { get; set; }
+    public DateTimeOffset Date { get; set; }
 
     public string Description { get; set; } = null!;
 

@@ -16,9 +16,7 @@ namespace TimeTile.Storage.Utils
             var dbContext = eventData.Context;
 
             if (dbContext is null)
-            {
                 return base.SavingChanges(eventData, result);
-            }
 
             var changedEntries = dbContext.ChangeTracker
                 .Entries<AuditableEntity>()
@@ -38,20 +36,22 @@ namespace TimeTile.Storage.Utils
 
         private void CompleteAuditableEntity(AuditableEntity entity, EntityState state)
         {
-            DateTime utcNow = DateTime.UtcNow;
+            var utcNow = DateTimeOffset.UtcNow;
 
-            if (state == EntityState.Added)
+            switch (state)
             {
-                entity.CreatedAt = utcNow;
-                entity.UpdatedAt = utcNow;
-            }
-            else if (state == EntityState.Modified)
-            {
-                entity.UpdatedAt = utcNow;
-            }
-            else if (state == EntityState.Deleted)      // Soft delete
-            {
-                entity.DeletedAt = utcNow;
+                case EntityState.Added:
+                    entity.CreatedAt = utcNow;
+                    entity.UpdatedAt = utcNow;
+                    break;
+
+                case EntityState.Modified:
+                    entity.UpdatedAt = utcNow;
+                    break;
+
+                case EntityState.Deleted:               // Soft delete
+                    entity.DeletedAt = utcNow;
+                    break;
             }
         }
 

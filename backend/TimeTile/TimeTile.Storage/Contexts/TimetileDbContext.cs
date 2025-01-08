@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimeTile.Core.Models;
+using TimeTile.Storage.Utils;
 
 namespace TimeTile.Storage.Contexts;
 
@@ -16,6 +17,7 @@ public sealed partial class TimetileDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder
+            .AddInterceptors(new AuditingSaveChangesInterceptor())
             .UseLazyLoadingProxies()
             .EnableSensitiveDataLogging();
 
@@ -59,6 +61,9 @@ public sealed partial class TimetileDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Soft-deleted records are automatically excluded from queries
+        modelBuilder.Entity<AuditableEntity>().HasQueryFilter(e => e.DeletedAt == null);
+
         modelBuilder.Entity<AuditableEntity>(entity =>
         {
             // Table configuration

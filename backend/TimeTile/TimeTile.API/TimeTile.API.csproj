@@ -22,11 +22,17 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <Folder Include="Authentication\Endpoints\" />
+    <Folder Include="Authentication\Services\" />
+    <Folder Include="Common\Api\Filters\" />
+    <Folder Include="Common\Api\Results\UnifiedResponse\" />
+    <Folder Include="Filter\" />
+    <Folder Include="Users\Endpoints\" />
   </ItemGroup>
 
   <ItemGroup>

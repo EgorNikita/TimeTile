@@ -24,6 +24,14 @@ public static class ConfigureServices
             // options.InferSecuritySchemes();
         });
     }
+    
+    private static void AddSerilog(this WebApplicationBuilder builder)
+    {
+        builder.Host.UseSerilog((context, configuration) =>
+        {
+            configuration.ReadFrom.Configuration(context.Configuration);
+        });
+    }
 
     private static void AddDatabase(this WebApplicationBuilder builder)
     {

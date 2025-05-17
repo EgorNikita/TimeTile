@@ -12,7 +12,7 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    [Migration("20250106210847_CheckConstraintsWereAdded")]
+    [Migration("20250517142734_CheckConstraintsWereAdded")]
     partial class CheckConstraintsWereAdded
     {
         /// <inheritdoc />

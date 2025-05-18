@@ -15,10 +15,20 @@ namespace TimeTile.Storage.Configurations
         {
             // Table and Key Configuration
             builder.ToTable("courses_students", t =>
+            {
                 t.HasCheckConstraint(
                     "CK_CoursesStudents_HasExam_ExamGrade",
                     "\"has_exam\" = FALSE OR \"exam_grade_id\" IS NOT NULL"
-                ));
+                );
+                t.HasCheckConstraint(
+                    "CK_CoursesStudents_PositionX_Positive",
+                    "\"position_x\" >= 0"
+                );
+                t.HasCheckConstraint(
+                    "CK_CoursesStudents_PositionY_Positive",
+                    "\"position_y\" >= 0"
+                );
+            });
 
             builder.HasKey(e => e.Id).HasName("courses_students_pkey");
 
@@ -32,8 +42,9 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.ExamGradeId)
                 .HasColumnName("exam_grade_id")
                 .IsRequired(false);
-            builder.Property(e => e.HasExam)
-                .HasColumnName("has_exam");
+            builder.Property(e => e.HasExam).HasColumnName("has_exam");
+            builder.Property(e => e.PositionX).HasColumnName("position_x");
+            builder.Property(e => e.PositionY).HasColumnName("position_y");
 
             // Relationships
             builder.HasOne(d => d.Course)

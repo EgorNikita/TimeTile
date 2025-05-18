@@ -15,12 +15,19 @@ namespace TimeTile.Storage.Configurations
         {
             // Table Configuration
             builder.ToTable("lesson_statuses", t =>
+            {
                 t.HasCheckConstraint(
                     "CHK_LessonStatus_Description_Valid",
                     "\"description\"  ~ '^[a-zA-Z\\d ]+$'"
-                ));
+                );
 
-            builder.HasIndex(e => e.Description)
+                t.HasCheckConstraint(
+                    "CHK_LessonStatus_ArgbColor_Valid",
+                    "\"argb_color\" >= 0"
+                );
+            });
+
+            builder.HasIndex(e => new { e.Description, e.InstitutionId })
                 .HasDatabaseName("lesson_statuses_description_key")
                 .IsUnique();
 
@@ -29,29 +36,18 @@ namespace TimeTile.Storage.Configurations
                 .HasMaxLength(255)
                 .HasColumnName("description");
 
+            builder.Property(e => e.ArgbColor)
+                .HasColumnName("argb_color");
+
+            builder.Property(e => e.InstitutionId)
+                .HasColumnName("institution_id");
+
             // Many-to-Many Configuration
-            builder.HasMany(e => e.Institutions)
+            builder.HasOne(e => e.Institution)
                 .WithMany(e => e.LessonStatuses)
-                .UsingEntity<Dictionary<string, object>>(
-                    "LessonStatusInstitution",
-                    j => j
-                        .HasOne<Institution>()
-                        .WithMany()
-                        .HasForeignKey("institution_id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("lesson_status_institution_institution_id_fkey"),
-                    j => j
-                        .HasOne<LessonStatus>()
-                        .WithMany()
-                        .HasForeignKey("lesson_status_id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("lesson_status_institution_lesson_status_id_fkey"),
-                    j =>
-                    {
-                        j.ToTable("lesson_statuses_institutions");
-                        j.HasKey("lesson_status_id", "institution_id")
-                            .HasName("lesson_status_institution_pkey");
-                    });
+                .HasForeignKey(e => e.InstitutionId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("lesson_statuses_institution_id_fkey");
         }
     }
 }

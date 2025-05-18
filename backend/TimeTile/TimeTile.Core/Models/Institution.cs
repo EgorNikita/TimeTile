@@ -22,6 +22,8 @@ public partial class Institution : AuditableEntity
     
     public virtual ICollection<Classroom> Classrooms { get; set; } = new List<Classroom>();
 
+    public virtual ICollection<ClassroomType> ClassroomTypes { get; set; } = new List<ClassroomType>();
+
     public virtual ICollection<TimetableUnit> TimetableUnits { get; set; } = new List<TimetableUnit>();
     
     public virtual ICollection<Group> Groups { get; set; } = new List<Group>();

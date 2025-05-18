@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimeTile.Core.Models;
-using TimeTile.Storage.Configurations;
 using TimeTile.Storage.Utils;
+using File = TimeTile.Core.Models.File;
 
 namespace TimeTile.Storage.Contexts;
 
@@ -24,13 +24,15 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<AuditableEntity> AuditableEntities { get; set; } = null!; 
 
-    public DbSet<ClassTeacher> ClassTeachers { get; set; } = null!; 
+    public DbSet<Classroom> Classrooms { get; set; } = null!;
 
-    public DbSet<Classroom> Classrooms { get; set; } = null!; 
+    public DbSet<ClassroomType> ClassroomTypes { get; set; } = null!;
 
     public DbSet<Course> Courses { get; set; } = null!; 
 
     public DbSet<CourseToStudent> CoursesStudents { get; set; } = null!; 
+
+    public DbSet<File> Files { get; set; } = null!;
 
     public DbSet<Grade> Grades { get; set; } = null!; 
 
@@ -52,7 +54,11 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<Subject> Subjects { get; set; } = null!; 
 
-    public DbSet<Teacher> Teachers { get; set; } = null!; 
+    public DbSet<InstitutionMember> InstitutionMembers { get; set; } = null!;
+
+    public DbSet<InstitutionMemberToGroup> InstitutionMembersGroups { get; set; } = null!;
+
+    public DbSet<TeacherToSubject> TeachersSubjects { get; set; } = null!;
 
     public DbSet<Term> Terms { get; set; } = null!; 
     

@@ -29,6 +29,9 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.InstitutionId)
                 .HasColumnName("institution_id");
 
+            builder.Property(e => e.Capacity)
+                .HasColumnName("capacity");
+
             builder.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");

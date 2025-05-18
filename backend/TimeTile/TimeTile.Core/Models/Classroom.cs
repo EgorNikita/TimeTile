@@ -4,9 +4,13 @@ public partial class Classroom : AuditableEntity
 {
     public string Title { get; set; } = null!;
 
+    public int Capacity { get; set; }
+
     public int InstitutionId { get; set; }
     
     public virtual Institution Institution { get; set; } = null!;
 
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
+
+    public virtual ICollection<InstitutionMember> InstitutionMembers { get; set; } = new List<InstitutionMember>();
 }

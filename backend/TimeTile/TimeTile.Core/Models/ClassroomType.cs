@@ -12,11 +12,11 @@ namespace TimeTile.Core.Models
 
         public int InstitutionId { get; set; }
 
-        public int IconId { get; set; }
+        public int? IconId { get; set; }
 
         public virtual Institution Institution { get; set; } = null!;
 
-        public virtual File Icon { get; set; } = null!;
+        public virtual File? Icon { get; set; }
 
         public virtual ICollection<Classroom> Classrooms { get; set; } = new List<Classroom>();
     }

@@ -12,7 +12,7 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    [Migration("20250518180641_DatabaseIsModified")]
+    [Migration("20250518203427_DatabaseIsModified")]
     partial class DatabaseIsModified
     {
         /// <inheritdoc />
@@ -241,7 +241,7 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("description");
 
-                    b.Property<int>("IconId")
+                    b.Property<int?>("IconId")
                         .HasColumnType("integer")
                         .HasColumnName("icon_id");
 
@@ -268,10 +268,6 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
 
-                    b.Property<int>("InstitutionMemberId")
-                        .HasColumnType("integer")
-                        .HasColumnName("institution_member_id");
-
                     b.Property<bool>("IsAdvanced")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -281,6 +277,10 @@ namespace TimeTile.Storage.Migrations
                     b.Property<int>("SubjectId")
                         .HasColumnType("integer")
                         .HasColumnName("subject_id");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("integer")
+                        .HasColumnName("teacher_id");
 
                     b.Property<int>("TermId")
                         .HasColumnType("integer")
@@ -294,15 +294,15 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("InstitutionId");
 
-                    b.HasIndex("InstitutionMemberId");
-
                     b.HasIndex("SubjectId");
+
+                    b.HasIndex("TeacherId");
 
                     b.HasIndex("TermId");
 
-                    b.HasIndex("Title", "SubjectId", "InstitutionMemberId", "InstitutionId", "TermId")
+                    b.HasIndex("Title", "SubjectId", "TeacherId", "InstitutionId", "TermId")
                         .IsUnique()
-                        .HasDatabaseName("courses_title_subject_institution_member_institution_term_key");
+                        .HasDatabaseName("courses_title_subject_teacher_institution_term_key");
 
                     b.ToTable("courses", null, t =>
                         {
@@ -969,7 +969,6 @@ namespace TimeTile.Storage.Migrations
                         .WithOne("ClassroomType")
                         .HasForeignKey("TimeTile.Core.Models.ClassroomType", "IconId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
                         .HasConstraintName("classroom_types_icon_id_fkey");
 
                     b.HasOne("TimeTile.Core.Models.AuditableEntity", null)
@@ -1005,19 +1004,19 @@ namespace TimeTile.Storage.Migrations
                         .IsRequired()
                         .HasConstraintName("courses_institution_id_fkey");
 
-                    b.HasOne("TimeTile.Core.Models.InstitutionMember", "InstitutionMember")
-                        .WithMany("Courses")
-                        .HasForeignKey("InstitutionMemberId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("courses_teacher_id_fkey");
-
                     b.HasOne("TimeTile.Core.Models.Subject", "Subject")
                         .WithMany("Courses")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("courses_subject_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.InstitutionMember", "Teacher")
+                        .WithMany("Courses")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("courses_teacher_id_fkey");
 
                     b.HasOne("TimeTile.Core.Models.Term", "Term")
                         .WithMany("Courses")
@@ -1028,9 +1027,9 @@ namespace TimeTile.Storage.Migrations
 
                     b.Navigation("Institution");
 
-                    b.Navigation("InstitutionMember");
-
                     b.Navigation("Subject");
+
+                    b.Navigation("Teacher");
 
                     b.Navigation("Term");
                 });

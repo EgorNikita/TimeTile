@@ -28,7 +28,8 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("institution_id");
 
             builder.Property(e => e.IconId)
-                .HasColumnName("icon_id");
+                .HasColumnName("icon_id")
+                .IsRequired(false);
 
             // Relationships
             builder.HasOne(d => d.Institution)

@@ -27,21 +27,6 @@ namespace TimeTile.Storage.Migrations
                 name: "lesson_statuses_description_key",
                 table: "lesson_statuses");
 
-            migrationBuilder.RenameColumn(
-                name: "teacher_id",
-                table: "courses",
-                newName: "institution_member_id");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_courses_teacher_id",
-                table: "courses",
-                newName: "IX_courses_institution_member_id");
-
-            migrationBuilder.RenameIndex(
-                name: "courses_title_subject_teacher_institution_term_key",
-                table: "courses",
-                newName: "courses_title_subject_institution_member_institution_term_key");
-
             migrationBuilder.AddColumn<int>(
                 name: "argb_color",
                 table: "lesson_statuses",
@@ -147,7 +132,7 @@ namespace TimeTile.Storage.Migrations
                     id = table.Column<int>(type: "integer", nullable: false),
                     description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     institution_id = table.Column<int>(type: "integer", nullable: false),
-                    icon_id = table.Column<int>(type: "integer", nullable: false)
+                    icon_id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -319,7 +304,7 @@ namespace TimeTile.Storage.Migrations
             migrationBuilder.AddForeignKey(
                 name: "courses_teacher_id_fkey",
                 table: "courses",
-                column: "institution_member_id",
+                column: "teacher_id",
                 principalTable: "institution_members",
                 principalColumn: "id");
 
@@ -408,21 +393,6 @@ namespace TimeTile.Storage.Migrations
             migrationBuilder.DropColumn(
                 name: "classroom_type_id",
                 table: "classrooms");
-
-            migrationBuilder.RenameColumn(
-                name: "institution_member_id",
-                table: "courses",
-                newName: "teacher_id");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_courses_institution_member_id",
-                table: "courses",
-                newName: "IX_courses_teacher_id");
-
-            migrationBuilder.RenameIndex(
-                name: "courses_title_subject_institution_member_institution_term_key",
-                table: "courses",
-                newName: "courses_title_subject_teacher_institution_term_key");
 
             migrationBuilder.AlterColumn<int>(
                 name: "value",

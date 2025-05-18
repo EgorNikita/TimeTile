@@ -8,7 +8,7 @@ public partial class Course : AuditableEntity
     
     public int SubjectId { get; set; }
 
-    public int InstitutionMemberId { get; set; }
+    public int TeacherId { get; set; }
 
     public bool IsAdvanced { get; set; } = false;
     
@@ -24,7 +24,7 @@ public partial class Course : AuditableEntity
     
     public virtual Subject Subject { get; set; } = null!;
 
-    public virtual InstitutionMember InstitutionMember { get; set; } = null!;
+    public virtual InstitutionMember Teacher { get; set; } = null!;
 
     // CoursesToStudents
     public virtual ICollection<CourseToStudent> CoursesToStudents { get; set; } = new List<CourseToStudent>();

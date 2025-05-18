@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimeTile.Core.Models;
-using TimeTile.Storage.Configurations;
 using TimeTile.Storage.Utils;
+using File = TimeTile.Core.Models.File;
 
 namespace TimeTile.Storage.Contexts;
 
@@ -29,6 +29,8 @@ public sealed partial class TimetileDbContext : DbContext
     public DbSet<Course> Courses { get; set; } = null!; 
 
     public DbSet<CourseToStudent> CoursesStudents { get; set; } = null!; 
+
+    public DbSet<File> Files { get; set; } = null!;
 
     public DbSet<Grade> Grades { get; set; } = null!; 
 

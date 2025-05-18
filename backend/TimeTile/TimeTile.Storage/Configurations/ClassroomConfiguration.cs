@@ -26,9 +26,6 @@ namespace TimeTile.Storage.Configurations
                 .HasDatabaseName("classrooms_institution_title_key");
 
             // Property configurations
-            builder.Property(e => e.InstitutionId)
-                .HasColumnName("institution_id");
-
             builder.Property(e => e.Capacity)
                 .HasColumnName("capacity");
 
@@ -36,11 +33,24 @@ namespace TimeTile.Storage.Configurations
                 .HasMaxLength(255)
                 .HasColumnName("title");
 
+            builder.Property(e => e.InstitutionId)
+                .HasColumnName("institution_id");
+
+            builder.Property(e => e.ClassroomTypeId)
+                .HasColumnName("classroom_type_id");
+
+            // Define relationships
             builder.HasOne(d => d.Institution)
                 .WithMany(p => p.Classrooms)
                 .HasForeignKey(d => d.InstitutionId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("classrooms_institution_id_fkey");
+
+            builder.HasOne(d => d.ClassroomType)
+                .WithMany(p => p.Classrooms)
+                .HasForeignKey(d => d.ClassroomTypeId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("classrooms_classroom_type_id_fkey");
         }
     }
 }

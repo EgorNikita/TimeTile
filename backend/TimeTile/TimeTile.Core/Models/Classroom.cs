@@ -8,7 +8,11 @@ public partial class Classroom : AuditableEntity
 
     public int InstitutionId { get; set; }
     
+    public int ClassroomTypeId { get; set; }
+
     public virtual Institution Institution { get; set; } = null!;
+
+    public virtual ClassroomType ClassroomType { get; set; } = null!;
 
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 

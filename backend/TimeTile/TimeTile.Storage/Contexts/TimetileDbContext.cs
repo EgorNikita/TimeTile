@@ -24,7 +24,9 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<AuditableEntity> AuditableEntities { get; set; } = null!; 
 
-    public DbSet<Classroom> Classrooms { get; set; } = null!; 
+    public DbSet<Classroom> Classrooms { get; set; } = null!;
+
+    public DbSet<ClassroomType> ClassroomTypes { get; set; } = null!;
 
     public DbSet<Course> Courses { get; set; } = null!; 
 

@@ -16,5 +16,7 @@ namespace TimeTile.Core.Models
         public long Size { get; set; }
 
         public string StoragePath { get; set; } = null!;
+
+        public virtual ClassroomType? ClassroomType { get; set; }
     }
 }

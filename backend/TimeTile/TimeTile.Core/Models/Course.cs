@@ -8,7 +8,7 @@ public partial class Course : AuditableEntity
     
     public int SubjectId { get; set; }
 
-    public int TeacherId { get; set; }
+    public int InstitutionMemberId { get; set; }
 
     public bool IsAdvanced { get; set; } = false;
     

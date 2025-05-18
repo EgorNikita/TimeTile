@@ -20,9 +20,9 @@ namespace TimeTile.Storage.Configurations
                     "\"title\"  ~ '^[\\w -.*+,]+$'"
                 ));
 
-            builder.HasIndex(e => new { e.Title, e.SubjectId, e.TeacherId, e.InstitutionId, e.TermId })
+            builder.HasIndex(e => new { e.Title, e.SubjectId, e.InstitutionMemberId, e.InstitutionId, e.TermId })
                 .IsUnique()
-                .HasDatabaseName("courses_title_subject_teacher_institution_term_key");
+                .HasDatabaseName("courses_title_subject_institution_member_institution_term_key");
 
             // Property configurations
             builder.Property(e => e.Title)
@@ -36,8 +36,8 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.SubjectId)
                 .HasColumnName("subject_id");
 
-            builder.Property(e => e.TeacherId)
-                .HasColumnName("teacher_id");
+            builder.Property(e => e.InstitutionMemberId)
+                .HasColumnName("institution_member_id");
 
             builder.Property(e => e.InstitutionId)
                 .HasColumnName("institution_id");
@@ -52,9 +52,9 @@ namespace TimeTile.Storage.Configurations
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("courses_subject_id_fkey");
 
-            builder.HasOne(d => d.Teacher)
+            builder.HasOne(d => d.InstitutionMember)
                 .WithMany(p => p.Courses)
-                .HasForeignKey(d => d.TeacherId)
+                .HasForeignKey(d => d.InstitutionMemberId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("courses_teacher_id_fkey");
 

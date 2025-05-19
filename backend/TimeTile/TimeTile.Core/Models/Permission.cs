@@ -4,6 +4,8 @@ namespace TimeTile.Core.Models;
 
 public partial class Permission : AuditableEntity
 {
+    public int Id { get; set; }
+
     public string Description { get; set; } = null!;
 
     // Roles

@@ -22,8 +22,6 @@ public sealed partial class TimetileDbContext : DbContext
             .UseLazyLoadingProxies()
             .EnableSensitiveDataLogging();
 
-    public DbSet<AuditableEntity> AuditableEntities { get; set; } = null!; 
-
     public DbSet<Classroom> Classrooms { get; set; } = null!;
 
     public DbSet<ClassroomType> ClassroomTypes { get; set; } = null!;

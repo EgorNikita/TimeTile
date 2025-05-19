@@ -8,6 +8,8 @@ namespace TimeTile.Core.Models
 {
     public class InstitutionMemberToGroup : AuditableEntity
     {
+        public int Id { get; set; }
+
         public int InstitutionMemberId { get; set; }
 
         public int GroupId { get; set; }

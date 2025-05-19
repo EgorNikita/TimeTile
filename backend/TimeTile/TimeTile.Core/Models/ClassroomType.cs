@@ -8,6 +8,8 @@ namespace TimeTile.Core.Models
 {
     public class ClassroomType : AuditableEntity
     {
+        public int Id { get; set; }
+
         public string Description { get; set; } = null!;
 
         public int InstitutionId { get; set; }

@@ -9,6 +9,8 @@ namespace TimeTile.Core.Models
 {
     public class File : AuditableEntity
     {
+        public int Id { get; set; }
+
         public string OriginalName { get; set; } = null!;
 
         public FileExtension Extension { get; set; } 

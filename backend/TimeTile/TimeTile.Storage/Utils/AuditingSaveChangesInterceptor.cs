@@ -13,23 +13,23 @@ namespace TimeTile.Storage.Utils
     {
         public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
         {
-            var dbContext = eventData.Context;
+            //var dbContext = eventData.Context;
 
-            if (dbContext is null)
-                return base.SavingChanges(eventData, result);
+            //if (dbContext is null)
+            //    return base.SavingChanges(eventData, result);
 
-            var changedEntries = dbContext.ChangeTracker
-                .Entries<AuditableEntity>()
-                .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted);
+            //var changedEntries = dbContext.ChangeTracker
+            //    .Entries<AuditableEntity>()
+            //    .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted);
 
-            foreach (var entry in changedEntries)
-            {
-                CompleteAuditableEntity(entry.Entity, entry.State);
+            //foreach (var entry in changedEntries)
+            //{
+            //    CompleteAuditableEntity(entry.Entity, entry.State);
 
-                // Entity should not be deleted in base.SavingChanges()
-                if (entry.State == EntityState.Deleted) 
-                    entry.State = EntityState.Modified;
-            }
+            //    // Entity should not be deleted in base.SavingChanges()
+            //    if (entry.State == EntityState.Deleted) 
+            //        entry.State = EntityState.Modified;
+            //}
 
             return base.SavingChanges(eventData, result);
         }

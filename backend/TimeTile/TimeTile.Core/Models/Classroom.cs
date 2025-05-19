@@ -2,6 +2,8 @@
 
 public partial class Classroom : AuditableEntity
 {
+    public int Id { get; set; }
+
     public string Title { get; set; } = null!;
 
     public int Capacity { get; set; }

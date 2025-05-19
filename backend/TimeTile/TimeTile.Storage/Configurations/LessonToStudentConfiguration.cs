@@ -13,9 +13,6 @@ namespace TimeTile.Storage.Configurations
     {
         public void Configure(EntityTypeBuilder<LessonToStudent> builder)
         {
-            // Define the primary key
-            builder.HasKey(e => e.Id).HasName("lessons_students_pkey");
-
             // Map to table and create index
             builder.ToTable("lessons_students", t =>
             {
@@ -33,9 +30,6 @@ namespace TimeTile.Storage.Configurations
                 .IsUnique();
 
             // Define properties with column names
-            builder.Property(e => e.Id)
-                .HasColumnName("id");
-
             builder.Property(e => e.LessonId)
                 .HasColumnName("lesson_id");
 

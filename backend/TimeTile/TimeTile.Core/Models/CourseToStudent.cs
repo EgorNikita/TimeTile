@@ -1,9 +1,7 @@
 ﻿namespace TimeTile.Core.Models;
 
-public partial class CourseToStudent
+public partial class CourseToStudent : AuditableEntity
 {
-    public int Id { get; set; }
-
     public int CourseId { get; set; }
 
     public int StudentId { get; set; }

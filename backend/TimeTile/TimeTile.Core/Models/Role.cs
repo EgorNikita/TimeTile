@@ -1,4 +1,6 @@
-﻿namespace TimeTile.Core.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TimeTile.Core.Models;
 
 public class Role : AuditableEntity
 {
@@ -9,6 +11,10 @@ public class Role : AuditableEntity
     public virtual Institution Institution { get; set; } = null!;
     
     public virtual ICollection<User> Users { get; set; } = new List<User>();
-    
-    public virtual ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+
+    // Permissions
+    public virtual ICollection<RoleToPermission> RoleToPermissions { get; set; } = new List<RoleToPermission>();
+
+    [NotMapped]
+    public virtual IEnumerable<Permission> Permissions => RoleToPermissions.Select(x => x.Permission);
 }

@@ -48,7 +48,9 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<Permission> Permissions { get; set; } = null!; 
     
-    public DbSet<Role> Roles { get; set; } = null!; 
+    public DbSet<Role> Roles { get; set; } = null!;
+
+    public DbSet<RoleToPermission> RolesPermissions { get; set; } = null!;
 
     public DbSet<Student> Students { get; set; } = null!; 
 

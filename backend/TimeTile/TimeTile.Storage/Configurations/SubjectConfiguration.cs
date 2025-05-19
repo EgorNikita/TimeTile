@@ -27,29 +27,15 @@ namespace TimeTile.Storage.Configurations
                 .HasMaxLength(255)
                 .HasColumnName("title");
 
+            builder.Property(e => e.InstitutionId)
+                .HasColumnName("institution_id");
+
             // Many-to-Many Configuration
-            builder.HasMany(s => s.Institutions)
-                .WithMany(i => i.Subjects)
-                .UsingEntity<Dictionary<string, object>>(
-                    "SubjectInstitution",
-                    j => j
-                        .HasOne<Institution>()
-                        .WithMany()
-                        .HasForeignKey("institution_id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("subjects_institutions_institution_id_fkey"),
-                    j => j
-                        .HasOne<Subject>()
-                        .WithMany()
-                        .HasForeignKey("subject_id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("subjects_institutions_subject_id_fkey"),
-                    j =>
-                    {
-                        j.ToTable("subjects_institutions");  // Name of the join table
-                        j.HasKey("institution_id", "subject_id")  // Composite primary key
-                            .HasName("subjects_institutions_pkey");  // Name of the composite primary key
-                    });
+            builder.HasOne(d => d.Institution)
+                .WithMany(p => p.Subjects)
+                .HasForeignKey(d => d.InstitutionId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("subjects_institution_id_fkey");
         }
     }
 }

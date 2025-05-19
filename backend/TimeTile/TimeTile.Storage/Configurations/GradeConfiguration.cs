@@ -20,7 +20,13 @@ namespace TimeTile.Storage.Configurations
                 t.HasCheckConstraint("CHK_Grade_Weight_Positive", "\"weight\" > 0");
             });
 
+            builder.HasKey(e => e.Id);
+
             // Property Configurations
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.Value)
                 .HasColumnName("value");
 

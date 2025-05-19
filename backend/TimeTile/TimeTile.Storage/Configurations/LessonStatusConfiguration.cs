@@ -27,11 +27,17 @@ namespace TimeTile.Storage.Configurations
                 );
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.Description, e.InstitutionId })
                 .HasDatabaseName("lesson_statuses_description_key")
                 .IsUnique();
 
             // Property Configuration
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id"); 
+
             builder.Property(e => e.Description)
                 .HasMaxLength(255)
                 .HasColumnName("description");

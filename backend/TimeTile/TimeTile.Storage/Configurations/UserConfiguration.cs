@@ -51,11 +51,17 @@ namespace TimeTile.Storage.Configurations
                     "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.UseTptMappingStrategy();
 
             builder.HasIndex(e => e.Login, "users_login_key").IsUnique();
 
             // Property Configuration
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.AvatarPath)
                 .HasMaxLength(255)
                 .HasColumnName("avatar_path");

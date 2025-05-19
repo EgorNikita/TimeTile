@@ -26,6 +26,8 @@ namespace TimeTile.Storage.Configurations
                 );
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.InstitutionId, e.Title })
                 .HasDatabaseName("timetable_units_institution_title_key")
                 .IsUnique();
@@ -35,6 +37,10 @@ namespace TimeTile.Storage.Configurations
                 .IsUnique();
 
             // Property Configuration
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.StartTime)
                 .HasColumnName("start_time")
                 .HasColumnType("time with time zone");

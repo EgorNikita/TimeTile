@@ -16,10 +16,15 @@ namespace TimeTile.Storage.Configurations
             // Map to table and create index
             builder.ToTable("roles_permissions");
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.RoleId, e.PermissionId }, "roles_permissions_role_id_permission_id_key")
                 .IsUnique();
 
             // Define properties with column names
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
             builder.Property(e => e.RoleId)
                 .HasColumnName("role_id");
             builder.Property(e => e.PermissionId)

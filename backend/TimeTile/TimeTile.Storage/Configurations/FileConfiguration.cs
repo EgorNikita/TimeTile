@@ -30,10 +30,16 @@ namespace TimeTile.Storage.Configurations
                 );
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => e.StoragePath, "files_storage_path_key")
                 .IsUnique();
 
             // Define properties with column names
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.OriginalName)
                 .HasColumnName("original_name")
                 .HasMaxLength(255);

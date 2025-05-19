@@ -26,10 +26,16 @@ namespace TimeTile.Storage.Configurations
                 );
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.LessonId, e.StudentId }, "lessons_students_lesson_id_student_id_key")
                 .IsUnique();
 
             // Define properties with column names
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.LessonId)
                 .HasColumnName("lesson_id");
 

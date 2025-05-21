@@ -2,6 +2,8 @@
 
 public partial class LessonToStudent : AuditableEntity
 {
+    public int Id { get; set; }
+
     public int LessonId { get; set; }
 
     public int StudentId { get; set; }

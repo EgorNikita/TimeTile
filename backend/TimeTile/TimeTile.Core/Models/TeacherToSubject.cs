@@ -8,6 +8,8 @@ namespace TimeTile.Core.Models
 {
     public class TeacherToSubject : AuditableEntity
     {
+        public int Id { get; set; }
+
         public int TeacherId { get; set; }
 
         public int SubjectId { get; set; }

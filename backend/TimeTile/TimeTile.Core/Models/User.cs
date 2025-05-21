@@ -2,6 +2,8 @@
 
 public partial class User : AuditableEntity
 {
+    public int Id { get; set; }
+
     public string AvatarPath { get; set; } = null!;
 
     public string Firstname { get; set; } = null!;

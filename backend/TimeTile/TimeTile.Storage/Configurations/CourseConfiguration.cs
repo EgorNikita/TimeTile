@@ -20,11 +20,17 @@ namespace TimeTile.Storage.Configurations
                     "\"title\"  ~ '^[\\w -.*+,]+$'"
                 ));
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.Title, e.SubjectId, e.TeacherId, e.InstitutionId, e.TermId })
                 .IsUnique()
                 .HasDatabaseName("courses_title_subject_teacher_institution_term_key");
 
             // Property configurations
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");

@@ -2,6 +2,8 @@
 
 public partial class Institution : AuditableEntity
 {
+    public int Id { get; set; }
+
     public string Title { get; set; } = null!;
 
     public string Address { get; set; } = null!;

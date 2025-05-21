@@ -27,6 +27,8 @@ namespace TimeTile.Storage.Configurations
                 );
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.InstitutionId, e.Title })
                 .HasDatabaseName("terms_institution_title_key")
                 .IsUnique();
@@ -36,6 +38,10 @@ namespace TimeTile.Storage.Configurations
                 .IsUnique();
 
             // Property Configuration
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.InstitutionId)
                 .HasColumnName("institution_id");
 

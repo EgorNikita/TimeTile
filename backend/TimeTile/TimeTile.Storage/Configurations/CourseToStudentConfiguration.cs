@@ -30,10 +30,15 @@ namespace TimeTile.Storage.Configurations
                 );
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.CourseId, e.StudentId }, "courses_students_course_id_student_id_key")
                 .IsUnique();
 
             // Property Configurations
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
             builder.Property(e => e.CourseId).HasColumnName("course_id");
             builder.Property(e => e.StudentId).HasColumnName("student_id");
             builder.Property(e => e.ExamGradeId)

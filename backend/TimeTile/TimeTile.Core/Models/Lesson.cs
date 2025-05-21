@@ -4,6 +4,8 @@ namespace TimeTile.Core.Models;
 
 public partial class Lesson : AuditableEntity
 {
+    public int Id { get; set; }
+
     public int TimetableUnitId { get; set; }
 
     public int CourseId { get; set; }

@@ -16,11 +16,17 @@ namespace TimeTile.Storage.Configurations
             // Table Configuration
             builder.ToTable("lessons");
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.CourseId, e.TimetableUnitId, e.Date })
                 .HasDatabaseName("lessons_course_timetable_date_key")
                 .IsUnique();
 
             // Property Configurations
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.ClassroomId)
                 .HasColumnName("classroom_id");
 

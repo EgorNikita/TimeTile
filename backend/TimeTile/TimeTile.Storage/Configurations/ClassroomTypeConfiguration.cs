@@ -16,10 +16,16 @@ namespace TimeTile.Storage.Configurations
             // Table configuration
             builder.ToTable("classroom_types");
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.Description, e.InstitutionId }, "classroom_types_description_institution_id_key")
                 .IsUnique();
 
             // Property configurations
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.Description)
                 .HasColumnName("description")
                 .HasMaxLength(255);

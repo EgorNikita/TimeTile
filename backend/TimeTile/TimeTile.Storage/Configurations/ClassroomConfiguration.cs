@@ -20,12 +20,18 @@ namespace TimeTile.Storage.Configurations
                     "\"title\" ~ '^[a-zA-Z \\d-]+$'"
                 ));
 
+            builder.HasKey(e => e.Id);
+
             // Unique index for InstitutionId and Title
             builder.HasIndex(e => new { e.InstitutionId, e.Title })
                 .IsUnique()
                 .HasDatabaseName("classrooms_institution_title_key");
 
             // Property configurations
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.Capacity)
                 .HasColumnName("capacity");
 

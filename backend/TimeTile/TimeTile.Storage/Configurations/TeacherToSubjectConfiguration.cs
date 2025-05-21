@@ -16,10 +16,15 @@ namespace TimeTile.Storage.Configurations
             // Map to table and create index
             builder.ToTable("teachers_subjects");
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.TeacherId, e.SubjectId }, "teachers_subjects_teacher_id_subject_id_key")
                 .IsUnique();
 
             // Define properties with column names
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
             builder.Property(e => e.TeacherId)
                 .HasColumnName("teacher_id");
             builder.Property(e => e.SubjectId)

@@ -4,6 +4,8 @@ namespace TimeTile.Core.Models;
 
 public partial class Course : AuditableEntity
 {
+    public int Id { get; set; }
+
     public string Title { get; set; } = null!;
     
     public int SubjectId { get; set; }

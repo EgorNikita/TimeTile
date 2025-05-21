@@ -20,9 +20,15 @@ namespace TimeTile.Storage.Configurations
                     "\"title\"  ~ '^[\\w -]+$'"
                 ));
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => new { e.InstitutionId, e.Title }, "roles_title_institution_key").IsUnique();
 
             // Property Configuration
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");

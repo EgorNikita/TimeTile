@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using System.Reflection;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Utils;
 using File = TimeTile.Core.Models.File;
@@ -21,8 +23,6 @@ public sealed partial class TimetileDbContext : DbContext
             .AddInterceptors(new AuditingSaveChangesInterceptor())
             .UseLazyLoadingProxies()
             .EnableSensitiveDataLogging();
-
-    public DbSet<AuditableEntity> AuditableEntities { get; set; } = null!; 
 
     public DbSet<Classroom> Classrooms { get; set; } = null!;
 
@@ -73,7 +73,56 @@ public sealed partial class TimetileDbContext : DbContext
         var assembly = GetType().Assembly;
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
 
+        AddConfigurationOnAuditableEntity(modelBuilder);
+
         OnModelCreatingPartial(modelBuilder);
+    }
+
+    private void AddConfigurationOnAuditableEntity(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (entityType.ClrType.IsAssignableTo(typeof(AuditableEntity)) &&
+                entityType.BaseType == null)
+            {
+                var method = typeof(TimetileDbContext)
+                    .GetMethod(nameof(ConfigureAuditableEntity), BindingFlags.NonPublic | BindingFlags.Static)!
+                    .MakeGenericMethod(entityType.ClrType);
+
+                method.Invoke(null, [ modelBuilder ]);
+            }
+        }
+    }
+
+    private static void ConfigureAuditableEntity<T>(ModelBuilder modelBuilder) where T : AuditableEntity
+    {
+        ConfigureFieldsForAuditableEntity<T>(modelBuilder);
+        SetQueryFilterOnSoftDelete<T>(modelBuilder);
+    }
+
+    private static void ConfigureFieldsForAuditableEntity<T>(ModelBuilder modelBuilder) where T : AuditableEntity
+    {
+        modelBuilder.Entity<T>()
+            .Property(e => e.CreatedAt)
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .IsRequired(true);
+
+        modelBuilder.Entity<T>()
+            .Property(e => e.UpdatedAt)
+            .HasColumnName("updated_at")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .IsRequired(true);
+
+        modelBuilder.Entity<T>()
+            .Property(e => e.DeletedAt)
+            .HasColumnName("deleted_at")
+            .IsRequired(false);
+    }
+
+    private static void SetQueryFilterOnSoftDelete<T>(ModelBuilder modelBuilder) where T : AuditableEntity
+    {
+        modelBuilder.Entity<T>().HasQueryFilter(e => e.DeletedAt == null);
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

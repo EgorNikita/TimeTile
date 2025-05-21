@@ -33,11 +33,17 @@ namespace TimeTile.Storage.Configurations
                     "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
             });
 
+            builder.HasKey(e => e.Id);
+
             builder.HasIndex(e => e.Title)
                 .HasDatabaseName("institutions_title_key")
                 .IsUnique();
 
             // Property Configurations
+            builder.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("id");
+
             builder.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");

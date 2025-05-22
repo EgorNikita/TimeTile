@@ -32,7 +32,9 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => e.StoragePath, "files_storage_path_key")
+            builder.HasIndex(e => new { e.StoragePath, e.DeletedAt })
+                .HasDatabaseName("files_storage_path_deleted_at_key")
+                .AreNullsDistinct(false)
                 .IsUnique();
 
             // Define properties with column names

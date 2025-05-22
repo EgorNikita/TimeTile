@@ -22,7 +22,10 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.InstitutionId, e.Title }, "roles_title_institution_key").IsUnique();
+            builder.HasIndex(e => new { e.InstitutionId, e.Title, e.DeletedAt })
+                .HasDatabaseName("roles_title_institution_deleted_at_key")
+                .AreNullsDistinct(false)
+                .IsUnique();
 
             // Property Configuration
             builder.Property(e => e.Id)

@@ -55,7 +55,10 @@ namespace TimeTile.Storage.Configurations
 
             builder.UseTptMappingStrategy();
 
-            builder.HasIndex(e => e.Login, "users_login_key").IsUnique();
+            builder.HasIndex(e => new { e.Login, e.DeletedAt })
+                .HasDatabaseName("users_login_deleted_at_key")
+                .AreNullsDistinct(false)
+                .IsUnique();
 
             // Property Configuration
             builder.Property(e => e.Id)

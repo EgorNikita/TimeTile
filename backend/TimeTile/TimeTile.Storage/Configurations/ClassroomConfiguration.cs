@@ -23,9 +23,10 @@ namespace TimeTile.Storage.Configurations
             builder.HasKey(e => e.Id);
 
             // Unique index for InstitutionId and Title
-            builder.HasIndex(e => new { e.InstitutionId, e.Title })
-                .IsUnique()
-                .HasDatabaseName("classrooms_institution_title_key");
+            builder.HasIndex(e => new { e.InstitutionId, e.Title, e.DeletedAt })
+                .HasDatabaseName("classrooms_institution_title_deleted_at_key")
+                .AreNullsDistinct(false)
+                .IsUnique();
 
             // Property configurations
             builder.Property(e => e.Id)

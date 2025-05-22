@@ -18,7 +18,9 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.RoleId, e.PermissionId }, "roles_permissions_role_id_permission_id_key")
+            builder.HasIndex(e => new { e.RoleId, e.PermissionId, e.DeletedAt })
+                .HasDatabaseName("roles_permissions_role_permission_deleted_at_key")
+                .AreNullsDistinct(false)
                 .IsUnique();
 
             // Define properties with column names

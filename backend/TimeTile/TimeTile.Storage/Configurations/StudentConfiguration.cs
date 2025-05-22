@@ -16,10 +16,6 @@ namespace TimeTile.Storage.Configurations
             // Table Configuration
             builder.ToTable("students");
 
-            builder.HasIndex(e => new { e.Id, e.GroupId })
-                .HasDatabaseName("students_id_group_key")
-                .IsUnique();
-
             // Property Configuration
             builder.Property(e => e.GroupId)
                 .HasColumnName("group_id");

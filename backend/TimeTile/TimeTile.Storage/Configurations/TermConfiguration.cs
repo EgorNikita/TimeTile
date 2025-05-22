@@ -29,12 +29,14 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.InstitutionId, e.Title })
-                .HasDatabaseName("terms_institution_title_key")
+            builder.HasIndex(e => new { e.InstitutionId, e.Title, e.DeletedAt })
+                .HasDatabaseName("terms_institution_title_deleted_at_key")
+                .AreNullsDistinct(false)
                 .IsUnique();
 
-            builder.HasIndex(e => new { e.StartDate, e.EndDate, e.InstitutionId })
-                .HasDatabaseName("terms_institution_start_end_key")
+            builder.HasIndex(e => new { e.StartDate, e.EndDate, e.InstitutionId, e.DeletedAt })
+                .HasDatabaseName("terms_institution_start_end_deleted_at_key")
+                .AreNullsDistinct(false)
                 .IsUnique();
 
             // Property Configuration

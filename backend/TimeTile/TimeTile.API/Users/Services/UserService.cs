@@ -17,7 +17,7 @@ public class UserService : IUserService
     
     public Task<Institution> GetInstitutionId(string institutionDomain)
     {
-        _dbContext.Institutions
+        return _dbContext.Institutions
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Domain == institutionDomain)
             .ContinueWith(t =>

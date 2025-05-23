@@ -18,8 +18,9 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.CourseId, e.TimetableUnitId, e.Date })
-                .HasDatabaseName("lessons_course_timetable_date_key")
+            builder.HasIndex(e => new { e.CourseId, e.TimetableUnitId, e.Date, e.DeletedAt })
+                .HasDatabaseName("lessons_course_timetable_date_deleted_at_key")
+                .AreNullsDistinct(false)
                 .IsUnique();
 
             // Property Configurations

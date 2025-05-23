@@ -29,8 +29,9 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.Description, e.InstitutionId })
-                .HasDatabaseName("lesson_statuses_description_key")
+            builder.HasIndex(e => new { e.Description, e.InstitutionId, e.DeletedAt })
+                .HasDatabaseName("lesson_statuses_description_institution_deleted_at_key")
+                .AreNullsDistinct(false)
                 .IsUnique();
 
             // Property Configuration

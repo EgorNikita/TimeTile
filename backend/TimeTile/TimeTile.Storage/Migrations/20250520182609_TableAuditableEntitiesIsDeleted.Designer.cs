@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250520182609_TableAuditableEntitiesIsDeleted")]
+    partial class TableAuditableEntitiesIsDeleted
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,11 +75,9 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("ClassroomTypeId");
 
-                    b.HasIndex("InstitutionId", "Title", "DeletedAt")
+                    b.HasIndex("InstitutionId", "Title")
                         .IsUnique()
-                        .HasDatabaseName("classrooms_institution_title_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("InstitutionId", "Title", "DeletedAt"), false);
+                        .HasDatabaseName("classrooms_institution_title_key");
 
                     b.ToTable("classrooms", null, t =>
                         {
@@ -130,11 +131,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("InstitutionId");
 
-                    b.HasIndex("Description", "InstitutionId", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("classroom_types_description_institution_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Description", "InstitutionId", "DeletedAt"), false);
+                    b.HasIndex(new[] { "Description", "InstitutionId" }, "classroom_types_description_institution_id_key")
+                        .IsUnique();
 
                     b.ToTable("classroom_types", (string)null);
                 });
@@ -202,11 +200,9 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("TermId");
 
-                    b.HasIndex("Title", "SubjectId", "TeacherId", "InstitutionId", "TermId", "DeletedAt")
+                    b.HasIndex("Title", "SubjectId", "TeacherId", "InstitutionId", "TermId")
                         .IsUnique()
-                        .HasDatabaseName("courses_title_subject_teacher_institution_term_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Title", "SubjectId", "TeacherId", "InstitutionId", "TermId", "DeletedAt"), false);
+                        .HasDatabaseName("courses_title_subject_teacher_institution_term_key");
 
                     b.ToTable("courses", null, t =>
                         {
@@ -270,11 +266,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.HasIndex("CourseId", "StudentId", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("courses_students_course_student_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("CourseId", "StudentId", "DeletedAt"), false);
+                    b.HasIndex(new[] { "CourseId", "StudentId" }, "courses_students_course_id_student_id_key")
+                        .IsUnique();
 
                     b.ToTable("courses_students", null, t =>
                         {
@@ -334,11 +327,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StoragePath", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("files_storage_path_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("StoragePath", "DeletedAt"), false);
+                    b.HasIndex(new[] { "StoragePath" }, "files_storage_path_key")
+                        .IsUnique();
 
                     b.ToTable("files", null, t =>
                         {
@@ -430,11 +420,9 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InstitutionId", "Title", "DeletedAt")
+                    b.HasIndex("InstitutionId", "Title")
                         .IsUnique()
-                        .HasDatabaseName("groups_institution_title_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("InstitutionId", "Title", "DeletedAt"), false);
+                        .HasDatabaseName("groups_institution_title_key");
 
                     b.ToTable("groups", null, t =>
                         {
@@ -493,11 +481,9 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Title", "DeletedAt")
+                    b.HasIndex("Title")
                         .IsUnique()
-                        .HasDatabaseName("institutions_title_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Title", "DeletedAt"), false);
+                        .HasDatabaseName("institutions_title_key");
 
                     b.ToTable("institutions", null, t =>
                         {
@@ -548,11 +534,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.HasIndex("InstitutionMemberId", "GroupId", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("institution_members_groups_institution_member_group_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("InstitutionMemberId", "GroupId", "DeletedAt"), false);
+                    b.HasIndex(new[] { "InstitutionMemberId", "GroupId" }, "institution_members_groups_institution_member_id_group_id_key")
+                        .IsUnique();
 
                     b.ToTable("institution_members_groups", (string)null);
                 });
@@ -622,11 +605,9 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("TimetableUnitId");
 
-                    b.HasIndex("CourseId", "TimetableUnitId", "Date", "DeletedAt")
+                    b.HasIndex("CourseId", "TimetableUnitId", "Date")
                         .IsUnique()
-                        .HasDatabaseName("lessons_course_timetable_date_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("CourseId", "TimetableUnitId", "Date", "DeletedAt"), false);
+                        .HasDatabaseName("lessons_course_timetable_date_key");
 
                     b.ToTable("lessons", (string)null);
                 });
@@ -674,11 +655,9 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("InstitutionId");
 
-                    b.HasIndex("Description", "InstitutionId", "DeletedAt")
+                    b.HasIndex("Description", "InstitutionId")
                         .IsUnique()
-                        .HasDatabaseName("lesson_statuses_description_institution_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Description", "InstitutionId", "DeletedAt"), false);
+                        .HasDatabaseName("lesson_statuses_description_key");
 
                     b.ToTable("lesson_statuses", null, t =>
                         {
@@ -747,11 +726,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.HasIndex("LessonId", "StudentId", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("lessons_students_lesson_student_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("LessonId", "StudentId", "DeletedAt"), false);
+                    b.HasIndex(new[] { "LessonId", "StudentId" }, "lessons_students_lesson_id_student_id_key")
+                        .IsUnique();
 
                     b.ToTable("lessons_students", null, t =>
                         {
@@ -794,11 +770,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Description", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("permissions_description_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Description", "DeletedAt"), false);
+                    b.HasIndex(new[] { "Description" }, "permissions_description_key")
+                        .IsUnique();
 
                     b.ToTable("permissions", null, t =>
                         {
@@ -843,11 +816,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InstitutionId", "Title", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("roles_title_institution_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("InstitutionId", "Title", "DeletedAt"), false);
+                    b.HasIndex(new[] { "InstitutionId", "Title" }, "roles_title_institution_key")
+                        .IsUnique();
 
                     b.ToTable("roles", null, t =>
                         {
@@ -892,11 +862,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.HasIndex("RoleId", "PermissionId", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("roles_permissions_role_permission_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("RoleId", "PermissionId", "DeletedAt"), false);
+                    b.HasIndex(new[] { "RoleId", "PermissionId" }, "roles_permissions_role_id_permission_id_key")
+                        .IsUnique();
 
                     b.ToTable("roles_permissions", (string)null);
                 });
@@ -940,11 +907,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("InstitutionId");
 
-                    b.HasIndex("Title", "InstitutionId", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("subjects_title_institution_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Title", "InstitutionId", "DeletedAt"), false);
+                    b.HasIndex(new[] { "Title" }, "subjects_title_key")
+                        .IsUnique();
 
                     b.ToTable("subjects", null, t =>
                         {
@@ -989,11 +953,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("SubjectId");
 
-                    b.HasIndex("TeacherId", "SubjectId", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("teachers_subjects_teacher_subject_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("TeacherId", "SubjectId", "DeletedAt"), false);
+                    b.HasIndex(new[] { "TeacherId", "SubjectId" }, "teachers_subjects_teacher_id_subject_id_key")
+                        .IsUnique();
 
                     b.ToTable("teachers_subjects", (string)null);
                 });
@@ -1042,17 +1003,13 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InstitutionId", "Title", "DeletedAt")
+                    b.HasIndex("InstitutionId", "Title")
                         .IsUnique()
-                        .HasDatabaseName("terms_institution_title_deleted_at_key");
+                        .HasDatabaseName("terms_institution_title_key");
 
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("InstitutionId", "Title", "DeletedAt"), false);
-
-                    b.HasIndex("StartDate", "EndDate", "InstitutionId", "DeletedAt")
+                    b.HasIndex("StartDate", "EndDate", "InstitutionId")
                         .IsUnique()
-                        .HasDatabaseName("terms_institution_start_end_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("StartDate", "EndDate", "InstitutionId", "DeletedAt"), false);
+                        .HasDatabaseName("terms_institution_start_end_key");
 
                     b.ToTable("terms", null, t =>
                         {
@@ -1107,17 +1064,13 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InstitutionId", "Title", "DeletedAt")
+                    b.HasIndex("InstitutionId", "Title")
                         .IsUnique()
-                        .HasDatabaseName("timetable_units_institution_title_deleted_at_key");
+                        .HasDatabaseName("timetable_units_institution_title_key");
 
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("InstitutionId", "Title", "DeletedAt"), false);
-
-                    b.HasIndex("InstitutionId", "StartTime", "EndTime", "DeletedAt")
+                    b.HasIndex("InstitutionId", "Title", "StartTime", "EndTime")
                         .IsUnique()
-                        .HasDatabaseName("timetable_units_institution_start_end_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("InstitutionId", "StartTime", "EndTime", "DeletedAt"), false);
+                        .HasDatabaseName("timetable_units_institution_title_start_end_key");
 
                     b.ToTable("timetable_units", null, t =>
                         {
@@ -1212,11 +1165,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("Login", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("users_login_deleted_at_key");
-
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Login", "DeletedAt"), false);
+                    b.HasIndex(new[] { "Login" }, "users_login_key")
+                        .IsUnique();
 
                     b.ToTable("users", null, t =>
                         {
@@ -1277,6 +1227,10 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnName("group_id");
 
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("Id", "GroupId")
+                        .IsUnique()
+                        .HasDatabaseName("students_id_group_key");
 
                     b.ToTable("students", null, t =>
                         {

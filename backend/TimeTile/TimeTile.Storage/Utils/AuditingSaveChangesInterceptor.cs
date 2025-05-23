@@ -27,7 +27,7 @@ namespace TimeTile.Storage.Utils
                 CompleteAuditableEntity(entry.Entity, entry.State);
 
                 // Entity should not be deleted in base.SavingChanges()
-                if (entry.State == EntityState.Deleted) 
+                if (entry.State == EntityState.Deleted)
                     entry.State = EntityState.Modified;
             }
 
@@ -51,6 +51,7 @@ namespace TimeTile.Storage.Utils
 
                 case EntityState.Deleted:               // Soft delete
                     entity.DeletedAt = utcNow;
+                    entity.UpdatedAt = utcNow;
                     break;
             }
         }

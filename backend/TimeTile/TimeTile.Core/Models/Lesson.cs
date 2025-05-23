@@ -1,7 +1,11 @@
-﻿namespace TimeTile.Core.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TimeTile.Core.Models;
 
 public partial class Lesson : AuditableEntity
 {
+    public int Id { get; set; }
+
     public int TimetableUnitId { get; set; }
 
     public int CourseId { get; set; }
@@ -23,6 +27,9 @@ public partial class Lesson : AuditableEntity
     public virtual LessonStatus LessonStatus { get; set; } = null!;
 
     public virtual ICollection<LessonToStudent> LessonsToStudents { get; set; } = new List<LessonToStudent>();
+
+    [NotMapped]
+    public virtual IEnumerable<Student> Students => LessonsToStudents.Select(x => x.Student);
 
     public virtual TimetableUnit TimetableUnit { get; set; } = null!;
 }

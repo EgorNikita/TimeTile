@@ -40,6 +40,11 @@ namespace TimeTile.Storage.Configurations
                 .AreNullsDistinct(false)
                 .IsUnique();
 
+            builder.HasIndex(e => new { e.Domain, e.DeletedAt })
+                .HasDatabaseName("institutions_domain_deleted_at_constraint")
+                .AreNullsDistinct(false)
+                .IsUnique();
+            
             // Property Configurations
             builder.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
@@ -60,6 +65,10 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)
                 .HasColumnName("phone_number");
+            
+            builder.Property(e => e.Domain)
+                .HasMaxLength(20)
+                .HasColumnName("domain");
         }
     }
 }

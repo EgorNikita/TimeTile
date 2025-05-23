@@ -1,10 +1,35 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
+using TimeTile.Core.Models;
+using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Users.Services;
 
 public class UserService : IUserService
 {
+    private readonly TimetileDbContext _dbContext;
+    
+    public UserService(TimetileDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+    
+    public Task<Institution> GetInstitutionId(string institutionDomain)
+    {
+        _dbContext.Institutions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Domain == institutionDomain)
+            .ContinueWith(t =>
+            {
+                if (t.Result == null)
+                {
+                    throw new Exception($"Institution with domain {institutionDomain} not found.");
+                }
+                return t.Result;
+            });
+    }
+
     public Task<string> GenerateLogin(string firstname, string lastname, int birthYear, string institutionDomain)
     {
         var fn = firstname.Length >= 4 

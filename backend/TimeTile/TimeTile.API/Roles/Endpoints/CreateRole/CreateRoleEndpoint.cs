@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -32,23 +33,31 @@ public class CreateRoleEndpoint : IEndpoint
         CancellationToken cancellationToken)
     {
         if (await IsRoleTitleExists(request.Title, database, cancellationToken))
-        {
             return Results.BadRequest($"Role with title '{request.Title}' already exists.");
-        }
         
-        var permissions = await database.Permissions
-            .Where(p => request.PermissionsIds.Contains(p.Id))
-            .ToListAsync(cancellationToken);
+        var permissionsResult = await GetPermissionsAsync(
+            request.PermissionsIds,
+            database,
+            cancellationToken);
+
+        if (permissionsResult.IsFailure)
+            return Results.BadRequest(new { Error = permissionsResult.Error.Message });
         
-        if (permissions.Count != request.PermissionsIds.Count)
-        {
-            return Results.BadRequest("Some permission IDs are invalid.");
-        }
+        var permissions = permissionsResult.Data!;
+        
+        if (!TryGetInstitutionId(claimsPrincipal, out var institutionId))
+            return Results.Unauthorized();
         
         var role = new Role
         {
             Title = request.Title,
-            Permissions = permissions
+            InstitutionId = institutionId,
+            RoleToPermissions = permissions
+                .Select(permission => new RoleToPermission
+                {
+                    PermissionId = permission.Id
+                })
+                .ToList()
         };
 
         try
@@ -58,8 +67,8 @@ public class CreateRoleEndpoint : IEndpoint
         }
         catch (Exception e)
         {
-            Log.Error(e.Message);
-            throw;
+            Log.Error(e, "Error while saving new role");
+            return Results.StatusCode(500);
         }
         
         var response = new Response(role.Id, role.Title);
@@ -74,18 +83,35 @@ public class CreateRoleEndpoint : IEndpoint
         return await db.Roles.AnyAsync(r => r.Title == title, cancellationToken);
     }
     
-    // private static async Task<Result<List<Permission>>> GetPermissionsAsync(
-    //     List<int> permissionIds,
-    //     TimetileDbContext db,
-    //     CancellationToken cancellationToken)
-    // {
-    //     var permissions = await db.Permissions
-    //         .AsNoTracking()
-    //         .Where(p => permissionIds.Contains(p.Id))
-    //         .ToListAsync(cancellationToken);
-    //
-    //     return permissions.Count != permissionIds.Count
-    //         ? Result<List<Permission>>.Invalid()
-    //         : Result<List<Permission>>.Valid(permissions);
-    // }
+    private static async Task<Result<List<Permission>>> GetPermissionsAsync(
+        List<int> permissionIds,
+        TimetileDbContext db,
+        CancellationToken cancellationToken)
+    {
+        var permissions = await db.Permissions
+            .AsNoTracking()
+            .Where(p => permissionIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+    
+        var foundIds = permissions.Select(p => p.Id).ToHashSet();
+        var missingIds = permissionIds.Where(id => !foundIds.Contains(id)).ToList();
+
+        if (missingIds.Count == 0) return Result.Success(permissions);
+        
+        var error = Error.From(
+            $"Some permissions were not found: {string.Join(", ", missingIds)}",
+            code: "PERMISSIONS_NOT_FOUND"
+        );
+        return Result.Failure<List<Permission>>(error);
+    }
+    
+    private static bool TryGetInstitutionId(ClaimsPrincipal claimsPrincipal, out int institutionId)
+    {
+        institutionId = 0;
+        var institutionIdClaim = claimsPrincipal.FindFirst("institution_id");
+        if (institutionIdClaim != null && int.TryParse(institutionIdClaim.Value, out institutionId)) return true;
+        
+        Log.Error("Institution ID claim is missing or invalid");
+        return false;
+    }
 }

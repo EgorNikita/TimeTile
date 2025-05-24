@@ -88,9 +88,9 @@ namespace TimeTile.Storage.Configurations
                 .HasMaxLength(263)
                 .HasColumnName("login");
 
-            builder.Property(e => e.Password)
+            builder.Property(e => e.PasswordHash)
                 .HasMaxLength(256)
-                .HasColumnName("password");
+                .HasColumnName("password_hash");
 
             builder.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)

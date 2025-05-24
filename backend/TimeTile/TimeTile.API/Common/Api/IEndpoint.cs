@@ -1,6 +1,6 @@
 ﻿namespace TimeTile.API.Common.Api;
 
-public class IEndpoint
+public interface IEndpoint
 {
-    
+    static abstract IEndpointConventionBuilder Map(IEndpointRouteBuilder app);
 }

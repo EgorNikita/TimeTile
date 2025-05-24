@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Users;
@@ -12,7 +12,7 @@ namespace TimeTile.API.Students.Endpoints;
 
 public class CreateStudent : IEndpoint
 {
-    public static void Map(IEndpointRouteBuilder app) => app
+    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
         .MapPost("/", Handle)
         .WithSummary("Creates a new Student")
         .WithRequestValidation<Request>();
@@ -26,7 +26,7 @@ public class CreateStudent : IEndpoint
         DateTime BirthDate
     );
 
-    public record Response(
+    private record Response(
         int Id,
         string Firstname,
         string Lastname,
@@ -76,6 +76,7 @@ public class CreateStudent : IEndpoint
         Request request, 
         TimetileDbContext database,
         IUserService userService,
+        IPasswordHasher<User> hasher,
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
@@ -87,6 +88,8 @@ public class CreateStudent : IEndpoint
         
         var trimmedFirstname = request.Firstname.Trim();
         var trimmedLastname = request.Lastname.Trim();
+        var password =
+            await userService.GenerateDefaultPassword(trimmedFirstname, trimmedLastname, (short)request.BirthDate.Year);
         
         var student = new Student
         {
@@ -98,8 +101,9 @@ public class CreateStudent : IEndpoint
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
             InstitutionId = institution.Id,
             Login = await userService.GenerateLogin(trimmedFirstname, trimmedLastname, request.BirthDate.Year, institution.Domain),
-            Password = await userService.GenerateDefaultPassword(trimmedFirstname, trimmedLastname, (short)request.BirthDate.Year)
         };
+        
+        student.PasswordHash = hasher.HashPassword(student, password);
         
         await database.Students.AddAsync(student, cancellationToken);
         await database.SaveChangesAsync(cancellationToken);
@@ -109,11 +113,10 @@ public class CreateStudent : IEndpoint
             student.Firstname,
             student.Lastname,
             student.Login,
-            student.Password
+            password
         );
 
         return TypedResults.Ok(response);
     }
-
-
+    
 }

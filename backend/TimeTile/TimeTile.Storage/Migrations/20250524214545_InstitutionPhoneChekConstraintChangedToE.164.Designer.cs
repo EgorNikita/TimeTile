@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250524214545_InstitutionPhoneChekConstraintChangedToE.164")]
+    partial class InstitutionPhoneChekConstraintChangedToE164
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -469,8 +472,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Domain")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("domain");
 
                     b.Property<string>("Email")
@@ -513,9 +516,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("institutions", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Institution_Address_NotEmpty", "\"address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
-
-                            t.HasCheckConstraint("CHK_Institution_Domain_Valid", "\"domain\" ~ '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.[A-Za-z]{2,})+$'");
+                            t.HasCheckConstraint("CHK_Institution_Address_NotEmpty", "\"address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
 
                             t.HasCheckConstraint("CHK_Institution_Email_Valid", "\"email\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
 

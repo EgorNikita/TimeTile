@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -22,15 +17,18 @@ namespace TimeTile.Storage.Configurations
 
                 // Check constraint for Address to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Address_NotEmpty",
-                    "\"address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                    "\"address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
 
                 // Check constraint for Email (valid format)
                 t.HasCheckConstraint("CHK_Institution_Email_Valid",
                     "\"email\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
 
-                // Check constraint for PhoneNumber (digits and optional formatting characters)
+                // Check constraint for PhoneNumber E.164   
                 t.HasCheckConstraint("CHK_Institution_Phone_Valid",
-                    "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
+                    "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'");
+                
+                t.HasCheckConstraint("CHK_Institution_Domain_Valid",
+                    "\"domain\" ~ '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.[A-Za-z]{2,})+$'");
             });
 
             builder.HasKey(e => e.Id);
@@ -67,7 +65,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("phone_number");
             
             builder.Property(e => e.Domain)
-                .HasMaxLength(20)
+                .HasMaxLength(40)
                 .HasColumnName("domain");
         }
     }

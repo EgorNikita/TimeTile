@@ -8,7 +8,7 @@ public class Role : AuditableEntity
 
     public string Title { get; set; } = null!;
     
-    public int InstitutionId { get; set; }
+    public int? InstitutionId { get; set; }
     
     public virtual Institution Institution { get; set; } = null!;
     

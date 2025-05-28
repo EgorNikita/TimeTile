@@ -117,6 +117,18 @@ public static class ConfigureServices
                 Log.Information("Adding CreateStudent policy.");
                 policy.Requirements.Add(new PermissionRequirement("CreateStudent"));
             });
+            
+            options.AddPolicy("CreateRole", policy =>
+            {
+                Log.Information("Adding CreateRole policy.");
+                policy.Requirements.Add(new PermissionRequirement("CreateRole"));
+            });
+            
+            options.AddPolicy("CreateInstitution", policy =>
+            {
+                Log.Information("Adding CreateInstitution policy.");
+                policy.Requirements.Add(new PermissionRequirement("CreateInstitution"));
+            });
         });
 
         Log.Information("Registering PermissionAuthorizationHandler...");

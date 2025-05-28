@@ -48,8 +48,8 @@ public static class Endpoints
         var endpoints = app.MapGroup("/institutions")
             .WithTags("Institutions");
 
-        endpoints.MapEndpoint<CreateInstitutionEndpoint>();
-        //.RequireAuthorization("CreateInstitution");
+        endpoints.MapEndpoint<CreateInstitutionEndpoint>()
+        .RequireAuthorization("CreateInstitution");
     }
     
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

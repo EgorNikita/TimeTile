@@ -1,8 +1,16 @@
-﻿namespace TimeTile.Core.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TimeTile.Core.Models;
 
 public partial class Permission : AuditableEntity
 {
+    public int Id { get; set; }
+
     public string Description { get; set; } = null!;
 
-    public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
+    // Roles
+    public virtual ICollection<RoleToPermission> RolesToPermission { get; set; } = new List<RoleToPermission>();
+
+    [NotMapped]
+    public virtual IEnumerable<Role> Roles => RolesToPermission.Select(x => x.Role);
 }

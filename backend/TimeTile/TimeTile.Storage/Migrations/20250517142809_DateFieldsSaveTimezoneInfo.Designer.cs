@@ -12,7 +12,7 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    [Migration("20250107204415_DateFieldsSaveTimezoneInfo")]
+    [Migration("20250517142809_DateFieldsSaveTimezoneInfo")]
     partial class DateFieldsSaveTimezoneInfo
     {
         /// <inheritdoc />

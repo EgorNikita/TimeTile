@@ -12,8 +12,8 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    [Migration("20250106210847_CheckConstraintsWereAdded")]
-    partial class CheckConstraintsWereAdded
+    [Migration("20250518203427_DatabaseIsModified")]
+    partial class DatabaseIsModified
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,22 +27,6 @@ namespace TimeTile.Storage.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("LessonStatusInstitution", b =>
-                {
-                    b.Property<int>("lesson_status_id")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("institution_id")
-                        .HasColumnType("integer");
-
-                    b.HasKey("lesson_status_id", "institution_id")
-                        .HasName("lesson_status_institution_pkey");
-
-                    b.HasIndex("institution_id");
-
-                    b.ToTable("lesson_statuses_institutions", (string)null);
-                });
 
             modelBuilder.Entity("RolePermissions", b =>
                 {
@@ -85,16 +69,16 @@ namespace TimeTile.Storage.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone")
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp without time zone")
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone")
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");
@@ -125,6 +109,14 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("has_exam");
 
+                    b.Property<short>("PositionX")
+                        .HasColumnType("smallint")
+                        .HasColumnName("position_x");
+
+                    b.Property<short>("PositionY")
+                        .HasColumnType("smallint")
+                        .HasColumnName("position_y");
+
                     b.Property<int>("StudentId")
                         .HasColumnType("integer")
                         .HasColumnName("student_id");
@@ -143,6 +135,10 @@ namespace TimeTile.Storage.Migrations
                     b.ToTable("courses_students", null, t =>
                         {
                             t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = FALSE OR \"exam_grade_id\" IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_CoursesStudents_PositionX_Positive", "\"position_x\" >= 0");
+
+                            t.HasCheckConstraint("CK_CoursesStudents_PositionY_Positive", "\"position_y\" >= 0");
                         });
                 });
 
@@ -155,8 +151,8 @@ namespace TimeTile.Storage.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<TimeOnly?>("CameAt")
-                        .HasColumnType("time without time zone")
+                    b.Property<DateTimeOffset?>("CameAt")
+                        .HasColumnType("time with time zone")
                         .HasColumnName("came_at");
 
                     b.Property<int?>("ClassworkGradeId")
@@ -167,8 +163,8 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("homework_grade_id");
 
-                    b.Property<TimeOnly?>("LeftAt")
-                        .HasColumnType("time without time zone")
+                    b.Property<DateTimeOffset?>("LeftAt")
+                        .HasColumnType("time with time zone")
                         .HasColumnName("left_at");
 
                     b.Property<int>("LessonId")
@@ -205,6 +201,14 @@ namespace TimeTile.Storage.Migrations
                 {
                     b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
 
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer")
+                        .HasColumnName("capacity");
+
+                    b.Property<int>("ClassroomTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("classroom_type_id");
+
                     b.Property<int>("InstitutionId")
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
@@ -215,6 +219,8 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("title");
 
+                    b.HasIndex("ClassroomTypeId");
+
                     b.HasIndex("InstitutionId", "Title")
                         .IsUnique()
                         .HasDatabaseName("classrooms_institution_title_key");
@@ -223,6 +229,35 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_Classroom_Title_Valid", "\"title\" ~ '^[a-zA-Z \\d-]+$'");
                         });
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.ClassroomType", b =>
+                {
+                    b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("description");
+
+                    b.Property<int?>("IconId")
+                        .HasColumnType("integer")
+                        .HasColumnName("icon_id");
+
+                    b.Property<int>("InstitutionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("institution_id");
+
+                    b.HasIndex("IconId")
+                        .IsUnique();
+
+                    b.HasIndex("InstitutionId");
+
+                    b.HasIndex(new[] { "Description", "InstitutionId" }, "classroom_types_description_institution_id_key")
+                        .IsUnique();
+
+                    b.ToTable("classroom_types", (string)null);
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Course", b =>
@@ -275,12 +310,48 @@ namespace TimeTile.Storage.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.File", b =>
+                {
+                    b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("extension");
+
+                    b.Property<string>("OriginalName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("original_name");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("storage_path");
+
+                    b.HasIndex(new[] { "StoragePath" }, "files_storage_path_key")
+                        .IsUnique();
+
+                    b.ToTable("files", null, t =>
+                        {
+                            t.HasCheckConstraint("CHK_File_Extension_Valid", "\"extension\" IN ('pdf', 'docx', 'xlsx', 'png', 'jpg', 'jpeg', 'txt', 'zip')");
+
+                            t.HasCheckConstraint("CHK_File_Size_Valid", "\"size\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Grade", b =>
                 {
                     b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
 
-                    b.Property<int>("Value")
-                        .HasColumnType("integer")
+                    b.Property<short>("Value")
+                        .HasColumnType("smallint")
                         .HasColumnName("value");
 
                     b.Property<float>("Weight")
@@ -365,6 +436,26 @@ namespace TimeTile.Storage.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.InstitutionMemberToGroup", b =>
+                {
+                    b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<int>("InstitutionMemberId")
+                        .HasColumnType("integer")
+                        .HasColumnName("institution_member_id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex(new[] { "InstitutionMemberId", "GroupId" }, "institution_members_groups_institution_member_id_group_id_key")
+                        .IsUnique();
+
+                    b.ToTable("institution_members_groups", (string)null);
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Lesson", b =>
                 {
                     b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
@@ -377,8 +468,8 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("course_id");
 
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date")
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("date");
 
                     b.Property<string>("Description")
@@ -418,18 +509,30 @@ namespace TimeTile.Storage.Migrations
                 {
                     b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
 
+                    b.Property<int>("ArgbColor")
+                        .HasColumnType("integer")
+                        .HasColumnName("argb_color");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("description");
 
-                    b.HasIndex("Description")
+                    b.Property<int>("InstitutionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("institution_id");
+
+                    b.HasIndex("InstitutionId");
+
+                    b.HasIndex("Description", "InstitutionId")
                         .IsUnique()
                         .HasDatabaseName("lesson_statuses_description_key");
 
                     b.ToTable("lesson_statuses", null, t =>
                         {
+                            t.HasCheckConstraint("CHK_LessonStatus_ArgbColor_Valid", "\"argb_color\" >= 0");
+
                             t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[a-zA-Z\\d ]+$'");
                         });
                 });
@@ -495,20 +598,40 @@ namespace TimeTile.Storage.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.TeacherToSubject", b =>
+                {
+                    b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("integer")
+                        .HasColumnName("subject_id");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("integer")
+                        .HasColumnName("teacher_id");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex(new[] { "TeacherId", "SubjectId" }, "teachers_subjects_teacher_id_subject_id_key")
+                        .IsUnique();
+
+                    b.ToTable("teachers_subjects", (string)null);
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Term", b =>
                 {
                     b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
 
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date")
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_date");
 
                     b.Property<int>("InstitutionId")
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
 
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date")
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_date");
 
                     b.Property<string>("Title")
@@ -536,16 +659,16 @@ namespace TimeTile.Storage.Migrations
                 {
                     b.HasBaseType("TimeTile.Core.Models.AuditableEntity");
 
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone")
+                    b.Property<DateTimeOffset>("EndTime")
+                        .HasColumnType("time with time zone")
                         .HasColumnName("end_time");
 
                     b.Property<int>("InstitutionId")
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
 
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone")
+                    b.Property<DateTimeOffset>("StartTime")
+                        .HasColumnType("time with time zone")
                         .HasColumnName("start_time");
 
                     b.Property<string>("Title")
@@ -651,6 +774,38 @@ namespace TimeTile.Storage.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.InstitutionMember", b =>
+                {
+                    b.HasBaseType("TimeTile.Core.Models.User");
+
+                    b.Property<int?>("PreferredClassroomId")
+                        .HasColumnType("integer")
+                        .HasColumnName("preferred_classroom_id");
+
+                    b.Property<int>("WeekWorkHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("week_work_hours");
+
+                    b.HasIndex("PreferredClassroomId");
+
+                    b.ToTable("institution_members", null, t =>
+                        {
+                            t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
+
+                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
+
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+
+                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
+
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[\\w -]+$'");
+
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
+
+                            t.HasCheckConstraint("CK_InstitutionMember_WeekWorkHours_Positive", "\"week_work_hours\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Student", b =>
                 {
                     b.HasBaseType("TimeTile.Core.Models.User");
@@ -679,69 +834,6 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
                         });
-                });
-
-            modelBuilder.Entity("TimeTile.Core.Models.Teacher", b =>
-                {
-                    b.HasBaseType("TimeTile.Core.Models.User");
-
-                    b.ToTable("teachers", null, t =>
-                        {
-                            t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
-
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
-
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
-
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
-
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[\\w -]+$'");
-
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
-                        });
-                });
-
-            modelBuilder.Entity("TimeTile.Core.Models.ClassTeacher", b =>
-                {
-                    b.HasBaseType("TimeTile.Core.Models.Teacher");
-
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer")
-                        .HasColumnName("group_id");
-
-                    b.HasIndex("GroupId");
-
-                    b.ToTable("class_teachers", null, t =>
-                        {
-                            t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
-
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
-
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
-
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
-
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[\\w -]+$'");
-
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
-                        });
-                });
-
-            modelBuilder.Entity("LessonStatusInstitution", b =>
-                {
-                    b.HasOne("TimeTile.Core.Models.Institution", null)
-                        .WithMany()
-                        .HasForeignKey("institution_id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("lesson_status_institution_institution_id_fkey");
-
-                    b.HasOne("TimeTile.Core.Models.LessonStatus", null)
-                        .WithMany()
-                        .HasForeignKey("lesson_status_id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("lesson_status_institution_lesson_status_id_fkey");
                 });
 
             modelBuilder.Entity("RolePermissions", b =>
@@ -846,6 +938,13 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.Classroom", b =>
                 {
+                    b.HasOne("TimeTile.Core.Models.ClassroomType", "ClassroomType")
+                        .WithMany("Classrooms")
+                        .HasForeignKey("ClassroomTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("classrooms_classroom_type_id_fkey");
+
                     b.HasOne("TimeTile.Core.Models.AuditableEntity", null)
                         .WithOne()
                         .HasForeignKey("TimeTile.Core.Models.Classroom", "Id")
@@ -858,6 +957,34 @@ namespace TimeTile.Storage.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("classrooms_institution_id_fkey");
+
+                    b.Navigation("ClassroomType");
+
+                    b.Navigation("Institution");
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.ClassroomType", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.File", "Icon")
+                        .WithOne("ClassroomType")
+                        .HasForeignKey("TimeTile.Core.Models.ClassroomType", "IconId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("classroom_types_icon_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.AuditableEntity", null)
+                        .WithOne()
+                        .HasForeignKey("TimeTile.Core.Models.ClassroomType", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TimeTile.Core.Models.Institution", "Institution")
+                        .WithMany("ClassroomTypes")
+                        .HasForeignKey("InstitutionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("classroom_types_institution_id_fkey");
+
+                    b.Navigation("Icon");
 
                     b.Navigation("Institution");
                 });
@@ -884,7 +1011,7 @@ namespace TimeTile.Storage.Migrations
                         .IsRequired()
                         .HasConstraintName("courses_subject_id_fkey");
 
-                    b.HasOne("TimeTile.Core.Models.Teacher", "Teacher")
+                    b.HasOne("TimeTile.Core.Models.InstitutionMember", "Teacher")
                         .WithMany("Courses")
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -905,6 +1032,15 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Teacher");
 
                     b.Navigation("Term");
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.File", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.AuditableEntity", null)
+                        .WithOne()
+                        .HasForeignKey("TimeTile.Core.Models.File", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Grade", b =>
@@ -941,6 +1077,33 @@ namespace TimeTile.Storage.Migrations
                         .HasForeignKey("TimeTile.Core.Models.Institution", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.InstitutionMemberToGroup", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.Group", "Group")
+                        .WithMany("InstitutionMembersToGroup")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("institution_members_groups_group_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.AuditableEntity", null)
+                        .WithOne()
+                        .HasForeignKey("TimeTile.Core.Models.InstitutionMemberToGroup", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TimeTile.Core.Models.InstitutionMember", "InstitutionMember")
+                        .WithMany("InstitutionMemberToGroups")
+                        .HasForeignKey("InstitutionMemberId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("institution_members_groups_institution_member_id_fkey");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("InstitutionMember");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Lesson", b =>
@@ -995,6 +1158,15 @@ namespace TimeTile.Storage.Migrations
                         .HasForeignKey("TimeTile.Core.Models.LessonStatus", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("TimeTile.Core.Models.Institution", "Institution")
+                        .WithMany("LessonStatuses")
+                        .HasForeignKey("InstitutionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("lesson_statuses_institution_id_fkey");
+
+                    b.Navigation("Institution");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Permission", b =>
@@ -1031,6 +1203,33 @@ namespace TimeTile.Storage.Migrations
                         .HasForeignKey("TimeTile.Core.Models.Subject", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.TeacherToSubject", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.AuditableEntity", null)
+                        .WithOne()
+                        .HasForeignKey("TimeTile.Core.Models.TeacherToSubject", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TimeTile.Core.Models.Subject", "Subject")
+                        .WithMany("TeachersToSubject")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("teachers_subjects_subject_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.InstitutionMember", "Teacher")
+                        .WithMany("TeacherToSubjects")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("teachers_subjects_teacher_id_fkey");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Term", b =>
@@ -1096,6 +1295,23 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.InstitutionMember", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("TimeTile.Core.Models.InstitutionMember", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TimeTile.Core.Models.Classroom", "Classroom")
+                        .WithMany("InstitutionMembers")
+                        .HasForeignKey("PreferredClassroomId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("institution_members_preferred_classroom_id_fkey");
+
+                    b.Navigation("Classroom");
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Student", b =>
                 {
                     b.HasOne("TimeTile.Core.Models.Group", "Group")
@@ -1114,36 +1330,16 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("TimeTile.Core.Models.Teacher", b =>
-                {
-                    b.HasOne("TimeTile.Core.Models.User", null)
-                        .WithOne()
-                        .HasForeignKey("TimeTile.Core.Models.Teacher", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("TimeTile.Core.Models.ClassTeacher", b =>
-                {
-                    b.HasOne("TimeTile.Core.Models.Group", "Group")
-                        .WithMany("ClassTeachers")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("class_teachers_group_id_fkey");
-
-                    b.HasOne("TimeTile.Core.Models.Teacher", null)
-                        .WithOne()
-                        .HasForeignKey("TimeTile.Core.Models.ClassTeacher", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-                });
-
             modelBuilder.Entity("TimeTile.Core.Models.Classroom", b =>
                 {
+                    b.Navigation("InstitutionMembers");
+
                     b.Navigation("Lessons");
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.ClassroomType", b =>
+                {
+                    b.Navigation("Classrooms");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Course", b =>
@@ -1151,6 +1347,11 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("CoursesToStudents");
 
                     b.Navigation("Lessons");
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.File", b =>
+                {
+                    b.Navigation("ClassroomType");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Grade", b =>
@@ -1164,18 +1365,22 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.Group", b =>
                 {
-                    b.Navigation("ClassTeachers");
+                    b.Navigation("InstitutionMembersToGroup");
 
                     b.Navigation("Students");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Institution", b =>
                 {
+                    b.Navigation("ClassroomTypes");
+
                     b.Navigation("Classrooms");
 
                     b.Navigation("Courses");
 
                     b.Navigation("Groups");
+
+                    b.Navigation("LessonStatuses");
 
                     b.Navigation("Roles");
 
@@ -1204,6 +1409,8 @@ namespace TimeTile.Storage.Migrations
             modelBuilder.Entity("TimeTile.Core.Models.Subject", b =>
                 {
                     b.Navigation("Courses");
+
+                    b.Navigation("TeachersToSubject");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Term", b =>
@@ -1216,16 +1423,20 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Lessons");
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.InstitutionMember", b =>
+                {
+                    b.Navigation("Courses");
+
+                    b.Navigation("InstitutionMemberToGroups");
+
+                    b.Navigation("TeacherToSubjects");
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Student", b =>
                 {
                     b.Navigation("CoursesToStudents");
 
                     b.Navigation("LessonsToStudents");
-                });
-
-            modelBuilder.Entity("TimeTile.Core.Models.Teacher", b =>
-                {
-                    b.Navigation("Courses");
                 });
 #pragma warning restore 612, 618
         }

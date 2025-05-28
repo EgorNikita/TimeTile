@@ -2,6 +2,8 @@
 
 public partial class User : AuditableEntity
 {
+    public int Id { get; set; }
+
     public string AvatarPath { get; set; } = null!;
 
     public string Firstname { get; set; } = null!;
@@ -16,11 +18,11 @@ public partial class User : AuditableEntity
 
     public string Login { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    public string PasswordHash { get; set; } = null!;
 
     public int RoleId { get; set; }
     
-    public int InstitutionId { get; set; }
+    public int? InstitutionId { get; set; }
     
     public virtual Institution Institution { get; set; } = null!;
     

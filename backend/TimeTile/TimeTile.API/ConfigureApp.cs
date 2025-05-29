@@ -18,6 +18,7 @@ public static class ConfigureApp
         } 
         else
         {
+            app.UseRateLimiter();
             app.UseExceptionHandler(errorApp =>
             {
                 errorApp.Run(async context =>

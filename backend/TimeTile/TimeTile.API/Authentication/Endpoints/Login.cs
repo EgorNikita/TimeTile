@@ -55,7 +55,8 @@ public class Login : IEndpoint
         return await database.Users
             .AsNoTracking()
             .Include(u => u.Role)
-            .ThenInclude(r => r.Permissions)
+            .ThenInclude(r => r.RoleToPermissions)
+            .ThenInclude(rtp => rtp.Permission)
             .SingleOrDefaultAsync(u => u.Login == login, cancellationToken);
     }
     

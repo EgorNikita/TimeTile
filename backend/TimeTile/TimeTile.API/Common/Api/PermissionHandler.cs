@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using TimeTile.API.Common.Constants;
 
 namespace TimeTile.API.Common.Api;
 
@@ -9,7 +10,8 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         PermissionRequirement requirement)
     {
         Serilog.Log.Information($"Checking permission: {requirement.Permission}");
-        var hasPermission = context.User.HasClaim(c => c.Type == "Permission" && c.Value == requirement.Permission);
+        var hasPermission = context.User.HasClaim(c => c.Type == CustomClaimTypes.Permission 
+                                                       && c.Value == requirement.Permission);
         
         if (hasPermission)
         {

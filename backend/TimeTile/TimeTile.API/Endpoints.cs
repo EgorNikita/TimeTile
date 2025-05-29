@@ -19,7 +19,8 @@ public static class Endpoints
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
     {
         var endpoints = app.MapGroup("/auth")
-            .WithTags("Authentication");
+            .WithTags("Authentication")
+            .RequireRateLimiting("login");
 
         endpoints.MapPublicGroup()
             .MapEndpoint<Login>();

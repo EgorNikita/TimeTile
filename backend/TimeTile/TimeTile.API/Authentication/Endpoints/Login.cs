@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication.Services;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Constants;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -15,7 +16,7 @@ public class Login : IEndpoint
 {
     public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
         .MapPost("/login", Handle)
-        .WithSummary("Logs in a user with roles and InstitutionId")
+        .WithSummary("Authenticates a user and returns a JWT token with roles and institution claims")
         .WithRequestValidation<Request>();
     
     public record Request(string Login, string Password);
@@ -55,34 +56,36 @@ public class Login : IEndpoint
         return await database.Users
             .AsNoTracking()
             .Include(u => u.Role)
-            .ThenInclude(r => r.Permissions)
-            .SingleOrDefaultAsync(u => u.Login == login, cancellationToken);
+            .ThenInclude(r => r.RoleToPermissions)
+            .ThenInclude(rtp => rtp.Permission)
+            .Where(u => u.Login == login)
+            .FirstOrDefaultAsync(cancellationToken); 
     }
-    
+
     private static bool ValidatePassword(
-        User user, 
-        string password, 
+        User user,
+        string password,
         IPasswordHasher<User> hasher)
     {
-        return hasher.VerifyHashedPassword(user, user.PasswordHash, password) == PasswordVerificationResult.Success;
+        var result = hasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        return result == PasswordVerificationResult.Success;
     }
-    
+
     private static List<Claim> BuildClaims(User user)
     {
-        const string studentRole = "Student";
-        const string memberRole = "InstitutionMember";
-
-        var effectiveRole = user.Role.Title == studentRole ? studentRole : memberRole;
+        var effectiveRole = user.Role.Title == GeneralRoles.Student ? GeneralRoles.Student : GeneralRoles.InstitutionMember;
 
         var claims = new List<Claim>
         {
             new(ClaimTypes.Email, user.Login),
             new(ClaimTypes.Role, effectiveRole),
-            new("institution_id", user.InstitutionId.ToString())
+            new(CustomClaimTypes.InstitutionId, user.InstitutionId.ToString() ?? string.Empty)
         };
 
-        claims.AddRange(user.Role.Permissions.Select(p => new Claim("permission", p.Description)));
-    
+        claims.AddRange(user.Role.Permissions
+            .Where(p => !string.IsNullOrEmpty(p.Description))
+            .Select(p => new Claim(CustomClaimTypes.Permission, p.Description)));
+
         return claims;
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -60,19 +61,30 @@ public class CreateRoleEndpoint : IEndpoint
                 .ToList()
         };
 
+        var saveResult = await SaveRoleAsync(database, role, cancellationToken);
+        if (saveResult.IsFailure)
+            return Results.StatusCode(500);
+        
+        var response = new Response(role.Id, role.Title);
+        return Results.Ok(response);
+    }
+    
+    private static async Task<Result> SaveRoleAsync(
+        TimetileDbContext database, 
+        Role role, 
+        CancellationToken cancellationToken)
+    {
         try
         {
             database.Roles.Add(role);
             await database.SaveChangesAsync(cancellationToken);
+            return Result.Success();
         }
         catch (Exception e)
         {
             Log.Error(e, "Error while saving new role");
-            return Results.StatusCode(500);
+            return Result.Failure(new Error("DatabaseError", "Failed to save role"));
         }
-        
-        var response = new Response(role.Id, role.Title);
-        return Results.Ok(response);
     }
     
     private static async Task<bool> IsRoleTitleExists(
@@ -108,7 +120,7 @@ public class CreateRoleEndpoint : IEndpoint
     private static bool TryGetInstitutionId(ClaimsPrincipal claimsPrincipal, out int institutionId)
     {
         institutionId = 0;
-        var institutionIdClaim = claimsPrincipal.FindFirst("institution_id");
+        var institutionIdClaim = claimsPrincipal.FindFirst(CustomClaimTypes.InstitutionId);
         if (institutionIdClaim != null && int.TryParse(institutionIdClaim.Value, out institutionId)) return true;
         
         Log.Error("Institution ID claim is missing or invalid");

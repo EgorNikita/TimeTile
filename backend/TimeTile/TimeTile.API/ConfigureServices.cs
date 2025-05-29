@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,8 @@ using TimeTile.API.Users;
 using TimeTile.API.Users.Services;
 using TimeTile.Core.Models;
 using FluentValidation;
+using Microsoft.AspNetCore.RateLimiting;
+using TimeTile.API.Common.Constants;
 
 namespace TimeTile.API;
 
@@ -25,6 +28,7 @@ public static class ConfigureServices
         builder.AddSerilog();
         builder.AddJwtAuthentication();
         builder.AddAuthorization();
+        builder.AddRateLimiting();
         
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
         
@@ -46,7 +50,6 @@ public static class ConfigureServices
 
     private static void AddSerilog(this WebApplicationBuilder builder)
     {
-        Log.Information("Configuring Serilog...");
         builder.Host.UseSerilog((context, configuration) =>
         {
             configuration.ReadFrom.Configuration(context.Configuration);
@@ -55,7 +58,14 @@ public static class ConfigureServices
 
     private static void AddJwtAuthentication(this WebApplicationBuilder builder)
     {
-        Log.Information("Configuring JWT authentication...");
+        var jwtSection = builder.Configuration.GetSection("Jwt");
+        builder.Services.Configure<JwtOptions>(jwtSection);
+
+        var jwtOptions = jwtSection.Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
+
+        if (string.IsNullOrWhiteSpace(jwtOptions.Key))
+            throw new InvalidOperationException("JWT Key is not configured.");
+        
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -64,7 +74,7 @@ public static class ConfigureServices
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                IssuerSigningKey = Jwt.SecurityKey(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.")),
+                IssuerSigningKey = Jwt.SecurityKey(jwtOptions.Key),
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
@@ -75,7 +85,6 @@ public static class ConfigureServices
             {
                 OnChallenge = context =>
                 {
-                    Log.Information("JWT OnChallenge triggered.");
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     context.Response.ContentType = "application/json";
@@ -83,56 +92,55 @@ public static class ConfigureServices
                 },
                 OnForbidden = context =>
                 {
-                    Log.Information("JWT OnForbidden triggered.");
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;
                     context.Response.ContentType = "application/json";
                     return context.Response.WriteAsync("{\"error\": \"Forbidden\"}");
                 }
             };
         });
-
-        builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+        
         builder.Services.AddTransient<Jwt>();
     }
 
     private static void AddAuthorization(this WebApplicationBuilder builder)
     {
-        Log.Information("Registering authorization policies...");
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("AddStudent", policy =>
+            foreach (var permission in Permissions.All)
             {
-                Log.Information("Adding AddStudent policy.");
-                policy.Requirements.Add(new PermissionRequirement("AddStudent"));
-            });
-
-            options.AddPolicy("DeleteStudent", policy =>
-            {
-                Log.Information("Adding DeleteStudent policy.");
-                policy.Requirements.Add(new PermissionRequirement("DeleteStudent"));
-            });
-
-            options.AddPolicy("CreateStudent", policy =>
-            {
-                Log.Information("Adding CreateStudent policy.");
-                policy.Requirements.Add(new PermissionRequirement("CreateStudent"));
-            });
-            
-            options.AddPolicy("CreateRole", policy =>
-            {
-                Log.Information("Adding CreateRole policy.");
-                policy.Requirements.Add(new PermissionRequirement("CreateRole"));
-            });
-            
-            options.AddPolicy("CreateInstitution", policy =>
-            {
-                Log.Information("Adding CreateInstitution policy.");
-                policy.Requirements.Add(new PermissionRequirement("CreateInstitution"));
-            });
+                options.AddPolicy(permission, policy =>
+                {
+                    policy.Requirements.Add(new PermissionRequirement(permission));
+                });
+            }
         });
 
-        Log.Information("Registering PermissionAuthorizationHandler...");
         builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+    }
+    
+    private static void AddRateLimiting(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.OnRejected = async (context, token) =>
+            {
+                Log.Warning("Rate limit exceeded for {RequestPath}", context.HttpContext.Request.Path);
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                await context.HttpContext.Response.WriteAsJsonAsync(new
+                {
+                    Error = "Too many requests. Please try again later."
+                }, token);
+            };
+
+            options.AddFixedWindowLimiter("login", opt =>
+            {
+                Log.Information("Configuring login rate limiter: 5 requests per minute");
+                opt.PermitLimit = 5;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 0; // Reject immediately if limit exceeded
+            });
+        });
     }
 
     private static void AddDatabase(this WebApplicationBuilder builder)

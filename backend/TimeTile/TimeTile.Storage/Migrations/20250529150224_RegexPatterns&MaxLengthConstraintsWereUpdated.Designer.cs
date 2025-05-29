@@ -12,7 +12,7 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    [Migration("20250529000142_RegexPatterns&MaxLengthConstraintsWereUpdated")]
+    [Migration("20250529150224_RegexPatterns&MaxLengthConstraintsWereUpdated")]
     partial class RegexPatternsMaxLengthConstraintsWereUpdated
     {
         /// <inheritdoc />
@@ -83,7 +83,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("classrooms", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Classroom_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_Classroom_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -213,7 +213,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("courses", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Course_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_Course_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -441,7 +441,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("groups", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Group_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_Group_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -516,15 +516,15 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("institutions", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Institution_Address_NotEmpty", "\"address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
+                            t.HasCheckConstraint("CHK_Institution_Address_NotEmpty", "\"address\" ~ '^[[:alpha:]\\d\\s''.,#/()-]+$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Domain_Valid", "\"domain\" ~ '^(?!-)(?:[\\\\p{L}0-9-]{1,63}(?<!-)\\\\.)+[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_Institution_Domain_Valid", "\"domain\" ~ '^(?:[[:alpha:]0-9-]{1,63}\\.)+[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Email_Valid", "\"email\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_Institution_Email_Valid", "\"email\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Phone_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
+                            t.HasCheckConstraint("CHK_Institution_Phone_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Title_NotEmpty", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_Institution_Title_NotEmpty", "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -701,7 +701,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_LessonStatus_ArgbColor_Valid", "\"argb_color\" >= 0");
 
-                            t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[\\\\p{L}\\\\d\\\\s.,!?]+$'");
+                            t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
                         });
                 });
 
@@ -819,7 +819,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("permissions", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Permission_Description_Valid", "\"description\"  ~ '^[\\\\p{L}\\\\d\\\\s.,!?]+$'");
+                            t.HasCheckConstraint("CHK_Permission_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
                         });
                 });
 
@@ -868,7 +868,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("roles", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Role_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_Role_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -965,7 +965,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("subjects", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Subject_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_Subject_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -1075,7 +1075,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_Term_StartDate_LessThan_EndDate", "\"start_date\" < \"end_date\"");
 
-                            t.HasCheckConstraint("CHK_Term_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_Term_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -1140,7 +1140,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_TimetableUnit_StartTime_LessThan_EndTime", "\"start_time\" < \"end_time\"");
 
-                            t.HasCheckConstraint("CHK_TimetableUnit_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                            t.HasCheckConstraint("CHK_TimetableUnit_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
                 });
 
@@ -1239,15 +1239,15 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
 
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[[:alpha:]\\d\\s''.,#/()-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
                         });
 
                     b.UseTptMappingStrategy();
@@ -1271,15 +1271,15 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
 
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[[:alpha:]\\d\\s''.,#/()-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
 
                             t.HasCheckConstraint("CK_InstitutionMember_WeekWorkHours_Positive", "\"week_work_hours\" > 0");
                         });
@@ -1299,15 +1299,15 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
 
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[[:alpha:]\\d\\s''.,#/()-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
                         });
                 });
 

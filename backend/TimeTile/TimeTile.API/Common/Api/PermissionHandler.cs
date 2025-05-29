@@ -9,7 +9,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         PermissionRequirement requirement)
     {
         Serilog.Log.Information($"Checking permission: {requirement.Permission}");
-        var hasPermission = context.User.HasClaim(c => c.Type == "Permission" && c.Value == requirement.Permission);
+        var hasPermission = context.User.HasClaim(c => c.Type == "permission" && c.Value == requirement.Permission);
         
         if (hasPermission)
         {

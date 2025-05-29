@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
+using TimeTile.Storage.DataSeeders;
 
 namespace TimeTile.API;
 
@@ -49,6 +52,7 @@ public static class ConfigureApp
         try
         {
             await db.Database.MigrateAsync();
+            await AdminSeeder.SeedAsync(db, new PasswordHasher<User>(), Log.Logger);
         }
         catch (Exception ex)
         {

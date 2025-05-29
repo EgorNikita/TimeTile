@@ -15,12 +15,76 @@ namespace TimeTile.Storage.Migrations
                 table: "users");
 
             migrationBuilder.DropCheckConstraint(
+                name: "CHK_User_HomeAddress_Valid",
+                table: "users");
+
+            migrationBuilder.DropCheckConstraint(
                 name: "CHK_User_Lastname_Valid",
                 table: "users");
 
             migrationBuilder.DropCheckConstraint(
+                name: "CHK_User_Login_Valid",
+                table: "users");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_User_PhoneNumber_Valid",
+                table: "users");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_TimetableUnit_Title_Valid",
+                table: "timetable_units");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Term_Title_Valid",
+                table: "terms");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Subject_Title_Valid",
+                table: "subjects");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Role_Title_Valid",
+                table: "roles");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Permission_Description_Valid",
+                table: "permissions");
+
+            migrationBuilder.DropCheckConstraint(
                 name: "CHK_LessonStatus_Description_Valid",
                 table: "lesson_statuses");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Address_NotEmpty",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Domain_Valid",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Email_Valid",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Phone_Valid",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Title_NotEmpty",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Group_Title_Valid",
+                table: "groups");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Course_Title_Valid",
+                table: "courses");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Classroom_Title_Valid",
+                table: "classrooms");
 
             migrationBuilder.AlterColumn<string>(
                 name: "phone_number",
@@ -235,17 +299,97 @@ namespace TimeTile.Storage.Migrations
             migrationBuilder.AddCheckConstraint(
                 name: "CHK_User_Firstname_Valid",
                 table: "users",
-                sql: "\"firstname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                sql: "\"firstname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_User_HomeAddress_Valid",
+                table: "users",
+                sql: "\"home_address\" ~ '^[[:alpha:]\\d\\s''.,#/()-]+$'");
 
             migrationBuilder.AddCheckConstraint(
                 name: "CHK_User_Lastname_Valid",
                 table: "users",
-                sql: "\"lastname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
+                sql: "\"lastname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_User_Login_Valid",
+                table: "users",
+                sql: "\"login\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_User_PhoneNumber_Valid",
+                table: "users",
+                sql: "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_TimetableUnit_Title_Valid",
+                table: "timetable_units",
+                sql: "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Term_Title_Valid",
+                table: "terms",
+                sql: "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Subject_Title_Valid",
+                table: "subjects",
+                sql: "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Role_Title_Valid",
+                table: "roles",
+                sql: "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Permission_Description_Valid",
+                table: "permissions",
+                sql: "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
 
             migrationBuilder.AddCheckConstraint(
                 name: "CHK_LessonStatus_Description_Valid",
                 table: "lesson_statuses",
-                sql: "\"description\"  ~ '^[\\\\p{L}\\\\d\\\\s.,!?]+$'");
+                sql: "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Address_NotEmpty",
+                table: "institutions",
+                sql: "\"address\" ~ '^[[:alpha:]\\d\\s''.,#/()-]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Domain_Valid",
+                table: "institutions",
+                sql: "\"domain\" ~ '^(?:[[:alpha:]0-9-]{1,63}\\.)+[A-Za-z]{2,}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Email_Valid",
+                table: "institutions",
+                sql: "\"email\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Phone_Valid",
+                table: "institutions",
+                sql: "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Title_NotEmpty",
+                table: "institutions",
+                sql: "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Group_Title_Valid",
+                table: "groups",
+                sql: "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Course_Title_Valid",
+                table: "courses",
+                sql: "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Classroom_Title_Valid",
+                table: "classrooms",
+                sql: "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
         }
 
         /// <inheritdoc />
@@ -256,12 +400,76 @@ namespace TimeTile.Storage.Migrations
                 table: "users");
 
             migrationBuilder.DropCheckConstraint(
+                name: "CHK_User_HomeAddress_Valid",
+                table: "users");
+
+            migrationBuilder.DropCheckConstraint(
                 name: "CHK_User_Lastname_Valid",
                 table: "users");
 
             migrationBuilder.DropCheckConstraint(
+                name: "CHK_User_Login_Valid",
+                table: "users");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_User_PhoneNumber_Valid",
+                table: "users");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_TimetableUnit_Title_Valid",
+                table: "timetable_units");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Term_Title_Valid",
+                table: "terms");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Subject_Title_Valid",
+                table: "subjects");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Role_Title_Valid",
+                table: "roles");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Permission_Description_Valid",
+                table: "permissions");
+
+            migrationBuilder.DropCheckConstraint(
                 name: "CHK_LessonStatus_Description_Valid",
                 table: "lesson_statuses");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Address_NotEmpty",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Domain_Valid",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Email_Valid",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Phone_Valid",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Institution_Title_NotEmpty",
+                table: "institutions");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Group_Title_Valid",
+                table: "groups");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Course_Title_Valid",
+                table: "courses");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CHK_Classroom_Title_Valid",
+                table: "classrooms");
 
             migrationBuilder.AlterColumn<string>(
                 name: "phone_number",
@@ -476,17 +684,97 @@ namespace TimeTile.Storage.Migrations
             migrationBuilder.AddCheckConstraint(
                 name: "CHK_User_Firstname_Valid",
                 table: "users",
-                sql: "\"firstname\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                sql: "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_User_HomeAddress_Valid",
+                table: "users",
+                sql: "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
 
             migrationBuilder.AddCheckConstraint(
                 name: "CHK_User_Lastname_Valid",
                 table: "users",
-                sql: "\"lastname\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
+                sql: "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_User_Login_Valid",
+                table: "users",
+                sql: "\"login\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_User_PhoneNumber_Valid",
+                table: "users",
+                sql: "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_TimetableUnit_Title_Valid",
+                table: "timetable_units",
+                sql: "\"title\" ~ '^[\\w ]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Term_Title_Valid",
+                table: "terms",
+                sql: "\"title\" ~ '^[\\w -.*+,]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Subject_Title_Valid",
+                table: "subjects",
+                sql: "\"title\" ~ '^[\\w -]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Role_Title_Valid",
+                table: "roles",
+                sql: "\"title\"  ~ '^[\\w -]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Permission_Description_Valid",
+                table: "permissions",
+                sql: "\"description\"  ~ '^[\\w -]+$'");
 
             migrationBuilder.AddCheckConstraint(
                 name: "CHK_LessonStatus_Description_Valid",
                 table: "lesson_statuses",
                 sql: "\"description\"  ~ '^[a-zA-Z\\d ]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Address_NotEmpty",
+                table: "institutions",
+                sql: "\"address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Domain_Valid",
+                table: "institutions",
+                sql: "\"domain\" ~ '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.[A-Za-z]{2,})+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Email_Valid",
+                table: "institutions",
+                sql: "\"email\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Phone_Valid",
+                table: "institutions",
+                sql: "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Institution_Title_NotEmpty",
+                table: "institutions",
+                sql: "\"title\" ~ '^[\\w \\-.*&\"'',\\/\\\\|]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Group_Title_Valid",
+                table: "groups",
+                sql: "\"title\"  ~ '^[\\w -.*]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Course_Title_Valid",
+                table: "courses",
+                sql: "\"title\"  ~ '^[\\w -.*+,]+$'");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CHK_Classroom_Title_Valid",
+                table: "classrooms",
+                sql: "\"title\" ~ '^[a-zA-Z \\d-]+$'");
         }
     }
 }

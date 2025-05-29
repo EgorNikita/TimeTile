@@ -65,8 +65,8 @@ public static class ConfigureServices
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 IssuerSigningKey = Jwt.SecurityKey(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.")),
-                ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 ClockSkew = TimeSpan.Zero

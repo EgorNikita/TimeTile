@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using TimeTile.API.Common;
 
 namespace TimeTile.API.Institutions.Endpoints.CreateInstitution;
 
@@ -7,25 +8,28 @@ public class RequestValidator : AbstractValidator<CreateInstitutionEndpoint.Requ
     public RequestValidator()
     {
         RuleFor(x => x.Title)
-            .NotEmpty().WithMessage("Title is required.")
-            .MaximumLength(100);
+            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
+            .WithMessage("Title contains invalid characters.")
+            .ApplyRegexPattern("Title");
 
         RuleFor(x => x.Address)
-            .NotEmpty().WithMessage("Address is required.")
-            .MaximumLength(200);
+            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
+            .WithMessage("Address contains invalid characters.")
+            .ApplyRegexPattern("Address");
 
         RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Phone number is required.")
-            .Matches(@"^\+?[1-9]\d{1,14}$") // E.164 format
-            .WithMessage("Invalid phone number format.");
-
+            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
+            .WithMessage("PhoneE164 contains invalid characters.")
+            .ApplyRegexPattern("PhoneE164");
+        
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Invalid email format.");
+            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
+            .WithMessage("Email contains invalid characters.")
+            .ApplyRegexPattern("Email");
 
         RuleFor(x => x.Domain)
-            .NotEmpty().WithMessage("Domain is required.")
-            .Matches(@"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z]{2,})+$")
-            .WithMessage("Invalid domain format.");
+            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
+            .WithMessage("Domain contains invalid characters.")
+            .ApplyRegexPattern("Domain");
     }
 }

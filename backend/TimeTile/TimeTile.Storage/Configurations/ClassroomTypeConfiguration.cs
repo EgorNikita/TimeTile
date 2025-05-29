@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -30,7 +26,7 @@ namespace TimeTile.Storage.Configurations
 
             builder.Property(e => e.Description)
                 .HasColumnName("description")
-                .HasMaxLength(255);
+                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength);
 
             builder.Property(e => e.InstitutionId)
                 .HasColumnName("institution_id");

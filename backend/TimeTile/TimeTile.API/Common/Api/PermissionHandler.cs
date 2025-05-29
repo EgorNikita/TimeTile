@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using TimeTile.API.Common.Constants;
 
 namespace TimeTile.API.Common.Api;

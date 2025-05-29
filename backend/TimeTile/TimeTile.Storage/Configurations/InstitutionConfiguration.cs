@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -13,22 +14,22 @@ namespace TimeTile.Storage.Configurations
             {
                 // Check constraint for Title to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Title_NotEmpty",
-                    "\"title\" ~ '^[\\w \\-.*&\"'',\\/\\\\|]+$'");
+                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'");
 
                 // Check constraint for Address to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Address_NotEmpty",
-                    "\"address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
+                    $"\"address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Address"].Pattern.ToString())}'");
 
                 // Check constraint for Email (valid format)
                 t.HasCheckConstraint("CHK_Institution_Email_Valid",
-                    "\"email\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
+                    $"\"email\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Email"].Pattern.ToString())}'");
 
                 // Check constraint for PhoneNumber E.164   
                 t.HasCheckConstraint("CHK_Institution_Phone_Valid",
-                    "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'");
+                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["PhoneE164"].Pattern.ToString())}'");
                 
                 t.HasCheckConstraint("CHK_Institution_Domain_Valid",
-                    "\"domain\" ~ '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.[A-Za-z]{2,})+$'");
+                    $"\"domain\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Domain"].Pattern.ToString())}'");
             });
 
             builder.HasKey(e => e.Id);
@@ -49,23 +50,23 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
                 .HasColumnName("title");
 
             builder.Property(e => e.Address)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Address"].MaxLength)
                 .HasColumnName("address");
 
             builder.Property(e => e.Email)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Email"].MaxLength)
                 .HasColumnName("email");
 
             builder.Property(e => e.PhoneNumber)
-                .HasMaxLength(20)
+                .HasMaxLength(RegexPatterns.Patterns["PhoneE164"].MaxLength)
                 .HasColumnName("phone_number");
             
             builder.Property(e => e.Domain)
-                .HasMaxLength(40)
+                .HasMaxLength(RegexPatterns.Patterns["Domain"].MaxLength)
                 .HasColumnName("domain");
         }
     }

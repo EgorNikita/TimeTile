@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -12,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("classrooms", t =>
                 t.HasCheckConstraint(
                     "CHK_Classroom_Title_Valid",
-                    "\"title\" ~ '^[a-zA-Z \\d-]+$'"
+                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);
@@ -32,7 +33,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("capacity");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
                 .HasColumnName("title");
 
             builder.Property(e => e.InstitutionId)

@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -19,19 +15,19 @@ namespace TimeTile.Storage.Configurations
                 // Check constraint for Firstname to allow only letters and spaces
                 t.HasCheckConstraint(
                     "CHK_User_Firstname_Valid",
-                    "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'"
+                    $"\"firstname\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Name"].Pattern.ToString())}'"
                 );
 
                 // Check constraint for Lastname to allow only letters and spaces
                 t.HasCheckConstraint(
                     "CHK_User_Lastname_Valid",
-                    "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'"
+                    $"\"lastname\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Name"].Pattern.ToString())}'"
                 );
 
                 // Check constraint for Login to allow only letters, digits, spaces, and hyphens
                 t.HasCheckConstraint(
                     "CHK_User_Login_Valid",
-                    "\"login\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'"
+                    $"\"login\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Email"].Pattern.ToString())}'"
                 );
                 
                 // Check constraint for BirthDate to ensure it's not in the future
@@ -43,12 +39,12 @@ namespace TimeTile.Storage.Configurations
                 // Check constraint for PhoneNumber E.164
                 t.HasCheckConstraint(
                     "CHK_User_PhoneNumber_Valid",
-                    "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'"
+                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["PhoneE164"].Pattern.ToString())}'"
                 );
                 
                 // Check constraint for HomeAddress to allow only letters, digits, spaces, and hyphens
                 t.HasCheckConstraint("CHK_User_HomeAddress_Valid",
-                    "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
+                    $"\"home_address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Address"].Pattern.ToString())}'");
             });
 
             builder.HasKey(e => e.Id);
@@ -73,19 +69,19 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("birth_date");
 
             builder.Property(e => e.Firstname)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Name"].MaxLength)
                 .HasColumnName("firstname");
 
             builder.Property(e => e.HomeAddress)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Address"].MaxLength)
                 .HasColumnName("home_address");
 
             builder.Property(e => e.Lastname)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Name"].MaxLength)
                 .HasColumnName("lastname");
 
             builder.Property(e => e.Login)
-                .HasMaxLength(263)
+                .HasMaxLength(RegexPatterns.Patterns["Email"].MaxLength)
                 .HasColumnName("login");
 
             builder.Property(e => e.PasswordHash)
@@ -93,7 +89,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("password_hash");
 
             builder.Property(e => e.PhoneNumber)
-                .HasMaxLength(20)
+                .HasMaxLength(RegexPatterns.Patterns["PhoneE164"].MaxLength)
                 .HasColumnName("phone_number");
 
             builder.Property(e => e.RoleId)

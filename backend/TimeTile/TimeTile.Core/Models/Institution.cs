@@ -12,6 +12,8 @@ public partial class Institution : AuditableEntity
 
     public string Email { get; set; } = null!;
     
+    public string Domain { get; set; } = null!;
+    
     public virtual ICollection<LessonStatus> LessonStatuses { get; set; } = new List<LessonStatus>();
     
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();

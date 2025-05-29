@@ -14,6 +14,25 @@ public static class ConfigureApp
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseDeveloperExceptionPage();
+        } 
+        else
+        {
+            app.UseRateLimiter();
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+                    if (exceptionHandlerPathFeature?.Error is not null)
+                    {
+                        Log.Error(exceptionHandlerPathFeature.Error, "Unhandled exception occurred.");
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync("{\"error\": \"An unexpected error occurred.\"}");
+                    }
+                });
+            });
         }
 
         app.UseHttpsRedirection();

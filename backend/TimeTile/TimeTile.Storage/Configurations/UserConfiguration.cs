@@ -31,24 +31,24 @@ namespace TimeTile.Storage.Configurations
                 // Check constraint for Login to allow only letters, digits, spaces, and hyphens
                 t.HasCheckConstraint(
                     "CHK_User_Login_Valid",
-                    "\"login\" ~ '^[\\w -]+$'"
+                    "\"login\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'"
                 );
-
+                
                 // Check constraint for BirthDate to ensure it's not in the future
                 t.HasCheckConstraint(
                     "CHK_User_BirthDate_Valid",
                     "\"birth_date\" <= NOW()"
                 );
 
-                // Check constraint for PhoneNumber (digits and optional formatting characters)
+                // Check constraint for PhoneNumber E.164
                 t.HasCheckConstraint(
                     "CHK_User_PhoneNumber_Valid",
-                    "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'"
+                    "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'"
                 );
-
+                
                 // Check constraint for HomeAddress to allow only letters, digits, spaces, and hyphens
                 t.HasCheckConstraint("CHK_User_HomeAddress_Valid",
-                    "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                    "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
             });
 
             builder.HasKey(e => e.Id);
@@ -88,9 +88,9 @@ namespace TimeTile.Storage.Configurations
                 .HasMaxLength(263)
                 .HasColumnName("login");
 
-            builder.Property(e => e.Password)
+            builder.Property(e => e.PasswordHash)
                 .HasMaxLength(256)
-                .HasColumnName("password");
+                .HasColumnName("password_hash");
 
             builder.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)

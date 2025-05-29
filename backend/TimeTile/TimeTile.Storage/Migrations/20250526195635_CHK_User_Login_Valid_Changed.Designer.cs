@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250526195635_CHK_User_Login_Valid_Changed")]
+    partial class CHK_User_Login_Valid_Changed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1238,13 +1241,13 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
 
                             t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
                         });
 
                     b.UseTptMappingStrategy();
@@ -1270,13 +1273,13 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
 
                             t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
 
                             t.HasCheckConstraint("CK_InstitutionMember_WeekWorkHours_Positive", "\"week_work_hours\" > 0");
                         });
@@ -1298,13 +1301,13 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- ,]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
 
                             t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+?[1-9]\\d{1,14}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
                         });
                 });
 

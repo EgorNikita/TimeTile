@@ -58,8 +58,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -80,7 +80,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("classrooms", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Classroom_Title_Valid", "\"title\" ~ '^[a-zA-Z \\d-]+$'");
+                            t.HasCheckConstraint("CHK_Classroom_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -105,8 +105,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
                         .HasColumnName("description");
 
                     b.Property<int?>("IconId")
@@ -182,8 +182,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -210,7 +210,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("courses", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Course_Title_Valid", "\"title\"  ~ '^[\\w -.*+,]+$'");
+                            t.HasCheckConstraint("CHK_Course_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -418,8 +418,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -438,7 +438,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("groups", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Group_Title_Valid", "\"title\"  ~ '^[\\w -.*]+$'");
+                            t.HasCheckConstraint("CHK_Group_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -453,8 +453,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("address");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -467,22 +467,28 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Domain")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
+                        .HasColumnName("domain");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("email");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)")
                         .HasColumnName("phone_number");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -493,6 +499,12 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Domain", "DeletedAt")
+                        .IsUnique()
+                        .HasDatabaseName("institutions_domain_deleted_at_constraint");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Domain", "DeletedAt"), false);
+
                     b.HasIndex("Title", "DeletedAt")
                         .IsUnique()
                         .HasDatabaseName("institutions_title_deleted_at_key");
@@ -501,13 +513,15 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("institutions", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Institution_Address_NotEmpty", "\"address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                            t.HasCheckConstraint("CHK_Institution_Address_NotEmpty", "\"address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Email_Valid", "\"email\" ~ '^[A-Za-z\\d._%+-]+@[A-Za-z\\d.-]+\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_Institution_Domain_Valid", "\"domain\" ~ '^(?!-)(?:[\\\\p{L}0-9-]{1,63}(?<!-)\\\\.)+[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Phone_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
+                            t.HasCheckConstraint("CHK_Institution_Email_Valid", "\"email\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Title_NotEmpty", "\"title\" ~ '^[\\w \\-.*&\"'',\\/\\\\|]+$'");
+                            t.HasCheckConstraint("CHK_Institution_Phone_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
+
+                            t.HasCheckConstraint("CHK_Institution_Title_NotEmpty", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -590,14 +604,14 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
                         .HasColumnName("description");
 
                     b.Property<string>("HomeworkDescription")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
                         .HasColumnName("homework_description");
 
                     b.Property<int>("LessonStatusId")
@@ -656,8 +670,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
                         .HasColumnName("description");
 
                     b.Property<int>("InstitutionId")
@@ -684,7 +698,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_LessonStatus_ArgbColor_Valid", "\"argb_color\" >= 0");
 
-                            t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[a-zA-Z\\d ]+$'");
+                            t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[\\\\p{L}\\\\d\\\\s.,!?]+$'");
                         });
                 });
 
@@ -782,8 +796,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
                         .HasColumnName("description");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -802,7 +816,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("permissions", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Permission_Description_Valid", "\"description\"  ~ '^[\\w -]+$'");
+                            t.HasCheckConstraint("CHK_Permission_Description_Valid", "\"description\"  ~ '^[\\\\p{L}\\\\d\\\\s.,!?]+$'");
                         });
                 });
 
@@ -825,14 +839,14 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<int>("InstitutionId")
+                    b.Property<int?>("InstitutionId")
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -851,7 +865,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("roles", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Role_Title_Valid", "\"title\"  ~ '^[\\w -]+$'");
+                            t.HasCheckConstraint("CHK_Role_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -926,8 +940,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -948,7 +962,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("subjects", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Subject_Title_Valid", "\"title\" ~ '^[\\w -]+$'");
+                            t.HasCheckConstraint("CHK_Subject_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -1058,7 +1072,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_Term_StartDate_LessThan_EndDate", "\"start_date\" < \"end_date\"");
 
-                            t.HasCheckConstraint("CHK_Term_Title_Valid", "\"title\" ~ '^[\\w -.*+,]+$'");
+                            t.HasCheckConstraint("CHK_Term_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -1095,8 +1109,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -1123,7 +1137,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_TimetableUnit_StartTime_LessThan_EndTime", "\"start_time\" < \"end_time\"");
 
-                            t.HasCheckConstraint("CHK_TimetableUnit_Title_Valid", "\"title\" ~ '^[\\w ]+$'");
+                            t.HasCheckConstraint("CHK_TimetableUnit_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\\\s\\\\-.,_&()]+$'");
                         });
                 });
 
@@ -1158,42 +1172,42 @@ namespace TimeTile.Storage.Migrations
 
                     b.Property<string>("Firstname")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("firstname");
 
                     b.Property<string>("HomeAddress")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("home_address");
 
-                    b.Property<int>("InstitutionId")
+                    b.Property<int?>("InstitutionId")
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
 
                     b.Property<string>("Lastname")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("lastname");
 
                     b.Property<string>("Login")
                         .IsRequired()
-                        .HasMaxLength(263)
-                        .HasColumnType("character varying(263)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("login");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
-                        .HasColumnName("password");
+                        .HasColumnName("password_hash");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)")
                         .HasColumnName("phone_number");
 
                     b.Property<int>("RoleId")
@@ -1222,15 +1236,15 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
 
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
+                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
 
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
+                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[\\w -]+$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
                         });
 
                     b.UseTptMappingStrategy();
@@ -1254,15 +1268,15 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
 
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
+                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
 
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
+                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[\\w -]+$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
 
                             t.HasCheckConstraint("CK_InstitutionMember_WeekWorkHours_Positive", "\"week_work_hours\" > 0");
                         });
@@ -1282,15 +1296,15 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_User_BirthDate_Valid", "\"birth_date\" <= NOW()");
 
-                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
+                            t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[\\\\p{L}\\\\d\\\\s''.,#/\\\\-()]+$'");
 
-                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
+                            t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^\\\\p{L}+(?:[\\\\s''-]\\\\p{L}+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[\\w -]+$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\\\.)[A-Za-z0-9._%+-]+(?<!\\\\.)@[A-Za-z0-9-]+(?:\\\\.[A-Za-z0-9-]+)*\\\\.[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^(\\+\\d{1,2} )?\\(?\\d{3}\\)?[ .-]\\d{3}[ .-]\\d{4}$'");
+                            t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\\\+[1-9]\\\\d{6,14}$'");
                         });
                 });
 
@@ -1530,7 +1544,6 @@ namespace TimeTile.Storage.Migrations
                         .WithMany("Roles")
                         .HasForeignKey("InstitutionId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
                         .HasConstraintName("roles_institution_id_fkey");
 
                     b.Navigation("Institution");
@@ -1620,7 +1633,6 @@ namespace TimeTile.Storage.Migrations
                         .WithMany("Users")
                         .HasForeignKey("InstitutionId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
                         .HasConstraintName("users_institution_id_fkey");
 
                     b.HasOne("TimeTile.Core.Models.Role", "Role")

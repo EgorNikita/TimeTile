@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TimeTile.Core.Enums;
-using TimeTile.Core.Models;
 using File = TimeTile.Core.Models.File;
 
 namespace TimeTile.Storage.Configurations

@@ -10,6 +10,7 @@ using TimeTile.API.Common.Api;
 using TimeTile.API.Users;
 using TimeTile.API.Users.Services;
 using TimeTile.Core.Models;
+using FluentValidation;
 
 namespace TimeTile.API;
 
@@ -24,6 +25,8 @@ public static class ConfigureServices
         builder.AddSerilog();
         builder.AddJwtAuthentication();
         builder.AddAuthorization();
+        
+        builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
         
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
@@ -113,6 +116,18 @@ public static class ConfigureServices
             {
                 Log.Information("Adding CreateStudent policy.");
                 policy.Requirements.Add(new PermissionRequirement("CreateStudent"));
+            });
+            
+            options.AddPolicy("CreateRole", policy =>
+            {
+                Log.Information("Adding CreateRole policy.");
+                policy.Requirements.Add(new PermissionRequirement("CreateRole"));
+            });
+            
+            options.AddPolicy("CreateInstitution", policy =>
+            {
+                Log.Information("Adding CreateInstitution policy.");
+                policy.Requirements.Add(new PermissionRequirement("CreateInstitution"));
             });
         });
 

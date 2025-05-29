@@ -78,7 +78,7 @@ public class Login : IEndpoint
         {
             new(ClaimTypes.Email, user.Login),
             new(ClaimTypes.Role, effectiveRole),
-            new("InstitutionId", user.InstitutionId.ToString())
+            new("institution_id", user.InstitutionId.ToString())
         };
 
         claims.AddRange(user.Role.Permissions.Select(p => new Claim("permission", p.Description)));

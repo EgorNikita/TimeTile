@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250526183046_InstitutionIdByUserIsNullable")]
+    partial class InstitutionIdByUserIsNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,12 +248,12 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("has_exam");
 
-                    b.Property<int>("PositionX")
-                        .HasColumnType("integer")
+                    b.Property<short>("PositionX")
+                        .HasColumnType("smallint")
                         .HasColumnName("position_x");
 
-                    b.Property<int>("PositionY")
-                        .HasColumnType("integer")
+                    b.Property<short>("PositionY")
+                        .HasColumnType("smallint")
                         .HasColumnName("position_y");
 
                     b.Property<int>("StudentId")
@@ -278,7 +281,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("courses_students", null, t =>
                         {
-                            t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = TRUE OR \"exam_grade_id\" IS NULL");
+                            t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = FALSE OR \"exam_grade_id\" IS NOT NULL");
 
                             t.HasCheckConstraint("CK_CoursesStudents_PositionX_Positive", "\"position_x\" >= 0");
 
@@ -373,8 +376,8 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("Value")
-                        .HasColumnType("integer")
+                    b.Property<short>("Value")
+                        .HasColumnType("smallint")
                         .HasColumnName("value");
 
                     b.Property<float>("Weight")

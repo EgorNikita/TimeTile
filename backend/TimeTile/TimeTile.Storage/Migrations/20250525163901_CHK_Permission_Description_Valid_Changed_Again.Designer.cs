@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250525163901_CHK_Permission_Description_Valid_Changed_Again")]
+    partial class CHK_Permission_Description_Valid_Changed_Again
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,12 +248,12 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("has_exam");
 
-                    b.Property<int>("PositionX")
-                        .HasColumnType("integer")
+                    b.Property<short>("PositionX")
+                        .HasColumnType("smallint")
                         .HasColumnName("position_x");
 
-                    b.Property<int>("PositionY")
-                        .HasColumnType("integer")
+                    b.Property<short>("PositionY")
+                        .HasColumnType("smallint")
                         .HasColumnName("position_y");
 
                     b.Property<int>("StudentId")
@@ -278,7 +281,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("courses_students", null, t =>
                         {
-                            t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = TRUE OR \"exam_grade_id\" IS NULL");
+                            t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = FALSE OR \"exam_grade_id\" IS NOT NULL");
 
                             t.HasCheckConstraint("CK_CoursesStudents_PositionX_Positive", "\"position_x\" >= 0");
 
@@ -373,8 +376,8 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("Value")
-                        .HasColumnType("integer")
+                    b.Property<short>("Value")
+                        .HasColumnType("smallint")
                         .HasColumnName("value");
 
                     b.Property<float>("Weight")
@@ -823,7 +826,7 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<int?>("InstitutionId")
+                    b.Property<int>("InstitutionId")
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
 
@@ -1166,7 +1169,7 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("home_address");
 
-                    b.Property<int?>("InstitutionId")
+                    b.Property<int>("InstitutionId")
                         .HasColumnType("integer")
                         .HasColumnName("institution_id");
 
@@ -1222,7 +1225,7 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
 
@@ -1254,7 +1257,7 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
 
@@ -1282,7 +1285,7 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Firstname_Valid", "\"firstname\" ~ '^[a-zA-Z ,.''-]+$'");
 
-                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]+$'");
+                            t.HasCheckConstraint("CHK_User_HomeAddress_Valid", "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[a-zA-Z ,.''-]+$'");
 
@@ -1528,6 +1531,7 @@ namespace TimeTile.Storage.Migrations
                         .WithMany("Roles")
                         .HasForeignKey("InstitutionId")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
                         .HasConstraintName("roles_institution_id_fkey");
 
                     b.Navigation("Institution");
@@ -1617,6 +1621,7 @@ namespace TimeTile.Storage.Migrations
                         .WithMany("Users")
                         .HasForeignKey("InstitutionId")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
                         .HasConstraintName("users_institution_id_fkey");
 
                     b.HasOne("TimeTile.Core.Models.Role", "Role")

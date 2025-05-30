@@ -20,11 +20,6 @@ namespace TimeTile.Storage.Configurations
                     "CHK_LessonStatus_Description_Valid",
                     "\"description\"  ~ '^[a-zA-Z\\d ]+$'"
                 );
-
-                t.HasCheckConstraint(
-                    "CHK_LessonStatus_ArgbColor_Valid",
-                    "\"argb_color\" >= 0"
-                );
             });
 
             builder.HasKey(e => e.Id);

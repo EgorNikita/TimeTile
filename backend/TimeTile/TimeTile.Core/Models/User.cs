@@ -22,9 +22,9 @@ public partial class User : AuditableEntity
 
     public int RoleId { get; set; }
     
-    public int InstitutionId { get; set; }
+    public int? InstitutionId { get; set; }
     
-    public virtual Institution Institution { get; set; } = null!;
+    public virtual Institution? Institution { get; set; }
     
     public virtual Role Role { get; set; } = null!;
 }

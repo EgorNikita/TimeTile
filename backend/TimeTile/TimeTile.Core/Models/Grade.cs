@@ -4,7 +4,7 @@ public partial class Grade : AuditableEntity
 {
     public int Id { get; set; }
 
-    public short Value { get; set; }
+    public int Value { get; set; }
     
     public float Weight { get; set; }
 

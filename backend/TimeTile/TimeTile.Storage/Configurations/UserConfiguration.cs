@@ -48,7 +48,7 @@ namespace TimeTile.Storage.Configurations
 
                 // Check constraint for HomeAddress to allow only letters, digits, spaces, and hyphens
                 t.HasCheckConstraint("CHK_User_HomeAddress_Valid",
-                    "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                    "\"home_address\" ~ '^[A-Za-z\\d''\\.\\- \\,]+$'");
             });
 
             builder.HasKey(e => e.Id);
@@ -100,7 +100,8 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("role_id");
 
             builder.Property(e => e.InstitutionId)
-                .HasColumnName("institution_id");
+                .HasColumnName("institution_id")
+                .IsRequired(false);
 
             // Relationships
             builder.HasOne(d => d.Role)

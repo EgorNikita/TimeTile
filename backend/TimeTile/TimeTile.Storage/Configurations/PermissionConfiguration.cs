@@ -17,7 +17,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("permissions", t =>
                 t.HasCheckConstraint(
                     "CHK_Permission_Description_Valid",
-                    "\"description\"  ~ '^[\\w -]+$'"
+                    "\"description\"  ~ '^[\\w ''.-]+$'"
                 ));
 
             builder.HasKey(e => e.Id);

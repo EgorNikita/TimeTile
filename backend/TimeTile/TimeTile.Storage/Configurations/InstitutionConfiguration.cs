@@ -22,7 +22,7 @@ namespace TimeTile.Storage.Configurations
 
                 // Check constraint for Address to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Address_NotEmpty",
-                    "\"address\" ~ '^[A-Za-z\\d''\\.\\- \\,]$'");
+                    "\"address\" ~ '^[A-Za-z\\d''\\.\\- \\,]+$'");
 
                 // Check constraint for Email (valid format)
                 t.HasCheckConstraint("CHK_Institution_Email_Valid",

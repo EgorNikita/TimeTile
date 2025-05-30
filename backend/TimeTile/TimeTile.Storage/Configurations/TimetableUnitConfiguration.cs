@@ -14,7 +14,7 @@ namespace TimeTile.Storage.Configurations
             {
                 t.HasCheckConstraint(
                     "CHK_TimetableUnit_Title_Valid",
-                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'"
+                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].PostgresPattern.ToString())}'"
                 );
                 t.HasCheckConstraint(
                     "CHK_TimetableUnit_StartTime_LessThan_EndTime",

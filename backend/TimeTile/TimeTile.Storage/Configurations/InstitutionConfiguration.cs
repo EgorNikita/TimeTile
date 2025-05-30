@@ -14,22 +14,22 @@ namespace TimeTile.Storage.Configurations
             {
                 // Check constraint for Title to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Title_NotEmpty",
-                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'");
+                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].PostgresPattern.ToString())}'");
 
                 // Check constraint for Address to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Address_NotEmpty",
-                    $"\"address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Address"].Pattern.ToString())}'");
+                    $"\"address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Address"].PostgresPattern.ToString())}'");
 
                 // Check constraint for Email (valid format)
                 t.HasCheckConstraint("CHK_Institution_Email_Valid",
-                    $"\"email\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Email"].Pattern.ToString())}'");
+                    $"\"email\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Email"].PostgresPattern.ToString())}'");
 
                 // Check constraint for PhoneNumber E.164   
                 t.HasCheckConstraint("CHK_Institution_Phone_Valid",
-                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["PhoneE164"].Pattern.ToString())}'");
+                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["PhoneE164"].PostgresPattern.ToString())}'");
                 
                 t.HasCheckConstraint("CHK_Institution_Domain_Valid",
-                    $"\"domain\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Domain"].Pattern.ToString())}'");
+                    $"\"domain\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Domain"].PostgresPattern.ToString())}'");
             });
 
             builder.HasKey(e => e.Id);

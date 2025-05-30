@@ -13,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("roles", t =>
                 t.HasCheckConstraint(
                     "CHK_Role_Title_Valid",
-                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'"
+                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].PostgresPattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);

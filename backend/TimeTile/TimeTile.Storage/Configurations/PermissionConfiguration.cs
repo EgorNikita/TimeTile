@@ -13,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("permissions", t =>
                 t.HasCheckConstraint(
                     "CHK_Permission_Description_Valid",
-                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Description"].Pattern.ToString())}'"
+                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Description"].PostgresPattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);

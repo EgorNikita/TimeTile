@@ -15,19 +15,19 @@ namespace TimeTile.Storage.Configurations
                 // Check constraint for Firstname to allow only letters and spaces
                 t.HasCheckConstraint(
                     "CHK_User_Firstname_Valid",
-                    $"\"firstname\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Name"].Pattern.ToString())}'"
+                    $"\"firstname\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Name"].PostgresPattern.ToString())}'"
                 );
 
                 // Check constraint for Lastname to allow only letters and spaces
                 t.HasCheckConstraint(
                     "CHK_User_Lastname_Valid",
-                    $"\"lastname\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Name"].Pattern.ToString())}'"
+                    $"\"lastname\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Name"].PostgresPattern.ToString())}'"
                 );
 
                 // Check constraint for Login to allow only letters, digits, spaces, and hyphens
                 t.HasCheckConstraint(
                     "CHK_User_Login_Valid",
-                    $"\"login\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Email"].Pattern.ToString())}'"
+                    $"\"login\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Email"].PostgresPattern.ToString())}'"
                 );
                 
                 // Check constraint for BirthDate to ensure it's not in the future
@@ -39,12 +39,12 @@ namespace TimeTile.Storage.Configurations
                 // Check constraint for PhoneNumber E.164
                 t.HasCheckConstraint(
                     "CHK_User_PhoneNumber_Valid",
-                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["PhoneE164"].Pattern.ToString())}'"
+                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["PhoneE164"].PostgresPattern.ToString())}'"
                 );
                 
                 // Check constraint for HomeAddress to allow only letters, digits, spaces, and hyphens
                 t.HasCheckConstraint("CHK_User_HomeAddress_Valid",
-                    $"\"home_address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Address"].Pattern.ToString())}'");
+                    $"\"home_address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Address"].PostgresPattern.ToString())}'");
             });
 
             builder.HasKey(e => e.Id);

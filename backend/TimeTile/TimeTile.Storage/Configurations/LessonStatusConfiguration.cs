@@ -14,7 +14,7 @@ namespace TimeTile.Storage.Configurations
             {
                 t.HasCheckConstraint(
                     "CHK_LessonStatus_Description_Valid",
-                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Description"].Pattern.ToString())}'"
+                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Description"].PostgresPattern.ToString())}'"
                 );
             });
 

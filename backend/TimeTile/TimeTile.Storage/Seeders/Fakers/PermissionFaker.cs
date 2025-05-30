@@ -4,25 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.API.Common.Constants;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class PermissionFaker : BaseFaker<Permission>
     {
-        private readonly List<string> _descriptions = [
-            "Add institution member.",
-            "Add student.",
-            "Modify lesson.",
-            "Add lesson.",
-            "Set test.",
-            "Evaluate students.",
-            "Cancel lesson.",
-            "Check absences.",
-            "Modify group.",
-            "Change profile's info."
-        ];
-
         // Description constraints
         private const string DESCRIPTION_REGEX = @"^[\w '.-]+$";
         private const int DESCRIPTION_MAX_LENGTH = 255;
@@ -32,12 +20,12 @@ namespace TimeTile.Storage.Seeders.Fakers
         public PermissionFaker()
         {
             _faker
-                .RuleFor(p => p.Description, f => _descriptions.ElementAt((++_currentId - 1) % _descriptions.Count));
+                .RuleFor(p => p.Description, f => Permissions.All.ElementAt((++_currentId - 1) % Permissions.Count));
         }
 
         public List<Permission> Generate()
         {
-            return _faker.Generate(_descriptions.Count);
+            return _faker.Generate(Permissions.Count);
         }
 
         public override List<Permission> Generate(int count)

@@ -4,18 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class LessonFaker : BaseFaker<Lesson>
     {
-        // Description constraints
-        private const int DESCRIPTION_MAX_LENGTH = 255;
-
-        // HomeworkDescription constraints
-        private const int HOMEWORK_DESCRIPTION_MAX_LENGTH = 255;
-
         // Cashing for optimization
         private readonly Dictionary<int, List<LessonStatus>> _institutionLessonStatuses = new();
 
@@ -135,14 +130,18 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             string description = $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
 
-            return TruncateToMaxLength(description, DESCRIPTION_MAX_LENGTH);
+            int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
+
+            return TruncateToMaxLength(description, maxLength);
         }
 
         private string GenerateValidHomeworkDescription(Faker faker)
         {
             string description = faker.Lorem.Paragraphs(1, 2);
 
-            return TruncateToMaxLength(description, HOMEWORK_DESCRIPTION_MAX_LENGTH);
+            int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
+
+            return TruncateToMaxLength(description, maxLength);
         }
     }
 }

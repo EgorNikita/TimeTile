@@ -37,7 +37,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             _faker
                 .RuleFor(m => m.AvatarPath, f => "undefined")           // TODO: add avatars
-                .RuleFor(m => m.BirthDate, f => _userFaker.GenerateValidBirthDate(f, MIN_AGE, MAX_AGE))
+                .RuleFor(m => m.BirthDate, f => UserFaker.GenerateValidBirthDate(f, MIN_AGE, MAX_AGE))
                 .RuleFor(m => m.Firstname, _userFaker.GenerateValidFirstname)
                 .RuleFor(m => m.Lastname, _userFaker.GenerateValidLastname)
                 .RuleFor(m => m.HomeAddress, _userFaker.GenerateValidAddress)

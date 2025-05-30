@@ -4,16 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class SubjectFaker : BaseFaker<Subject>
     {
-        // Title constraints
-        private const string TITLE_REGEX = @"^[\w -]+$";
-        private const int TITLE_MAX_LENGTH = 255;
-
         public SubjectFaker(List<Institution> institutions)
         {
             _faker
@@ -25,7 +22,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             Func<string> generator = () => MakeUniqueValue($"{faker.Commerce.Department()} Studies");
 
-            return GenerateValidValue(generator, TITLE_REGEX, TITLE_MAX_LENGTH);
+            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
         }
     }
 }

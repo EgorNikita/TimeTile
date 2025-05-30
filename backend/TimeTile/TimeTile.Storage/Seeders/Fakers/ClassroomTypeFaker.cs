@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -12,7 +13,6 @@ namespace TimeTile.Storage.Seeders.Fakers
     {
         // Description constraints
         private const int DESCRIPTION_WORDS_COUNT = 3;
-        private const int DESCRIPTION_MAX_LENGTH = 255;
 
         public ClassroomTypeFaker(List<Institution> institutions)            // TODO: add icons
         {
@@ -23,10 +23,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidDescription(Faker faker)
         {
-            string description = faker.Lorem.Sentence(DESCRIPTION_WORDS_COUNT);
-            string uniqueDescription = MakeUniqueValue(description);
+            Func<string> generator = () => MakeUniqueValue(faker.Lorem.Sentence(DESCRIPTION_WORDS_COUNT));
 
-            return TruncateToMaxLength(uniqueDescription, DESCRIPTION_MAX_LENGTH);
+            return GenerateValidValue(generator, RegexPatterns.Pattern.Description);
         }
     }
 }

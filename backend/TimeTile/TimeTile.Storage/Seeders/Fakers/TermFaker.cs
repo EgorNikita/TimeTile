@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -14,7 +15,6 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly Dictionary<int, List<KeyValuePair<DateOnly, DateOnly>>> _institutionsToTerms = new();
 
         // Title constraints
-        private const string TITLE_REGEX = @"^[\w -.*+,]+$";
         private const int MAX_QUARTER_NUMBER = 12;
 
         // StartDate's logic
@@ -49,7 +49,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 return MakeUniqueValue($"Quarter {year} {quarter}");
             };
 
-            return GenerateValidValue(generator, TITLE_REGEX);
+            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
         }
 
         private DateTimeOffset GenerateValidStartDate(Faker faker, int year, int institutionId)

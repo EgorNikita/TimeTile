@@ -4,16 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class CourseFaker : BaseFaker<Course>
     {
-        // Title constraints
-        private const string TITLE_REGEX = @"^[\w -.*+,]+$";
-        private const int TITLE_MAX_LENGTH = 255;
-
         // Cashing for optimization
         private readonly Dictionary<int, List<Subject>> _institutionSubjects = new();
         private readonly Dictionary<int, List<InstitutionMember>> _subjectTeachers = new();
@@ -67,19 +64,15 @@ namespace TimeTile.Storage.Seeders.Fakers
                         t => t.InstitutionId == course.InstitutionId
                     );
                 })
-                .RuleFor(c => c.Title, (f, c) => GenerateValidTitle(f, c.Subject.Title, c.Term.StartDate, c.Term.EndDate))
+                .RuleFor(c => c.Title, (f, c) => GenerateValidTitle(c.Subject.Title, c.Term.StartDate, c.Term.EndDate))
                 .RuleFor(c => c.IsAdvanced, f => f.Random.Bool(0.2f));
         }
 
-        private string GenerateValidTitle(Faker faker, string subjectTitle, DateTimeOffset startDate, DateTimeOffset endDate)
+        private string GenerateValidTitle(string subjectTitle, DateTimeOffset startDate, DateTimeOffset endDate)
         {
-            Func<string> generator = () =>
-            {
-                string mainPart = $"{subjectTitle} {startDate.Date:dd.MM.yyyy}-{endDate.Date:dd.MM.yyyy}";
-                return MakeUniqueValue(mainPart);
-            };
+            string mainPart = $"{subjectTitle.Substring(0, 10)} {startDate.Date:dd.MM.yyyy}-{endDate.Date:dd.MM.yyyy}";
 
-            return GenerateValidValue(generator, TITLE_REGEX, TITLE_MAX_LENGTH);
+            return TruncateToMaxLength(MakeUniqueValue(mainPart), RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength);
         }
     }
 }

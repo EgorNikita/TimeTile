@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -37,7 +38,7 @@ namespace TimeTile.Storage.Seeders.Fakers
             return baseValue.Length <= maxLength ? baseValue : baseValue.Substring(0, maxLength);
         }
 
-        protected string GenerateValidValue(Func<string> valueGenerator, string regex, int maxLength = -1)
+        protected string GenerateValidValue(Func<string> valueGenerator, string regex, int maxLength)
         {
             Regex regexObj = new Regex(regex);
 
@@ -58,6 +59,14 @@ namespace TimeTile.Storage.Seeders.Fakers
             }
 
             throw new InvalidOperationException("Unable to generate a valid value.");
+        }
+
+        protected string GenerateValidValue(Func<string> valueGenerator, RegexPatterns.Pattern pattern)
+        {
+            string regex = RegexPatterns.Patterns[pattern].Pattern.ToString();
+            int maxLength = RegexPatterns.Patterns[pattern].MaxLength;
+
+            return GenerateValidValue(valueGenerator, regex, maxLength);
         }
 
         protected static K GenerateValidValue<K>(Func<K> generator, Predicate<K> predicate)

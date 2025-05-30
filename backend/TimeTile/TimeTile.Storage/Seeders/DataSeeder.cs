@@ -21,9 +21,9 @@ namespace TimeTile.Storage.Seeders
         private const int ROLES_TO_PERMISSIONS_COUNT = 100;
         private const int STUDENTS_COUNT = 200;
         private const int INSTITUTION_MEMBERS_COUNT = 20;
-        private const int INSTITUTION_MEMBERS_TO_GROUPS_COUNT = 2000;
-        private const int TEACHERS_TO_SUBJECTS_COUNT = 30;
-        private const int COURSES_COUNT = 60;
+        private const int INSTITUTION_MEMBERS_TO_GROUPS_COUNT = 25;
+        private const int TEACHERS_TO_SUBJECTS_COUNT = 35;
+        private const int COURSES_COUNT = 70;
         private const int COURSES_TO_STUDENTS_COUNT = 1000;
         private const int LESSONS_COUNT = 1000;
         private const int LESSONS_TO_STUDENTS_COUNT = 5000;
@@ -94,7 +94,7 @@ namespace TimeTile.Storage.Seeders
 
             var rolesToPermissions = new RoleToPermissionFaker(roles, permissions).Generate(ROLES_TO_PERMISSIONS_COUNT);
             await _context.RolesPermissions.AddRangeAsync(rolesToPermissions);
-            
+
             var students = new StudentFaker(studentRole, institutions, groups).Generate(STUDENTS_COUNT);
             await _context.Students.AddRangeAsync(students);
 
@@ -128,8 +128,6 @@ namespace TimeTile.Storage.Seeders
             await _context.LessonsStudents.AddRangeAsync(lessonsToStudents);
 
             await _context.SaveChangesAsync();
-
-            Console.WriteLine();
         }
     }
 }

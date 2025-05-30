@@ -5,16 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class LessonStatusFaker : BaseFaker<LessonStatus>
     {
-        // Description constraints
-        private const string DESCRIPTION_REGEX = @"^[a-zA-Z\d ]+$";
-        private const int DESCRIPTION_MAX_LENGTH = 255;
-
         private int _currentId = 0;
 
         private static readonly List<string> _descriptions = new()
@@ -50,7 +47,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             Func<string> uniqueDescriptionGenerator = () => MakeUniqueValue(descriptionGenerator());
 
-            return GenerateValidValue(uniqueDescriptionGenerator, DESCRIPTION_REGEX, DESCRIPTION_MAX_LENGTH);
+            return GenerateValidValue(uniqueDescriptionGenerator, RegexPatterns.Pattern.Description);
         }
 
         private int GenerateArgbColor(Faker faker)

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -14,10 +15,6 @@ namespace TimeTile.Storage.Seeders.Fakers
         // Capacity constraints
         private const int CAPACITY_MIN_VALUE = 10;
         private const int CAPACITY_MAX_VALUE = 40;
-
-        // Title constraints
-        private const int TITLE_MAX_LENGTH = 255;
-        private const string TITLE_REGEX = @"^[a-zA-Z \d-]+$";
 
         // Caching for optimization
         private readonly Dictionary<int, List<ClassroomType>> _institutionClassroomTypes = new();
@@ -57,10 +54,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidTitle(Faker faker)
         {
-            string randomTitle = GenerateRandomTitle(faker);
-            Func<string> generator = () => MakeUniqueValue(randomTitle);
+            Func<string> generator = () => MakeUniqueValue(GenerateRandomTitle(faker));
 
-            return GenerateValidValue(generator, TITLE_REGEX, TITLE_MAX_LENGTH);
+            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
         }
     }
 }

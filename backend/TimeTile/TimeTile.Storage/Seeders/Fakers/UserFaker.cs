@@ -1,9 +1,11 @@
 ﻿using Bogus;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -14,30 +16,12 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const int MIN_AGE = 6;
         private const int MAX_AGE = 100;
 
-        // Firstname constraints
-        private const string FIRSTNAME_REGEX = @"^[a-zA-Z ,.''-]+$";
-        private const int FIRSTNAME_MAX_LENGTH = 255;
-
-        // Lastname constraints
-        private const string LASTNAME_REGEX = @"^[a-zA-Z ,.''-]+$";
-        private const int LASTNAME_MAX_LENGTH = 255;
-
-        // Address constraints
-        private const string ADDRESS_REGEX = @"^[A-Za-z\d''\.\- \,]+$";
-        private const int ADDRESS_MAX_LENGTH = 255;
-
-        // Login constraints
-        private const string LOGIN_REGEX = @"^[\w -]+$";
-        private const int LOGIN_MAX_LENGTH = 263;
-
         // Password constraints
         private const int PASSWORD_MAX_LENGTH = 256;
 
-        // PhoneNumber constraints
-        private const string PHONE_NUMBER_REGEX = @"^(\+\d{1,2} )?\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}$";
-        private const int PHONE_NUMBER_MAX_LENGTH = 20;
+        private HashSet<string> _usedLogins = new();
 
-        public DateOnly GenerateValidBirthDate(Faker faker, int minAge = MIN_AGE, int maxAge = MAX_AGE)
+        public static DateOnly GenerateValidBirthDate(Faker faker, int minAge = MIN_AGE, int maxAge = MAX_AGE)
         {
             DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
             DateOnly start = today.AddYears(-maxAge);
@@ -47,25 +31,46 @@ namespace TimeTile.Storage.Seeders.Fakers
         }
 
         public string GenerateValidFirstname(Faker faker) =>
-            GenerateValidValue(() => faker.Person.FirstName, FIRSTNAME_REGEX, FIRSTNAME_MAX_LENGTH);
+            GenerateValidValue(() => faker.Person.FirstName, RegexPatterns.Pattern.Name);
 
         public string GenerateValidLastname(Faker faker) =>
-            GenerateValidValue(() => faker.Person.LastName, LASTNAME_REGEX, LASTNAME_MAX_LENGTH);
+            GenerateValidValue(() => faker.Person.LastName, RegexPatterns.Pattern.Name);
 
         public string GenerateValidAddress(Faker faker) =>
-            GenerateValidValue(faker.Address.FullAddress, ADDRESS_REGEX, ADDRESS_MAX_LENGTH);
+            GenerateValidValue(faker.Address.FullAddress, RegexPatterns.Pattern.Address);
 
         public string GenerateValidLogin(Faker faker)
         {
-            Func<string> generator = () => MakeUniqueValue(faker.Internet.UserName());
+            Func<string> generator = () => faker.Internet.Email();
 
-            return GenerateValidValue(generator, LOGIN_REGEX, LOGIN_MAX_LENGTH);
+            while (true)
+            {
+                string login = GenerateValidValue(generator, RegexPatterns.Pattern.Email);
+
+                if (!_usedLogins.Contains(login))
+                {
+                    _usedLogins.Add(login);
+
+                    return login;
+                }
+            }
         }
 
-        public string GenerateValidPassword(Faker faker) =>
-            TruncateToMaxLength(faker.Internet.Password(), PASSWORD_MAX_LENGTH);
+        public string GenerateValidPassword(Faker faker, User user)
+        {
+            var hasher = new PasswordHasher<User>();
+            var password = faker.Internet.Password();
 
-        public string GenerateValidPhoneNumber(Faker faker) =>
-            GenerateValidValue(() => faker.Phone.PhoneNumber(), PHONE_NUMBER_REGEX, PHONE_NUMBER_MAX_LENGTH);
+            var hash = hasher.HashPassword(user, password);
+
+            return TruncateToMaxLength(hash, PASSWORD_MAX_LENGTH);
+        }
+
+        public string GenerateValidPhoneNumber(Faker faker)
+        {
+            Func<string> generator = () => $"+1{faker.Phone.PhoneNumber("##########")}";
+
+            return GenerateValidValue(generator, RegexPatterns.Pattern.PhoneE164);
+        }
     }
 }

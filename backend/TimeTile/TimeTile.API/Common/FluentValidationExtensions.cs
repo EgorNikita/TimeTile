@@ -7,7 +7,7 @@ public static class FluentValidationExtensions
 {
     public static IRuleBuilderOptions<T, string> ApplyRegexPattern<T>(
         this IRuleBuilder<T, string> ruleBuilder,
-        string patternKey,
+        RegexPatterns.Pattern patternKey,
         bool allowEmpty = false) where T : class
     {
         var patternInfo = RegexPatterns.Patterns[patternKey];

@@ -14,7 +14,7 @@ namespace TimeTile.Storage.Configurations
             {
                 t.HasCheckConstraint(
                     "CHK_LessonStatus_Description_Valid",
-                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Description"].PostgresPattern.ToString())}'"
+                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].PostgresPattern.ToString())}'"
                 );
             });
 
@@ -31,7 +31,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id"); 
 
             builder.Property(e => e.Description)
-                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength)
                 .HasColumnName("description");
 
             builder.Property(e => e.ArgbColor)

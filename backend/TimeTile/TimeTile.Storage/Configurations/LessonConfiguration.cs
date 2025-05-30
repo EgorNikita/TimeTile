@@ -35,11 +35,11 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("date");
 
             builder.Property(e => e.Description)
-                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength)
                 .HasColumnName("description");
 
             builder.Property(e => e.HomeworkDescription)
-                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength)
                 .HasColumnName("homework_description");
 
             builder.Property(e => e.LessonStatusId)

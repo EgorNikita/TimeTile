@@ -13,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("courses", t =>
                 t.HasCheckConstraint(
                     "CHK_Course_Title_Valid",
-                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].PostgresPattern.ToString())}'"
+                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].PostgresPattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);
@@ -29,7 +29,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength)
                 .HasColumnName("title");
 
             builder.Property(e => e.IsAdvanced)

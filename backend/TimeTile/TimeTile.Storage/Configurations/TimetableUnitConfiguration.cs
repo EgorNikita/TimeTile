@@ -14,7 +14,7 @@ namespace TimeTile.Storage.Configurations
             {
                 t.HasCheckConstraint(
                     "CHK_TimetableUnit_Title_Valid",
-                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].PostgresPattern.ToString())}'"
+                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].PostgresPattern.ToString())}'"
                 );
                 t.HasCheckConstraint(
                     "CHK_TimetableUnit_StartTime_LessThan_EndTime",
@@ -51,7 +51,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("institution_id");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength)
                 .HasColumnName("title");
 
             // Relationships

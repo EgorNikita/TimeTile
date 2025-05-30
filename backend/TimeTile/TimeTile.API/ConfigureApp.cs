@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 using TimeTile.Storage.Seeders;
+using TimeTile.Storage.DataSeeders;
 
 namespace TimeTile.API;
 
@@ -19,6 +22,25 @@ public static class ConfigureApp
             using var scope = app.Services.CreateScope();
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
             await seeder.Seed();
+            app.UseDeveloperExceptionPage();
+        } 
+        else
+        {
+            app.UseRateLimiter();
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+                    if (exceptionHandlerPathFeature?.Error is not null)
+                    {
+                        Log.Error(exceptionHandlerPathFeature.Error, "Unhandled exception occurred.");
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync("{\"error\": \"An unexpected error occurred.\"}");
+                    }
+                });
+            });
         }
 
         app.UseHttpsRedirection();
@@ -36,6 +58,7 @@ public static class ConfigureApp
         try
         {
             await db.Database.MigrateAsync();
+            await AdminSeeder.SeedAsync(db, new PasswordHasher<User>(), Log.Logger);
         }
         catch (Exception ex)
         {

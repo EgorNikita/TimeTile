@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -17,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("groups", t =>
                 t.HasCheckConstraint(
                     "CHK_Group_Title_Valid",
-                    "\"title\"  ~ '^[\\w -.*]+$'"
+                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);
@@ -36,7 +32,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("institution_id");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
                 .HasColumnName("title");
 
             // Relationships

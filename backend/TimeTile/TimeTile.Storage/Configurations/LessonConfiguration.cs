@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -39,11 +35,11 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("date");
 
             builder.Property(e => e.Description)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength)
                 .HasColumnName("description");
 
             builder.Property(e => e.HomeworkDescription)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength)
                 .HasColumnName("homework_description");
 
             builder.Property(e => e.LessonStatusId)

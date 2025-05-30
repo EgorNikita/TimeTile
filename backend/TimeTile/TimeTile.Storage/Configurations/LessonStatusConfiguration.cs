@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -18,7 +14,7 @@ namespace TimeTile.Storage.Configurations
             {
                 t.HasCheckConstraint(
                     "CHK_LessonStatus_Description_Valid",
-                    "\"description\"  ~ '^[a-zA-Z\\d ]+$'"
+                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Description"].Pattern.ToString())}'"
                 );
             });
 
@@ -35,7 +31,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id"); 
 
             builder.Property(e => e.Description)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength)
                 .HasColumnName("description");
 
             builder.Property(e => e.ArgbColor)

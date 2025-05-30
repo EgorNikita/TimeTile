@@ -1,10 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Configurations
@@ -17,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("permissions", t =>
                 t.HasCheckConstraint(
                     "CHK_Permission_Description_Valid",
-                    "\"description\"  ~ '^[\\w ''.-]+$'"
+                    $"\"description\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Description"].Pattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);
@@ -33,7 +29,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id");
 
             builder.Property(e => e.Description)
-                .HasMaxLength(255)
+                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength)
                 .HasColumnName("description");
         }
     }

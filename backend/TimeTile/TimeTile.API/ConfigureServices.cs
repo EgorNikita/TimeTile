@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TimeTile.Storage.Contexts;
 using Serilog;
+using TimeTile.Storage.Seeders;
 
 namespace TimeTile.API;
 
@@ -8,6 +9,7 @@ public static class ConfigureServices
 {
     public static void AddServices(this WebApplicationBuilder builder)
     {
+        builder.Services.AddScoped<DataSeeder>();
         builder.AddSwagger();
         builder.AddDatabase();
         //builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);

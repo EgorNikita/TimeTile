@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TimeTile.Storage.Contexts;
+using TimeTile.Storage.Seeders;
 
 namespace TimeTile.API;
 
@@ -14,6 +15,10 @@ public static class ConfigureApp
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+
+            using var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+            await seeder.Seed();
         }
 
         app.UseHttpsRedirection();

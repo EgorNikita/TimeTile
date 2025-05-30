@@ -42,7 +42,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 .RuleFor(m => m.Lastname, _userFaker.GenerateValidLastname)
                 .RuleFor(m => m.HomeAddress, _userFaker.GenerateValidAddress)
                 .RuleFor(m => m.Login, _userFaker.GenerateValidLogin)
-                .RuleFor(m => m.Password, _userFaker.GenerateValidPassword)
+                .RuleFor(m => m.PasswordHash, _userFaker.GenerateValidPassword)
                 .RuleFor(m => m.PhoneNumber, _userFaker.GenerateValidPhoneNumber)
                 .RuleFor(m => m.WeekWorkHours, f => f.Random.Int(MIN_WEEK_WORK_HOURS, MAX_WEEK_WORK_HOURS))
                 .Rules((faker, member) =>

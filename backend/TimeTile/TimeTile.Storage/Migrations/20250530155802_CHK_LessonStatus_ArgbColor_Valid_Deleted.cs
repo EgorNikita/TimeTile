@@ -5,7 +5,7 @@
 namespace TimeTile.Storage.Migrations
 {
     /// <inheritdoc />
-    public partial class CHK_LessonStatus_ArgbColor_Valid_Changed : Migration
+    public partial class CHK_LessonStatus_ArgbColor_Valid_Deleted : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

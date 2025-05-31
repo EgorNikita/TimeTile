@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using TimeTile.API.Common;
+using TimeTile.Core.Common.Regex;
 
 namespace TimeTile.API.Roles.Endpoints.CreateRole;
 
@@ -10,7 +11,7 @@ public class RequestValidator : AbstractValidator<CreateRoleEndpoint.Request>
         RuleFor(x => x.Title)
             .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
             .WithMessage("Title contains invalid characters.")
-            .ApplyRegexPattern("Title");
+            .ApplyRegexPattern(RegexPatterns.Pattern.Title);
 
         RuleFor(x => x.PermissionsIds)
             .NotNull().WithMessage("PermissionsIds must be provided.")

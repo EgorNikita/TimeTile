@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Models;
@@ -14,22 +14,22 @@ namespace TimeTile.Storage.Configurations
             {
                 // Check constraint for Title to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Title_NotEmpty",
-                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'");
+                    $"\"title\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].PostgresPattern.ToString())}'");
 
                 // Check constraint for Address to allow only letters, digits, spaces, and special characters
                 t.HasCheckConstraint("CHK_Institution_Address_NotEmpty",
-                    $"\"address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Address"].Pattern.ToString())}'");
+                    $"\"address\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Address].PostgresPattern.ToString())}'");
 
                 // Check constraint for Email (valid format)
                 t.HasCheckConstraint("CHK_Institution_Email_Valid",
-                    $"\"email\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Email"].Pattern.ToString())}'");
+                    $"\"email\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Email].PostgresPattern.ToString())}'");
 
                 // Check constraint for PhoneNumber E.164   
                 t.HasCheckConstraint("CHK_Institution_Phone_Valid",
-                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["PhoneE164"].Pattern.ToString())}'");
+                    $"\"phone_number\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.PhoneE164].PostgresPattern.ToString())}'");
                 
                 t.HasCheckConstraint("CHK_Institution_Domain_Valid",
-                    $"\"domain\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Domain"].Pattern.ToString())}'");
+                    $"\"domain\" ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Domain].PostgresPattern.ToString())}'");
             });
 
             builder.HasKey(e => e.Id);
@@ -50,23 +50,23 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength)
                 .HasColumnName("title");
 
             builder.Property(e => e.Address)
-                .HasMaxLength(RegexPatterns.Patterns["Address"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Address].MaxLength)
                 .HasColumnName("address");
 
             builder.Property(e => e.Email)
-                .HasMaxLength(RegexPatterns.Patterns["Email"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Email].MaxLength)
                 .HasColumnName("email");
 
             builder.Property(e => e.PhoneNumber)
-                .HasMaxLength(RegexPatterns.Patterns["PhoneE164"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.PhoneE164].MaxLength)
                 .HasColumnName("phone_number");
             
             builder.Property(e => e.Domain)
-                .HasMaxLength(RegexPatterns.Patterns["Domain"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Domain].MaxLength)
                 .HasColumnName("domain");
         }
     }

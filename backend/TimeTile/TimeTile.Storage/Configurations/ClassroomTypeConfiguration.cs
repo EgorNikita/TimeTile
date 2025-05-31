@@ -26,7 +26,7 @@ namespace TimeTile.Storage.Configurations
 
             builder.Property(e => e.Description)
                 .HasColumnName("description")
-                .HasMaxLength(RegexPatterns.Patterns["Description"].MaxLength);
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength);
 
             builder.Property(e => e.InstitutionId)
                 .HasColumnName("institution_id");

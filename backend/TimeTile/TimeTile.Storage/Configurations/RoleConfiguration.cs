@@ -13,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("roles", t =>
                 t.HasCheckConstraint(
                     "CHK_Role_Title_Valid",
-                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'"
+                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].PostgresPattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);
@@ -29,11 +29,12 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength)
                 .HasColumnName("title");
 
             builder.Property(e => e.InstitutionId)
-                .HasColumnName("institution_id");
+                .HasColumnName("institution_id")
+                .IsRequired(false);
 
             // Relationships
             builder.HasOne(d => d.Institution)

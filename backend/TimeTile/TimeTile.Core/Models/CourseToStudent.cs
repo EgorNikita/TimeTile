@@ -12,9 +12,9 @@ public partial class CourseToStudent : AuditableEntity
     
     public bool HasExam { get; set; }
 
-    public int PositionX { get; set; }
+    public short PositionX { get; set; }
 
-    public int PositionY { get; set; }
+    public short PositionY { get; set; }
 
     public virtual Course Course { get; set; } = null!;
 

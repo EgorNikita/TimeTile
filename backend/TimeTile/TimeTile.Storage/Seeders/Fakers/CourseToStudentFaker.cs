@@ -52,8 +52,8 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                     return null;
                 })
-                .RuleFor(cs => cs.PositionX, 0)                 // TODO: real positions
-                .RuleFor(cs => cs.PositionY, 0);
+                .RuleFor(cs => cs.PositionX, (short)0)                 // TODO: real positions
+                .RuleFor(cs => cs.PositionY, (short)0);
         }
 
         private void FindAllPossibleCombinations(List<Course> courses, List<Student> students)

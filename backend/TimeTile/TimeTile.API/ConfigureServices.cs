@@ -24,7 +24,6 @@ public static class ConfigureServices
     {
         Log.Information("Starting service configuration...");
         
-        builder.Services.AddScoped<DataSeeder>();
         builder.AddSwagger();
         builder.AddDatabase();
         builder.AddSerilog();
@@ -33,10 +32,11 @@ public static class ConfigureServices
         builder.AddRateLimiting();
         
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
-        
+
+        builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
-        
+
         Log.Information("Service configuration completed.");
     }
 

@@ -16,4 +16,6 @@ public static class Permissions
         CreateRole,
         CreateInstitution
     };
+
+    public static int Count => All.Count;
 }

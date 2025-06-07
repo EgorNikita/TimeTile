@@ -13,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             {
                 t.HasCheckConstraint(
                     "CK_CoursesStudents_HasExam_ExamGrade",
-                    "\"has_exam\" = FALSE OR \"exam_grade_id\" IS NOT NULL"
+                    "\"has_exam\" = TRUE OR \"exam_grade_id\" IS NULL"
                 );
                 t.HasCheckConstraint(
                     "CK_CoursesStudents_PositionX_Positive",

@@ -14,6 +14,7 @@ using TimeTile.Core.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.RateLimiting;
 using TimeTile.API.Common.Constants;
+using TimeTile.Storage.Seeders;
 using TimeTile.API.Files.Services;
 using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.API.Users.Services.Interfaces;
@@ -35,7 +36,8 @@ public static class ConfigureServices
         builder.AddRateLimiting();
         
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
-        
+
+        builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IFileService, FileService>();

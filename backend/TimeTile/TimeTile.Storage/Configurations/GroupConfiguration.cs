@@ -13,7 +13,7 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("groups", t =>
                 t.HasCheckConstraint(
                     "CHK_Group_Title_Valid",
-                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns["Title"].Pattern.ToString())}'"
+                    $"\"title\"  ~ '{SqlRegexHelper.SqlSafe(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].PostgresPattern.ToString())}'"
                 ));
 
             builder.HasKey(e => e.Id);
@@ -32,7 +32,7 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("institution_id");
 
             builder.Property(e => e.Title)
-                .HasMaxLength(RegexPatterns.Patterns["Title"].MaxLength)
+                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength)
                 .HasColumnName("title");
 
             // Relationships

@@ -278,7 +278,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("courses_students", null, t =>
                         {
-                            t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = FALSE OR \"exam_grade_id\" IS NOT NULL");
+                            t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = TRUE OR \"exam_grade_id\" IS NULL");
 
                             t.HasCheckConstraint("CK_CoursesStudents_PositionX_Positive", "\"position_x\" >= 0");
 
@@ -696,8 +696,6 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("lesson_statuses", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_LessonStatus_ArgbColor_Valid", "\"argb_color\" >= 0");
-
                             t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
                         });
                 });

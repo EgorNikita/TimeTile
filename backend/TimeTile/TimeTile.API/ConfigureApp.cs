@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
+using TimeTile.Storage.Seeders;
 using TimeTile.Storage.DataSeeders;
 
 namespace TimeTile.API;
@@ -17,6 +18,10 @@ public static class ConfigureApp
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+
+            using var scope = app.Services.CreateScope();
+            var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+            await seeder.Seed();
             app.UseDeveloperExceptionPage();
         } 
         else

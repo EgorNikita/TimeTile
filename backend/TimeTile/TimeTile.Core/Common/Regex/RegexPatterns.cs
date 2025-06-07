@@ -19,7 +19,7 @@ public static class RegexPatterns
             "Full names may include letters, apostrophes, hyphens, and spaces."),
 
         [Pattern.Address] = 
-            (new System.Text.RegularExpressions.Regex(@"^[\p{L}\d\s'.,#/()-]+$", RegexOptions.Compiled),
+            (new System.Text.RegularExpressions.Regex(@"^[\p{L}\d\s'.,#/()-]+$", RegexOptions.Compiled), //TODO: '#' doesn't work
             new System.Text.RegularExpressions.Regex(@"^[[:alpha:]\d\s'.,#/()-]+$", RegexOptions.Compiled), 
             200, 
             "Addresses may contain letters, numbers, spaces, and punctuation like '.,#/-()."),

@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Users;
+using TimeTile.API.Files.Services.Interfaces;
+using TimeTile.API.Users.Services.Interfaces;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -18,7 +19,7 @@ public class CreateStudent : IEndpoint
         .WithRequestValidation<Request>();
 
     public record Request(
-        string? AvatarPath,
+        IFormFile? Avatar,
         string Firstname,
         string Lastname,
         string HomeAddress,
@@ -76,6 +77,7 @@ public class CreateStudent : IEndpoint
         Request request, 
         TimetileDbContext database,
         IUserService userService,
+        IFileService fileService,
         IPasswordHasher<User> hasher,
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
@@ -90,10 +92,19 @@ public class CreateStudent : IEndpoint
         var trimmedLastname = request.Lastname.Trim();
         var password =
             await userService.GenerateDefaultPassword(trimmedFirstname, trimmedLastname, (short)request.BirthDate.Year);
+
+        var avatarPath = await GetAvatarPath(
+            request.Avatar,
+            trimmedFirstname,
+            trimmedLastname,
+            userService,
+            fileService,
+            cancellationToken
+        );
         
         var student = new Student
         {
-            AvatarPath = request.AvatarPath ?? await userService.GenerateDefaultAvatar(trimmedFirstname, trimmedLastname),
+            AvatarPath = avatarPath,
             Firstname = trimmedFirstname,
             Lastname = trimmedLastname,
             HomeAddress = request.HomeAddress.Trim(),
@@ -117,6 +128,30 @@ public class CreateStudent : IEndpoint
         );
 
         return TypedResults.Ok(response);
+    }
+    
+    private static async Task<string> GetAvatarPath(
+        IFormFile? avatar, 
+        string firstname, 
+        string lastname, 
+        IUserService userService,
+        IFileService fileService,
+        CancellationToken cancellationToken)
+    {
+        await using var avatarStream = avatar != null
+            ? avatar.OpenReadStream()
+            : await userService.GenerateDefaultAvatar(firstname, lastname);
+
+        var fileName = $"{firstname}_{lastname}_avatar.png";
+
+        var avatarPath = await fileService.SaveFile(
+            avatarStream,
+            fileName,
+            "image/png",
+            cancellationToken
+        );
+
+        return avatarPath;
     }
     
 }

@@ -12,7 +12,9 @@ public class CreateInstitutionEndpoint : IEndpoint
     public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
         .MapPost("/", Handle)
         .WithSummary("Creates a new Institution")
-        .WithRequestValidation<Request>();
+        .WithRequestValidation<Request>()
+        .Produces<Result>(StatusCodes.Status400BadRequest)
+        .Produces<Result<Response>>(StatusCodes.Status201Created);
 
     public sealed record Request(
         string Title,
@@ -36,11 +38,11 @@ public class CreateInstitutionEndpoint : IEndpoint
         TimetileDbContext database,
         CancellationToken cancellationToken)
     {
-        var duplicateCheck = await IsInstitutionDuplicateAsync(
+        var duplicateCheckResult = await IsInstitutionDuplicateAsync(
             request.Title, request.Email, request.Domain, database, cancellationToken);
 
-        if (duplicateCheck.IsFailure)
-            return Results.BadRequest(new { duplicateCheck.Error });
+        if (duplicateCheckResult.IsFailure)
+            return Results.BadRequest(duplicateCheckResult);
 
         var institution = new Institution
         {
@@ -58,7 +60,9 @@ public class CreateInstitutionEndpoint : IEndpoint
         }
         catch (Exception e)
         {
-            return Results.Problem(e.Message);
+            var error = Error.From(e.Message);
+
+            return Results.BadRequest(Result.Failure(error));
         }
 
         var response = new Response(
@@ -69,8 +73,10 @@ public class CreateInstitutionEndpoint : IEndpoint
             institution.Email,
             institution.Domain
         );
+
+        var result = Result.Success(response);
         
-        return Results.Created($"/institutions/{institution.Id}", response);
+        return Results.Created($"/institutions/{institution.Id}", result);
     }
     
     private static async Task<Result> IsInstitutionDuplicateAsync(

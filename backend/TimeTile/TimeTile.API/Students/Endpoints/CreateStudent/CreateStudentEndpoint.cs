@@ -9,9 +9,9 @@ using TimeTile.API.Users.Services.Interfaces;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Students.Endpoints;
+namespace TimeTile.API.Students.Endpoints.CreateStudent;
 
-public class CreateStudent : IEndpoint
+public class CreateStudentEndpoint : IEndpoint
 {
     public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
         .MapPost("/", Handle)
@@ -31,8 +31,7 @@ public class CreateStudent : IEndpoint
         int Id,
         string Firstname,
         string Lastname,
-        string Login,
-        string Password
+        string Login
     );
     
     public class RequestValidator : AbstractValidator<Request>
@@ -123,8 +122,7 @@ public class CreateStudent : IEndpoint
             student.Id,
             student.Firstname,
             student.Lastname,
-            student.Login,
-            password
+            student.Login
         );
 
         return TypedResults.Ok(response);

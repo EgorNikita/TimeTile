@@ -3,6 +3,7 @@ using TimeTile.API.Common.Api;
 using TimeTile.API.Institutions.Endpoints.CreateInstitution;
 using TimeTile.API.Roles.Endpoints.CreateRole;
 using TimeTile.API.Students.Endpoints;
+using TimeTile.API.Students.Endpoints.CreateStudent;
 
 namespace TimeTile.API;
 
@@ -31,7 +32,7 @@ public static class Endpoints
         var endpoints = app.MapGroup("/students")
             .WithTags("Students");
 
-        endpoints.MapEndpoint<CreateStudent>()
+        endpoints.MapEndpoint<CreateStudentEndpoint>()
             .RequireAuthorization("CreateStudent");
     }
     

@@ -7,6 +7,12 @@ namespace TimeTile.Storage.Seeders
 {
     public class DataSeeder
     {
+        private const string CURRENT_ASSEMBLY = "TimeTile.Storage";
+        private const string CURRENT_FOLDER = "Seeders";
+        public static readonly string CURRENT_DIRECTORY = Path.GetFullPath(
+            Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\", CURRENT_ASSEMBLY, CURRENT_FOLDER)
+        );
+
         // Influence Generation's volume
         private const int INSTITUTIONS_COUNT = 2;
         private const int CLASSROOM_TYPES_COUNT = 5;
@@ -40,6 +46,8 @@ namespace TimeTile.Storage.Seeders
             // if database is not empty
             if (_context.Institutions.Any())
                 return;
+
+            await ClearAllTxtFiles();
 
             var institutions = new InstitutionFaker().Generate(INSTITUTIONS_COUNT);
             await _context.Institutions.AddRangeAsync(institutions);
@@ -128,6 +136,16 @@ namespace TimeTile.Storage.Seeders
             await _context.LessonsStudents.AddRangeAsync(lessonsToStudents);
 
             await _context.SaveChangesAsync();
+        }
+
+        private async Task ClearAllTxtFiles()
+        {
+            var filesPaths = Directory.GetFiles(CURRENT_DIRECTORY, "*.txt");
+
+            foreach (var path in filesPaths)
+            {
+                await System.IO.File.WriteAllTextAsync(path, string.Empty);
+            }
         }
     }
 }

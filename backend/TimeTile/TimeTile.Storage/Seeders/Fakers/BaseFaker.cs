@@ -108,5 +108,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             return faker.PickRandom(suitableValues);
         }
+
+        protected static string FormFullPath(string fileName)
+        {
+            return Path.Combine(DataSeeder.CURRENT_DIRECTORY, fileName);
+        }
     }
 }

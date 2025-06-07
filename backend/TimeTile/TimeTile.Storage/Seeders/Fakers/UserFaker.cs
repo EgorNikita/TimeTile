@@ -10,6 +10,11 @@ using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
+    public sealed record LoginCredential(
+        string Login,
+        string Password
+    );
+
     internal class UserFaker : BaseFaker<User>
     {
         // BirthDate constraints
@@ -20,6 +25,10 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const int PASSWORD_MAX_LENGTH = 256;
 
         private HashSet<string> _usedLogins = new();
+
+        // For saving passwords
+        public List<LoginCredential> LoginData { get; } = new();
+        public string LoginDataFormatted => string.Join(Environment.NewLine, LoginData.Select(x => $"Login: {x.Login}; Password: {x.Password}"));
 
         public static DateOnly GenerateValidBirthDate(Faker faker, int minAge = MIN_AGE, int maxAge = MAX_AGE)
         {
@@ -60,6 +69,9 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             var hasher = new PasswordHasher<User>();
             var password = faker.Internet.Password();
+
+            var loginCredential = new LoginCredential(user.Login, password);
+            LoginData.Add(loginCredential);
 
             var hash = hasher.HashPassword(user, password);
 

@@ -40,8 +40,8 @@ public static class Endpoints
         var endpoints = app.MapGroup("/roles")
             .WithTags("Roles");
 
-        endpoints.MapEndpoint<CreateRoleEndpoint>();
-        //.RequireAuthorization("CreateRole");
+        endpoints.MapEndpoint<CreateRoleEndpoint>()
+            .RequireAuthorization("CreateRole");
     }
     
     private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)

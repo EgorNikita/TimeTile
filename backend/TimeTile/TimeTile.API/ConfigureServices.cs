@@ -14,6 +14,10 @@ using TimeTile.Core.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.RateLimiting;
 using TimeTile.API.Common.Constants;
+using TimeTile.API.Files.Services;
+using TimeTile.API.Files.Services.Interfaces;
+using TimeTile.API.Users.Services.Interfaces;
+using File = TimeTile.Core.Models.File;
 
 namespace TimeTile.API;
 
@@ -34,6 +38,8 @@ public static class ConfigureServices
         
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IFileService, FileService>();
+        builder.Services.AddScoped<IAvatarService, AvatarService>();
         
         Log.Information("Service configuration completed.");
     }

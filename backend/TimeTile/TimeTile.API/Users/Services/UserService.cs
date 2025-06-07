@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using TimeTile.API.Users.Services.Interfaces;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -9,10 +10,12 @@ namespace TimeTile.API.Users.Services;
 public class UserService : IUserService
 {
     private readonly TimetileDbContext _dbContext;
+    private readonly IAvatarService _avatarService;
     
-    public UserService(TimetileDbContext dbContext)
+    public UserService(TimetileDbContext dbContext, IAvatarService avatarService)
     {
         _dbContext = dbContext;
+        _avatarService = avatarService;
     }
     
     public Task<Institution> GetInstitutionId(string institutionDomain)
@@ -52,9 +55,8 @@ public class UserService : IUserService
         return Task.FromResult(password);
     }
 
-    public Task<string> GenerateDefaultAvatar(string firstname, string lastname)
+    public Task<Stream> GenerateDefaultAvatar(string firstname, string lastname)
     {
-        var initials = $"{char.ToUpper(firstname[0], CultureInfo.InvariantCulture)}{char.ToUpper(lastname[0], CultureInfo.InvariantCulture)}";
-        return Task.FromResult($"/avatars/{initials}.png");
+        return _avatarService.GenerateDefaultAvatar(firstname, lastname);
     }
 }

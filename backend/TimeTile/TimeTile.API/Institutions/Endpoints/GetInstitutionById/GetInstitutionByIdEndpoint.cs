@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.UnifiedResponse;
@@ -11,9 +12,7 @@ namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById
         public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
             .MapGet("/{id}", Handle)
             .WithSummary("Returns Institution by passed Id")
-            .WithRequestValidation<Request>()
-            .Produces<Result<Response>>(StatusCodes.Status200OK)
-            .Produces<Result>(StatusCodes.Status404NotFound);
+            .WithRequestValidation<Request>();
 
         public sealed record Request(
             int Id
@@ -28,7 +27,7 @@ namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById
             string Domain
         );
 
-        private static async Task<IResult> Handle(
+        private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext context,
             CancellationToken cancellationToken)
@@ -44,7 +43,7 @@ namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById
                     "ENTITY_DOES_NOT_EXIST"
                 );
 
-                return Results.NotFound(Result.Failure(error));
+                return TypedResults.NotFound(Result.Failure(error));
             }
 
             var response = new Response(
@@ -58,7 +57,7 @@ namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById
 
             var result = Result.Success(response);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result);
         }
     }
 }

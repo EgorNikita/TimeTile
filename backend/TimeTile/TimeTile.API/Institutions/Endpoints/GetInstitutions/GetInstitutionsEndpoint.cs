@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
-using TimeTile.Storage.Seeders.Fakers;
 
 namespace TimeTile.API.Institutions.Endpoints.GetInstitutions
 {
@@ -14,8 +14,7 @@ namespace TimeTile.API.Institutions.Endpoints.GetInstitutions
         public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
             .MapGet("/", Handle)
             .WithSummary("Returns a page of Institutions")
-            .WithRequestValidation<Request>()
-            .Produces<Result<PagedList<Response>>>(StatusCodes.Status200OK);
+            .WithRequestValidation<Request>();
 
         public sealed record Request(
             int? Page = 1,
@@ -31,7 +30,7 @@ namespace TimeTile.API.Institutions.Endpoints.GetInstitutions
             string Domain
         );
 
-        private static async Task<IResult> Handle(
+        private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext context,
             CancellationToken cancellationToken)
@@ -51,7 +50,7 @@ namespace TimeTile.API.Institutions.Endpoints.GetInstitutions
 
             var result = Result.Success(institutions);
 
-            return Results.Ok(result);
+            return TypedResults.Ok(result);
         }
     }
 }

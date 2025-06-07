@@ -82,11 +82,11 @@ public class CreateStudent : IEndpoint
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
-        var institutionDomain = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(institutionDomain))
-            return TypedResults.NotFound();
-        
-        var institution = await userService.GetInstitutionId(institutionDomain); //Check if found
+        // var institutionDomain = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+        // if (string.IsNullOrEmpty(institutionDomain))
+        //     return TypedResults.NotFound();
+        //
+        // var institution = await userService.GetInstitutionId(institutionDomain); //Check if found
         
         var trimmedFirstname = request.Firstname.Trim();
         var trimmedLastname = request.Lastname.Trim();
@@ -110,8 +110,8 @@ public class CreateStudent : IEndpoint
             HomeAddress = request.HomeAddress.Trim(),
             PhoneNumber = request.PhoneNumber.Trim(),
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
-            InstitutionId = institution.Id,
-            Login = await userService.GenerateLogin(trimmedFirstname, trimmedLastname, request.BirthDate.Year, institution.Domain),
+            //InstitutionId = institution.Id,
+            //Login = await userService.GenerateLogin(trimmedFirstname, trimmedLastname, request.BirthDate.Year, institution.Domain),
         };
         
         student.PasswordHash = hasher.HashPassword(student, password);

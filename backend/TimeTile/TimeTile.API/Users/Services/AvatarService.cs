@@ -39,7 +39,7 @@ public class AvatarService : IAvatarService
 
             // Measure and center text
             font.MeasureText(initials, out var textBounds, textPaint);
-            float x = size / 2f;
+            float x = size / 2f - textBounds.MidX;
             float y = size / 2f - textBounds.MidY;
 
             canvas.DrawText(initials, x, y, font, textPaint);

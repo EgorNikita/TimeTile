@@ -10,6 +10,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class InstitutionMemberFaker : BaseFaker<InstitutionMember>
     {
+        // For saving passwords
+        private const string LOGIN_DATA_FILE_NAME = "institution_members_login_data.txt";
+
         // WeekWorkHours constraints
         private const int MIN_WEEK_WORK_HOURS = 10;
         private const int MAX_WEEK_WORK_HOURS = 40;
@@ -65,6 +68,24 @@ namespace TimeTile.Storage.Seeders.Fakers
                         c => c.InstitutionId == member.InstitutionId
                     ).Id;
                 });
+        }
+
+        public override List<InstitutionMember> Generate(int count)
+        {
+            var institutionMembers = base.Generate(count);
+
+            System.IO.File.AppendAllText(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+
+            return institutionMembers;
+        }
+
+        public async Task<List<InstitutionMember>> GenerateAsync(int count)
+        {
+            var institutionMembers = base.Generate(count);
+
+            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+
+            return institutionMembers;
         }
     }
 }

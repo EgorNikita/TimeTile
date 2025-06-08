@@ -1,14 +1,20 @@
-﻿using System;
+﻿using Bogus;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TimeTile.Core.Models;
+using TimeTile.Storage.Contexts;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class AdminFaker : BaseFaker<User>
     {
+        // For saving passwords
+        private const string LOGIN_DATA_FILE_NAME = "admins_login_data.txt";
+
         private readonly UserFaker _userFaker = new UserFaker();
 
         // BirthDate constraints
@@ -27,6 +33,24 @@ namespace TimeTile.Storage.Seeders.Fakers
                 .RuleFor(s => s.PasswordHash, _userFaker.GenerateValidPassword)
                 .RuleFor(s => s.PhoneNumber, _userFaker.GenerateValidPhoneNumber)
                 .RuleFor(s => s.RoleId, adminRole.Id);
+        }
+
+        public override List<User> Generate(int count)
+        {
+            var users = base.Generate(count);
+
+            System.IO.File.AppendAllText(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+
+            return users;
+        }
+
+        public async Task<List<User>> GenerateAsync(int count)
+        {
+            var users = base.Generate(count);
+
+            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+
+            return users;
         }
     }
 }

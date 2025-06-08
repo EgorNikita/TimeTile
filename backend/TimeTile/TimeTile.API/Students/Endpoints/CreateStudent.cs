@@ -85,9 +85,9 @@ public class CreateStudent : IEndpoint
         var institutionDomain = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(institutionDomain))
             return TypedResults.NotFound();
-        
+
         var institution = await userService.GetInstitutionId(institutionDomain); //Check if found
-        
+
         var trimmedFirstname = request.Firstname.Trim();
         var trimmedLastname = request.Lastname.Trim();
         var password =
@@ -147,7 +147,6 @@ public class CreateStudent : IEndpoint
         var avatarPath = await fileService.SaveFile(
             avatarStream,
             fileName,
-            "image/png",
             cancellationToken
         );
 

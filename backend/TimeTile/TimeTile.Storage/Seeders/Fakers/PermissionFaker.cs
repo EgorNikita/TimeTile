@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TimeTile.API.Common.Constants;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers

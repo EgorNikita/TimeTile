@@ -4,20 +4,31 @@ namespace TimeTile.API.Files.Services;
 
 public class FileService : IFileService
 {
+    private static readonly string UploadsFolder = Path.Combine(Environment.CurrentDirectory, "uploads");
+
+    public static string FileServiceBaseUrl { get; } = UploadsFolder;
+    
+    public Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken)
+    {
+        var fileName = Path.GetFileName(filePath);
+        var fileUrl = $"{FileDownloadBaseUrl}/{Uri.EscapeDataString(fileName)}";
+
+        return Task.FromResult(fileUrl);
+    }
+    
     public async Task<string> SaveFile(Stream fileStream, string fileName, string contentType, CancellationToken cancellationToken)
     {
-        var uploadsFolder = Path.Combine(Environment.CurrentDirectory, "uploads");
         
-        if (!Directory.Exists(uploadsFolder))
+        if (!Directory.Exists(UploadsFolder))
         {
-            Directory.CreateDirectory(uploadsFolder);
+            Directory.CreateDirectory(UploadsFolder);
         }
         
         // Sanitize the file name to avoid invalid path chars
         var safeFileName = Path.GetFileName(fileName);
 
         // Full path to save the file
-        var filePath = Path.Combine(uploadsFolder, safeFileName);
+        var filePath = Path.Combine(UploadsFolder, safeFileName);
 
         // Save stream to file asynchronously
         await using var fileStreamOutput = File.Create(filePath);
@@ -31,4 +42,5 @@ public class FileService : IFileService
     {
         throw new NotImplementedException();
     }
+    
 }

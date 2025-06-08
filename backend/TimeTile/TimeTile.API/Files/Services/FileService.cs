@@ -20,14 +20,6 @@ public class FileService : IFileService
     private readonly string _storagePath;
 
     public FileService(IWebHostEnvironment env, TimetileDbContext db, IFileRepository repository)
-    public Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken)
-    {
-        // var fileName = Path.GetFileName(filePath);
-        //
-        // var fileUrl = $"{FileDownloadBaseUrl}/{Uri.EscapeDataString(fileName)}";
-        // return Task.FromResult(fileUrl);
-        throw new NotImplementedException("File URL generation is not implemented yet.");
-    }
     {
         var solutionRoot = Directory.GetParent(env.ContentRootPath)!.FullName;
 
@@ -41,6 +33,15 @@ public class FileService : IFileService
         _fileRepository = repository;
     }
 
+    public Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken)
+    {
+        // var fileName = Path.GetFileName(filePath);
+        //
+        // var fileUrl = $"{FileDownloadBaseUrl}/{Uri.EscapeDataString(fileName)}";
+        // return Task.FromResult(fileUrl);
+        throw new NotImplementedException("File URL generation is not implemented yet.");
+    }
+    
     public async Task<string> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(_storagePath))

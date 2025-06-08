@@ -124,7 +124,6 @@ public class CreateStudentEndpoint : IEndpoint
         var avatarPath = await fileService.SaveFile(
             avatarStream,
             fileName,
-            "image/png",
             cancellationToken
         );
 

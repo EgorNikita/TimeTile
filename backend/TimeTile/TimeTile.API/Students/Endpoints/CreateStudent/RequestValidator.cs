@@ -27,5 +27,10 @@ public class RequestValidator : AbstractValidator<CreateStudentEndpoint.Request>
             .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
             .WithMessage("PhoneNumber contains invalid characters.")
             .ApplyRegexPattern(RegexPatterns.Pattern.PhoneE164);
+
+        RuleFor(u => u.HomeAddress)
+            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
+            .WithMessage("HomeAddress contains invalid characters.")
+            .ApplyRegexPattern(RegexPatterns.Pattern.Address);
     }
 }

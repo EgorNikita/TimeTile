@@ -1,11 +1,13 @@
 ﻿using System.Security.Claims;
-using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.API.Users.Services.Interfaces;
+using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -33,69 +35,37 @@ public class CreateStudentEndpoint : IEndpoint
         string Lastname,
         string Login
     );
-    
-    public class RequestValidator : AbstractValidator<Request>
-    {
-        public RequestValidator()
-        {
-            // Firstname: not empty, max 255, letters + space/comma/dot/quote/hyphen only
-            RuleFor(u => u.Firstname)
-                .NotEmpty()
-                .MaximumLength(255)
-                .Matches("^[a-zA-Z ,.'-]+$")
-                .WithMessage("Firstname can contain only letters, spaces, commas, periods, apostrophes, and hyphens.");
-        
-            // Lastname: same as firstname
-            RuleFor(u => u.Lastname)
-                .NotEmpty()
-                .MaximumLength(255)
-                .Matches("^[a-zA-Z ,.'-]+$")
-                .WithMessage("Lastname can contain only letters, spaces, commas, periods, apostrophes, and hyphens.");
-            
-            // BirthDate: not in future
-            RuleFor(u => u.BirthDate)
-                .LessThanOrEqualTo(DateTime.Now)
-                .WithMessage("BirthDate cannot be in the future.");
 
-            // PhoneNumber: must match pattern
-            RuleFor(u => u.PhoneNumber)
-                .Matches(@"^(\+\d{1,2} )?\(?\d{3}\)?[ .-]\d{3}[ .-]\d{4}$")
-                .When(u => !string.IsNullOrEmpty(u.PhoneNumber))
-                .WithMessage("PhoneNumber format is invalid.");
-
-            // HomeAddress: max 255, letters, digits, spaces, commas, periods, hyphens, apostrophes
-            RuleFor(u => u.HomeAddress)
-                .MaximumLength(255)
-                .Matches(@"^[A-Za-z\d'.,\- ]*$")
-                .When(u => !string.IsNullOrEmpty(u.HomeAddress))
-                .WithMessage("HomeAddress contains invalid characters.");
-        }
-    }
-
-    private static async Task<Results<Ok<Response>, NotFound>> Handle(
+    private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>>> Handle(
         Request request, 
-        TimetileDbContext database,
+        TimetileDbContext db,
         IUserService userService,
         IFileService fileService,
         IPasswordHasher<User> hasher,
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
-        var institutionDomain = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(institutionDomain))
-            return TypedResults.NotFound();
+        var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
+
+        if (!institutionResult.IsSuccess)
+            return TypedResults.NotFound(Result.Failure(institutionResult.Error));
+
+        var institutionId = institutionResult.Data;
+        var institution = await db.Institutions
+            .AsNoTracking()
+            .FirstAsync(i => i.Id == institutionId, cancellationToken);
         
-        var institution = await userService.GetInstitutionId(institutionDomain); //Check if found
-        
-        var trimmedFirstname = request.Firstname.Trim();
-        var trimmedLastname = request.Lastname.Trim();
-        var password =
-            await userService.GenerateDefaultPassword(trimmedFirstname, trimmedLastname, (short)request.BirthDate.Year);
+        var firstName = request.Firstname.Trim();
+        var lastName = request.Lastname.Trim();
+        var birthYear = (short)request.BirthDate.Year;
+       
+        var password = await userService.GenerateDefaultPassword(firstName, lastName, birthYear);
+        var login = await userService.GenerateLogin(firstName, lastName, birthYear, institution.Domain);
 
         var avatarPath = await GetAvatarPath(
             request.Avatar,
-            trimmedFirstname,
-            trimmedLastname,
+            firstName,
+            lastName,
             userService,
             fileService,
             cancellationToken
@@ -103,20 +73,28 @@ public class CreateStudentEndpoint : IEndpoint
         
         var student = new Student
         {
-            AvatarPath = avatarPath,
-            Firstname = trimmedFirstname,
-            Lastname = trimmedLastname,
+            Firstname = firstName,
+            Lastname = lastName,
             HomeAddress = request.HomeAddress.Trim(),
             PhoneNumber = request.PhoneNumber.Trim(),
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
-            InstitutionId = institution.Id,
-            Login = await userService.GenerateLogin(trimmedFirstname, trimmedLastname, request.BirthDate.Year, institution.Domain),
+            AvatarPath = avatarPath,
+            Login = login,
+            InstitutionId = institution.Id
         };
         
         student.PasswordHash = hasher.HashPassword(student, password);
         
-        await database.Students.AddAsync(student, cancellationToken);
-        await database.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await db.Students.AddAsync(student, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            var error = Error.From(e.Message);
+            return TypedResults.BadRequest(Result.Failure(error));
+        }
         
         var response = new Response(
             student.Id,
@@ -125,7 +103,9 @@ public class CreateStudentEndpoint : IEndpoint
             student.Login
         );
 
-        return TypedResults.Ok(response);
+        var result = Result.Success(response);
+        
+        return TypedResults.Created($"/students/{student.Id}", result);
     }
     
     private static async Task<string> GetAvatarPath(

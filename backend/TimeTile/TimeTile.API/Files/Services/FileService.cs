@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Threading;
+using TimeTile.API.Files.Helpers;
 using TimeTile.API.Files.Repositories.Interfaces;
 using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.Core.Common.UnifiedResponse;
@@ -40,7 +41,7 @@ public class FileService : IFileService
         }
 
         // Sanitize the file name to avoid invalid path chars
-        var safeFileName = Path.GetFileName(fileName);
+        var safeFileName = FileNameSanitizer.MakeValidFileName(Path.GetFileName(fileName));
 
         // Creating unique new filename
         var extension = Path.GetExtension(safeFileName);
@@ -55,8 +56,10 @@ public class FileService : IFileService
 
         await _fileRepository.Add(fileName, extension, fileStreamOutput.Length, filePath, cancellationToken);
 
-        // Return the path where file was saved
-        return filePath;
+        // Return the relative path
+        var relativePath = Path.Combine(STORAGE_FOLDER, newFileName).Replace(@"\", @"/");
+
+        return relativePath;
     }
 
     public async Task<Result<Stream>> GetFileStream(int id, CancellationToken cancellationToken)

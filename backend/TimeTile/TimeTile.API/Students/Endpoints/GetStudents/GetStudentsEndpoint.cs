@@ -7,7 +7,6 @@ using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
-using TimeTile.API.Files.Services;
 using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
@@ -17,67 +16,35 @@ namespace TimeTile.API.Students.Endpoints.GetStudents;
 
 public class GetStudentsEndpoint : IEndpoint
 {
-    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
-        .MapGet("/", Handle)
-        .WithSummary("Retrieves a list of all students")
-         .WithRequestValidation<Request>();
-    
-    public sealed record Request(
-        int[]? GroupIds = null,
-        int[]? CourseIds = null,
-        int[]? LessonIds = null,
+    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
+    {
+        return app
+            .MapGet("/", Handle)
+            .WithSummary("Retrieves a list of all students")
+            .WithRequestValidation<Request>();
+    }
 
-        [FromQuery] string? Search = null,
-
-        [FromQuery] DateOnly? BirthDateFrom = null,
-        [FromQuery] DateOnly? BirthDateTo = null,
-
-        [FromQuery] int? Page = 1,
-        [FromQuery] int? PageSize = 10,
-
-        [FromQuery] string? SortBy = null,
-        [FromQuery] bool Descending = false
-    ) : IPagedRequest;
-
-    public sealed record Response(
-        int Id,
-        string Firstname,
-        string Lastname,
-        string Login,
-        string AvatarUrl
-    );
-    
     private static async Task<Results<Ok<Result<PagedList<Response>>>, NotFound<Result>>> Handle(
         [AsParameters] Request request,
-        [FromServices] TimetileDbContext db,
-        [FromServices] IFileService fileService,
+        TimetileDbContext db,
+        IFileService fileService,
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
         var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
         if (!institutionResult.IsSuccess)
             return TypedResults.NotFound(Result.Failure(institutionResult.Error));
-        
+
         var institutionId = institutionResult.Data;
-        
+
         var query = BuildFilteredQuery(request, institutionId, db);
 
         query = ApplySorting(query, request);
-        
+
         var students = await query.ToPagedListAsync(request, cancellationToken);
-        
-        if (students.TotalCount == 0)
-        {
-            var error = Error.From(
-                $"No students found for the provided IDs.",
-                "ENTITY_DOES_NOT_EXIST"
-            );
-            
-            return TypedResults.NotFound(Result.Failure(error));
-        }
-        
+
         var responses = await MapToResponses(students.Items, fileService, cancellationToken);
-        
+
         var pagedResponse = new PagedList<Response>(
             responses,
             students.Page,
@@ -85,12 +52,12 @@ public class GetStudentsEndpoint : IEndpoint
             students.TotalPages,
             students.TotalCount
         );
-        
+
         var result = Result.Success(pagedResponse);
 
         return TypedResults.Ok(result);
     }
-    
+
     private static IQueryable<Student> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
     {
         var query = db.Students
@@ -98,10 +65,8 @@ public class GetStudentsEndpoint : IEndpoint
             .Where(s => s.InstitutionId == institutionId);
 
         if (request.GroupIds != null && request.GroupIds.Any())
-        {
             query = query.Where(s =>
                 s.GroupId != null && request.GroupIds.Cast<int?>().Contains(s.GroupId));
-        }
 
         if (request.CourseIds != null && request.CourseIds.Any())
             query = query.Where(s =>
@@ -128,15 +93,13 @@ public class GetStudentsEndpoint : IEndpoint
 
         return query;
     }
-    
+
     private static IQueryable<Student> ApplySorting(IQueryable<Student> query, Request request)
     {
         if (string.IsNullOrEmpty(request.SortBy) ||
-            !Enum.TryParse<AllowedSortFields>(request.SortBy, ignoreCase: true, out var sortField))
-        {
+            !Enum.TryParse<AllowedSortFields>(request.SortBy, true, out var sortField))
             // Default sorting
             return query.OrderBy(s => s.Firstname);
-        }
 
         return sortField switch
         {
@@ -156,10 +119,10 @@ public class GetStudentsEndpoint : IEndpoint
                 ? query.OrderByDescending(s => s.Login)
                 : query.OrderBy(s => s.Login),
 
-            _ => query.OrderBy(s => s.Firstname),
+            _ => query.OrderBy(s => s.Firstname)
         };
     }
-    
+
     private static async Task<List<Response>> MapToResponses(
         IEnumerable<Student> students,
         IFileService fileService,
@@ -176,8 +139,28 @@ public class GetStudentsEndpoint : IEndpoint
                 avatarUrl
             );
         }));
-        
+
         return responses.ToList();
     }
 
+    public sealed record Request(
+        int[]? GroupIds = null,
+        int[]? CourseIds = null,
+        int[]? LessonIds = null,
+        [FromQuery] string? Search = null,
+        [FromQuery] DateOnly? BirthDateFrom = null,
+        [FromQuery] DateOnly? BirthDateTo = null,
+        [FromQuery] int? Page = 1,
+        [FromQuery] int? PageSize = 10,
+        [FromQuery] string? SortBy = null,
+        [FromQuery] bool Descending = false
+    ) : IPagedRequest;
+
+    public sealed record Response(
+        int Id,
+        string Firstname,
+        string Lastname,
+        string Login,
+        string AvatarUrl
+    );
 }

@@ -28,14 +28,17 @@ public class Jwt
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _options.Issuer,
-            audience: _options.Audience,
-            claims: claims,
+            _options.Issuer,
+            _options.Audience,
+            claims,
             expires: DateTime.UtcNow.AddYears(1),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-    
-    public static SymmetricSecurityKey SecurityKey(string key) => new(Encoding.UTF8.GetBytes(key));
+
+    public static SymmetricSecurityKey SecurityKey(string key)
+    {
+        return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+    }
 }

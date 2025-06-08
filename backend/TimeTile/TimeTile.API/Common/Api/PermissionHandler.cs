@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Serilog;
 using TimeTile.API.Common.Constants;
 
 namespace TimeTile.API.Common.Api;
@@ -9,18 +10,20 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        Serilog.Log.Information($"Checking permission: {requirement.Permission}");
-        var hasPermission = context.User.HasClaim(c => c.Type == CustomClaimTypes.Permission 
+        Log.Information($"Checking permission: {requirement.Permission}");
+        var hasPermission = context.User.HasClaim(c => c.Type == CustomClaimTypes.Permission
                                                        && c.Value == requirement.Permission);
-        
+
         if (hasPermission)
         {
-            Serilog.Log.Information($"Permission {requirement.Permission} granted.");
+            Log.Information($"Permission {requirement.Permission} granted.");
             context.Succeed(requirement);
         }
         else
-            Serilog.Log.Information($"Permission {requirement.Permission} denied.");
-        
+        {
+            Log.Information($"Permission {requirement.Permission} denied.");
+        }
+
         return Task.CompletedTask;
     }
 }

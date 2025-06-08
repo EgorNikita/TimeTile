@@ -16,30 +16,17 @@ namespace TimeTile.API.Students.Endpoints.CreateStudent;
 
 public class CreateStudentEndpoint : IEndpoint
 {
-    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
-        .MapPost("/", Handle)
-        .WithSummary("Creates a new Student")
-        .WithRequestValidation<Request>()
-        .DisableAntiforgery();
-
-    public record Request(
-        IFormFile? Avatar,
-        string Firstname,
-        string Lastname,
-        string HomeAddress,
-        string PhoneNumber,
-        DateTime BirthDate
-    );
-
-    private record Response(
-        int Id,
-        string Firstname,
-        string Lastname,
-        string Login
-    );
+    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
+    {
+        return app
+            .MapPost("/", Handle)
+            .WithSummary("Creates a new Student")
+            .WithRequestValidation<Request>()
+            .DisableAntiforgery();
+    }
 
     private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>>> Handle(
-        [FromForm] Request request, 
+        [FromForm] Request request,
         TimetileDbContext db,
         IUserService userService,
         IFileService fileService,
@@ -53,7 +40,7 @@ public class CreateStudentEndpoint : IEndpoint
         if (duplicateCheckResult.IsFailure)
             return TypedResults.BadRequest(duplicateCheckResult);
 
-        
+
         var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
         if (institutionResult.IsFailure)
             return TypedResults.NotFound(Result.Failure(institutionResult.Error));
@@ -62,14 +49,20 @@ public class CreateStudentEndpoint : IEndpoint
         var institution = await db.Institutions
             .AsNoTracking()
             .FirstAsync(i => i.Id == institutionId, cancellationToken);
-        
+
         var firstName = request.Firstname.Trim();
         var lastName = request.Lastname.Trim();
         var birthYear = (short)request.BirthDate.Year;
-       
+
         var password = await userService.GenerateDefaultPassword(firstName, lastName, birthYear);
         var login = await userService.GenerateUniqueLoginAsync(firstName, lastName, birthYear, institution.Domain);
 
+        var roleResult = await GetStudentRole(db, cancellationToken);
+        if (roleResult.IsFailure)
+            return TypedResults.NotFound(Result.Failure(roleResult.Error));
+
+        var studentRoleId = roleResult.Data!.Id;
+        
         var avatarPath = await GetAvatarPath(
             request.Avatar,
             firstName,
@@ -80,12 +73,6 @@ public class CreateStudentEndpoint : IEndpoint
             cancellationToken
         );
 
-        var roleResult = await GetStudentRoleAsync(db, cancellationToken);
-        if (roleResult.IsFailure)
-            return TypedResults.NotFound(Result.Failure(roleResult.Error));
-        
-        var studentRoleId = roleResult.Data!.Id;
-        
         var student = new Student
         {
             Firstname = firstName,
@@ -98,9 +85,9 @@ public class CreateStudentEndpoint : IEndpoint
             InstitutionId = institution.Id,
             RoleId = studentRoleId
         };
-        
+
         student.PasswordHash = hasher.HashPassword(student, password);
-        
+
         try
         {
             await db.Students.AddAsync(student, cancellationToken);
@@ -111,7 +98,7 @@ public class CreateStudentEndpoint : IEndpoint
             var error = Error.From(e.Message);
             return TypedResults.BadRequest(Result.Failure(error));
         }
-        
+
         var response = new Response(
             student.Id,
             student.Firstname,
@@ -120,13 +107,13 @@ public class CreateStudentEndpoint : IEndpoint
         );
 
         var result = Result.Success(response);
-        
+
         return TypedResults.Created($"/students/{student.Id}", result);
     }
 
     private static async Task<string> GetAvatarPath(
-        IFormFile? avatar, 
-        string firstname, 
+        IFormFile? avatar,
+        string firstname,
         string lastname,
         DateTime birthday,
         IUserService userService,
@@ -147,21 +134,21 @@ public class CreateStudentEndpoint : IEndpoint
 
         return avatarPath;
     }
-    
+
     private static async Task<Result> IsStudentDuplicate(
-        Request request, 
-        TimetileDbContext db, 
+        Request request,
+        TimetileDbContext db,
         CancellationToken cancellationToken)
     {
         var existingStudent = await db.Students
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.DeletedAt == null && 
-                                      s.Firstname == request.Firstname &&
-                                      s.Lastname == request.Lastname &&
-                                      s.BirthDate == DateOnly.FromDateTime(request.BirthDate),
+            .AnyAsync(s => s.DeletedAt == null &&
+                           s.Firstname == request.Firstname &&
+                           s.Lastname == request.Lastname &&
+                           s.BirthDate == DateOnly.FromDateTime(request.BirthDate),
                 cancellationToken);
 
-        if (existingStudent != null)
+        if (existingStudent)
         {
             var error = Error.From(
                 $"A student with the name '{request.Firstname} {request.Lastname}' and birth date '{request.BirthDate:yyyy-MM-dd}' already exists.",
@@ -172,16 +159,32 @@ public class CreateStudentEndpoint : IEndpoint
 
         return Result.Success();
     }
-    
-    private static async Task<Result<Role>> GetStudentRoleAsync(TimetileDbContext db, CancellationToken cancellationToken)
+
+    private static async Task<Result<Role>> GetStudentRole(TimetileDbContext db, CancellationToken cancellationToken)
     {
         var studentRole = await db.Roles.FirstOrDefaultAsync(r => r.Title == "Student", cancellationToken);
         if (studentRole != null) return Result.Success(studentRole);
-        
+
         var error = Error.From(
             "The 'Student' role does not exist. Please create it before adding a student.",
             "ROLE_NOT_FOUND"
         );
         return Result.Failure<Role>(error);
     }
+
+    public record Request(
+        IFormFile? Avatar,
+        string Firstname,
+        string Lastname,
+        string HomeAddress,
+        string PhoneNumber,
+        DateTime BirthDate
+    );
+
+    private record Response(
+        int Id,
+        string Firstname,
+        string Lastname,
+        string Login
+    );
 }

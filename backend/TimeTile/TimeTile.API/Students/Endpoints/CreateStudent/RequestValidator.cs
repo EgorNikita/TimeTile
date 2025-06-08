@@ -12,12 +12,12 @@ public class RequestValidator : AbstractValidator<CreateStudentEndpoint.Request>
             .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
             .WithMessage("Firstname contains invalid characters.")
             .ApplyRegexPattern(RegexPatterns.Pattern.Name);
-        
+
         RuleFor(u => u.Lastname)
             .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
             .WithMessage("Lastname contains invalid characters.")
             .ApplyRegexPattern(RegexPatterns.Pattern.Name);
-        
+
         RuleFor(u => u.BirthDate)
             .LessThanOrEqualTo(DateTime.Now)
             .WithMessage("BirthDate cannot be in the future.");

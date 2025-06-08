@@ -5,59 +5,61 @@ using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById
+namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById;
+
+public class GetInstitutionByIdEndpoint : IEndpoint
 {
-    public class GetInstitutionByIdEndpoint : IEndpoint
+    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
     {
-        public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
+        return app
             .MapGet("/{id}", Handle)
             .WithSummary("Returns Institution by passed Id")
             .WithRequestValidation<Request>();
+    }
 
-        public sealed record Request(
-            int Id
-        );
+    private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
+        [AsParameters] Request request,
+        TimetileDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var institution = await context.Institutions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
-        public sealed record Response(
-            int Id,
-            string Title,
-            string Address,
-            string PhoneNumber,
-            string Email,
-            string Domain
-        );
-
-        private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
-            [AsParameters] Request request,
-            TimetileDbContext context,
-            CancellationToken cancellationToken)
+        if (institution is null)
         {
-            var institution = await context.Institutions
-                .AsNoTracking()
-                .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
-
-            if (institution is null)
-            {
-                var error = Error.From(
-                    $"Institution with id '{request.Id}' does not exist.", 
-                    "ENTITY_DOES_NOT_EXIST"
-                );
-
-                return TypedResults.NotFound(Result.Failure(error));
-            }
-
-            var response = new Response(
-                institution.Id,
-                institution.Title,
-                institution.Address,
-                institution.PhoneNumber,
-                institution.Email,
-                institution.Domain
+            var error = Error.From(
+                $"Institution with id '{request.Id}' does not exist.",
+                "ENTITY_DOES_NOT_EXIST"
             );
 
-            var result = Result.Success(response);
-
-            return TypedResults.Ok(result);
+            return TypedResults.NotFound(Result.Failure(error));
         }
+
+        var response = new Response(
+            institution.Id,
+            institution.Title,
+            institution.Address,
+            institution.PhoneNumber,
+            institution.Email,
+            institution.Domain
+        );
+
+        var result = Result.Success(response);
+
+        return TypedResults.Ok(result);
     }
+
+    public sealed record Request(
+        int Id
+    );
+
+    public sealed record Response(
+        int Id,
+        string Title,
+        string Address,
+        string PhoneNumber,
+        string Email,
+        string Domain
+    );
 }

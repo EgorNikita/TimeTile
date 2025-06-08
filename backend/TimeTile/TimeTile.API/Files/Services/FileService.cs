@@ -1,22 +1,17 @@
-using Microsoft.EntityFrameworkCore;
-using System.Threading;
 using TimeTile.API.Files.Helpers;
 using TimeTile.API.Files.Repositories.Interfaces;
 using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.Core.Common.UnifiedResponse;
-using TimeTile.Core.Enums;
-using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Files.Services;
 
 public class FileService : IFileService
 {
-    private readonly TimetileDbContext _db;
-    private readonly IFileRepository _fileRepository;
-
     private const string STORAGE_ASSEMBLY = "TimeTile.Storage";
     private const string STORAGE_FOLDER = "Uploads";
+    private readonly TimetileDbContext _db;
+    private readonly IFileRepository _fileRepository;
     private readonly string _storagePath;
 
     public FileService(IWebHostEnvironment env, TimetileDbContext db, IFileRepository repository)
@@ -35,19 +30,15 @@ public class FileService : IFileService
 
     public Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken)
     {
-        var fileName = Path.GetFileName(filePath);
-        
+        var fileName = Path.GetFileName(filePath);                  //TODO: Reconsider
+
         var fileUrl = $"{STORAGE_FOLDER}/{Uri.EscapeDataString(fileName)}";
         return Task.FromResult(fileUrl);
-        //throw new NotImplementedException("File URL generation is not implemented yet.");
     }
-    
+
     public async Task<string> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(_storagePath))
-        {
-            Directory.CreateDirectory(_storagePath);
-        }
+        if (!Directory.Exists(_storagePath)) Directory.CreateDirectory(_storagePath);
 
         // Sanitize the file name to avoid invalid path chars
         var safeFileName = FileNameSanitizer.MakeValidFileName(Path.GetFileName(fileName));
@@ -60,7 +51,7 @@ public class FileService : IFileService
         var filePath = Path.Combine(_storagePath, newFileName);
 
         // Save stream to file asynchronously
-        await using var fileStreamOutput = System.IO.File.Create(filePath);
+        await using var fileStreamOutput = File.Create(filePath);
         await fileStream.CopyToAsync(fileStreamOutput, cancellationToken);
 
         await _fileRepository.Add(fileName, extension, fileStreamOutput.Length, filePath, cancellationToken);
@@ -80,9 +71,8 @@ public class FileService : IFileService
 
         var file = result.Data;
 
-        var fileStream = new FileStream(file!.StoragePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
+        var fileStream = new FileStream(file!.StoragePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
 
         return Result.Success<Stream>(fileStream);
     }
-    
 }

@@ -8,16 +8,17 @@ namespace TimeTile.API.Users.Services;
 
 public class UserService : IUserService
 {
-    private TimetileDbContext _db;
     private readonly IAvatarService _avatarService;
-    
+    private readonly TimetileDbContext _db;
+
     public UserService(TimetileDbContext db, IAvatarService avatarService)
     {
         _db = db;
         _avatarService = avatarService;
     }
-    
-    public async Task<string> GenerateUniqueLoginAsync(string firstname, string lastname, int birthYear, string institutionDomain)
+
+    public async Task<string> GenerateUniqueLoginAsync(string firstname, string lastname, int birthYear,
+        string institutionDomain)
     {
         var fn = firstname.Length >= 4 ? firstname[..4].ToLowerInvariant() : firstname.ToLowerInvariant();
         var ln = lastname.Length >= 5 ? lastname[..5].ToLowerInvariant() : lastname.ToLowerInvariant();
@@ -35,7 +36,7 @@ public class UserService : IUserService
         // Extract numeric suffixes (if any)
         // Example: baseLocalPart@domain (no suffix)
         // Or baseLocalPart1234@domain (with suffix)
-        int maxSuffix = -1;
+        var maxSuffix = -1;
         foreach (var login in existingLogins)
         {
             // Extract part between baseLocalPart and @domain
@@ -44,27 +45,24 @@ public class UserService : IUserService
             var suffixPart = login.Substring(startIndex, endIndex - startIndex);
 
             if (string.IsNullOrEmpty(suffixPart))
-            {
                 maxSuffix = Math.Max(maxSuffix, 0);
-            }
-            else if (int.TryParse(suffixPart, out int suffixNum))
-            {
+            else if (int.TryParse(suffixPart, out var suffixNum))
                 if (suffixNum > maxSuffix)
                     maxSuffix = suffixNum;
-            }
         }
 
         // Increment suffix for new login
-        string newLoginLocalPart = maxSuffix == -1 ? baseLocalPart : $"{baseLocalPart}{maxSuffix + 1}";
+        var newLoginLocalPart = maxSuffix == -1 ? baseLocalPart : $"{baseLocalPart}{maxSuffix + 1}";
 
-        string newLogin = $"{newLoginLocalPart}@{domain}";
-        
+        var newLogin = $"{newLoginLocalPart}@{domain}";
+
         return newLogin;
     }
 
     public Task<string> GenerateDefaultPassword(string firstname, string lastname, short birthYear)
     {
-        var basePart = $"{firstname[..1].ToUpper(CultureInfo.InvariantCulture)}{lastname[..1].ToLower(CultureInfo.InvariantCulture)}{birthYear % 100:D2}";
+        var basePart =
+            $"{firstname[..1].ToUpper(CultureInfo.InvariantCulture)}{lastname[..1].ToLower(CultureInfo.InvariantCulture)}{birthYear % 100:D2}";
         var suffix = RandomNumberGenerator.GetInt32(1000, 10000);
         var password = $"{basePart}{suffix}";
         return Task.FromResult(password);

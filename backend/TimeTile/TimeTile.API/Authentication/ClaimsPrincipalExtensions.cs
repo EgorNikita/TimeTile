@@ -20,7 +20,7 @@ public static class ClaimsPrincipalExtensions
         Log.Error("Institution ID claim is missing or invalid");
         return false;
     }
-    
+
     public static async Task<Result<int>> GetValidatedInstitutionIdAsync(
         this ClaimsPrincipal user,
         TimetileDbContext db,

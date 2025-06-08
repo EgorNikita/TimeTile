@@ -2,7 +2,9 @@
 
 namespace TimeTile.API.Common.Api.Filters;
 
-public class RequestValidationFilter<TRequest>(ILogger<RequestValidationFilter<TRequest>> logger, IValidator<TRequest>? validator = null) : IEndpointFilter
+public class RequestValidationFilter<TRequest>(
+    ILogger<RequestValidationFilter<TRequest>> logger,
+    IValidator<TRequest>? validator = null) : IEndpointFilter
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {

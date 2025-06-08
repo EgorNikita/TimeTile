@@ -7,6 +7,7 @@ using TimeTile.API.Institutions.Endpoints.GetInstitutions;
 using TimeTile.API.Roles.Endpoints.CreateRole;
 using TimeTile.API.Students.Endpoints.CreateStudent;
 using TimeTile.API.Students.Endpoints.GetStudentById;
+using TimeTile.API.Students.Endpoints.GetStudents;
 using TimeTile.Core.Common.Constants;
 
 namespace TimeTile.API;
@@ -40,6 +41,9 @@ public static class Endpoints
             .RequireAuthorization(Permissions.CreateStudent);
         
         endpoints.MapEndpoint<GetStudentByIdEndpoint>()
+            .RequireAuthorization(Permissions.GetStudents);
+        
+        endpoints.MapEndpoint<GetStudentsEndpoint>()
             .RequireAuthorization(Permissions.GetStudents);
     }
     

@@ -20,6 +20,8 @@ using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.API.Users.Services.Interfaces;
 using TimeTile.Core.Common.Constants;
 using File = TimeTile.Core.Models.File;
+using TimeTile.API.Files.Repositories.Interfaces;
+using TimeTile.API.Files.Repositories;
 
 namespace TimeTile.API;
 
@@ -43,6 +45,7 @@ public static class ConfigureServices
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IAvatarService, AvatarService>();
+        builder.Services.AddScoped<IFileRepository, FileRepository>();
         
         Log.Information("Service configuration completed.");
     }

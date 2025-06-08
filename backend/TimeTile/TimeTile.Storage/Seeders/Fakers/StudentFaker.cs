@@ -10,6 +10,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class StudentFaker : BaseFaker<Student>
     {
+        // For saving passwords
+        private const string LOGIN_DATA_FILE_NAME = "students_login_data.txt";
+
         // BirthDate constraints
         private const int MIN_AGE = 6;
         private const int MAX_AGE = 25;
@@ -49,6 +52,24 @@ namespace TimeTile.Storage.Seeders.Fakers
                         g => g.InstitutionId == student.InstitutionId
                     ).Id;
                 });
+        }
+
+        public override List<Student> Generate(int count)
+        {
+            var students = base.Generate(count);
+
+            System.IO.File.AppendAllText(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+
+            return students;
+        }
+
+        public async Task<List<Student>> GenerateAsync(int count)
+        {
+            var students = base.Generate(count);
+
+            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+
+            return students;
         }
     }
 }

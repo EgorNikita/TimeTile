@@ -25,7 +25,7 @@ namespace TimeTile.Storage.Configurations
 
                 t.HasCheckConstraint(
                     "CHK_File_Extension_Valid",
-                    $"\"extension\" IN ({allExtensions})"
+                    $"LOWER(\"extension\") IN ({allExtensions})"
                 );
             });
 

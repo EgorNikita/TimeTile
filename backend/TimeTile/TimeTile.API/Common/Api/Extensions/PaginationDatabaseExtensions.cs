@@ -24,7 +24,7 @@ namespace TimeTile.API.Common.Api.Extensions
 
             var totalItems = await query.CountAsync(cancellationToken);
 
-            var totalPages = (totalItems / pageSize) + 1;
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
             var items = await query
                 .Skip((page - 1) * pageSize)

@@ -1,6 +1,9 @@
-﻿using TimeTile.API.Authentication.Endpoints;
+using TimeTile.API.Authentication.Endpoints;
 using TimeTile.API.Common.Api;
+using TimeTile.API.Common.Constants;
 using TimeTile.API.Institutions.Endpoints.CreateInstitution;
+using TimeTile.API.Institutions.Endpoints.GetInstitutionById;
+using TimeTile.API.Institutions.Endpoints.GetInstitutions;
 using TimeTile.API.Roles.Endpoints.CreateRole;
 using TimeTile.API.Students.Endpoints;
 using TimeTile.API.Students.Endpoints.CreateStudent;
@@ -32,8 +35,8 @@ public static class Endpoints
         var endpoints = app.MapGroup("/students")
             .WithTags("Students");
 
-        endpoints.MapEndpoint<CreateStudentEndpoint>()
-            .RequireAuthorization("CreateStudent");
+        endpoints.MapEndpoint<CreateStudent>()
+            .RequireAuthorization(Permissions.CreateStudent);
     }
     
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
@@ -50,8 +53,11 @@ public static class Endpoints
         var endpoints = app.MapGroup("/institutions")
             .WithTags("Institutions");
 
+        endpoints.MapEndpoint<GetInstitutionsEndpoint>();
+        endpoints.MapEndpoint<GetInstitutionByIdEndpoint>();
+
         endpoints.MapEndpoint<CreateInstitutionEndpoint>()
-        .RequireAuthorization("CreateInstitution");
+            .RequireAuthorization(Permissions.CreateInstitution);
     }
     
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

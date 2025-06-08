@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.UnifiedResponse;
@@ -31,16 +32,16 @@ public class CreateInstitutionEndpoint : IEndpoint
         string Domain
     );
 
-    private static async Task<IResult> Handle(
+    private static async Task<Results<Created<Result<Response>>, BadRequest<Result>>> Handle(
         Request request, 
         TimetileDbContext database,
         CancellationToken cancellationToken)
     {
-        var duplicateCheck = await IsInstitutionDuplicateAsync(
+        var duplicateCheckResult = await IsInstitutionDuplicateAsync(
             request.Title, request.Email, request.Domain, database, cancellationToken);
 
-        if (duplicateCheck.IsFailure)
-            return Results.BadRequest(new { duplicateCheck.Error });
+        if (duplicateCheckResult.IsFailure)
+            return TypedResults.BadRequest(duplicateCheckResult);
 
         var institution = new Institution
         {
@@ -58,7 +59,9 @@ public class CreateInstitutionEndpoint : IEndpoint
         }
         catch (Exception e)
         {
-            return Results.Problem(e.Message);
+            var error = Error.From(e.Message);
+
+            return TypedResults.BadRequest(Result.Failure(error));
         }
 
         var response = new Response(
@@ -69,8 +72,10 @@ public class CreateInstitutionEndpoint : IEndpoint
             institution.Email,
             institution.Domain
         );
+
+        var result = Result.Success(response);
         
-        return Results.Created($"/institutions/{institution.Id}", response);
+        return TypedResults.Created($"/institutions/{institution.Id}", result);
     }
     
     private static async Task<Result> IsInstitutionDuplicateAsync(

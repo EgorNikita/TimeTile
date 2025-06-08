@@ -9,8 +9,10 @@ namespace TimeTile.Storage.Seeders
     {
         private const string CURRENT_ASSEMBLY = "TimeTile.Storage";
         private const string CURRENT_FOLDER = "Seeders";
-        public static readonly string CURRENT_DIRECTORY = Path.GetFullPath(
-            Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\", CURRENT_ASSEMBLY, CURRENT_FOLDER)
+        public static readonly string CURRENT_DIRECTORY = Path.Combine(
+            Directory.GetParent(AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.Parent!.FullName,
+            CURRENT_ASSEMBLY,
+            CURRENT_FOLDER
         );
 
         // Influence Generation's volume

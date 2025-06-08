@@ -1,30 +1,65 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Users.Services.Interfaces;
+using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Users.Services;
 
 public class UserService : IUserService
 {
+    private TimetileDbContext _db;
     private readonly IAvatarService _avatarService;
     
-    public UserService(IAvatarService avatarService)
+    public UserService(TimetileDbContext db, IAvatarService avatarService)
     {
+        _db = db;
         _avatarService = avatarService;
     }
-
-    public Task<string> GenerateLogin(string firstname, string lastname, int birthYear, string institutionDomain)
+    
+    public async Task<string> GenerateUniqueLoginAsync(string firstname, string lastname, int birthYear, string institutionDomain)
     {
-        var fn = firstname.Length >= 4 
-            ? firstname[..4].ToLower(CultureInfo.InvariantCulture) 
-            : firstname.ToLower(CultureInfo.InvariantCulture);
+        var fn = firstname.Length >= 4 ? firstname[..4].ToLowerInvariant() : firstname.ToLowerInvariant();
+        var ln = lastname.Length >= 5 ? lastname[..5].ToLowerInvariant() : lastname.ToLowerInvariant();
 
-        var ln = lastname.Length >= 5 
-            ? lastname[..5].ToLower(CultureInfo.InvariantCulture) 
-            : lastname.ToLower(CultureInfo.InvariantCulture);
+        var baseLocalPart = $"{fn}.{ln}{birthYear}";
+        var domain = institutionDomain.ToLowerInvariant();
 
-        var login = $"{fn}.{ln}{birthYear}@{institutionDomain}";
-        return Task.FromResult(login);
+        // Query all existing logins starting with baseLocalPart@
+        var existingLogins = await _db.Users
+            .AsNoTracking()
+            .Where(u => u.Login.StartsWith(baseLocalPart) && u.Login.EndsWith("@" + domain))
+            .Select(u => u.Login)
+            .ToListAsync();
+
+        // Extract numeric suffixes (if any)
+        // Example: baseLocalPart@domain (no suffix)
+        // Or baseLocalPart1234@domain (with suffix)
+        int maxSuffix = -1;
+        foreach (var login in existingLogins)
+        {
+            // Extract part between baseLocalPart and @domain
+            var startIndex = baseLocalPart.Length;
+            var endIndex = login.IndexOf('@');
+            var suffixPart = login.Substring(startIndex, endIndex - startIndex);
+
+            if (string.IsNullOrEmpty(suffixPart))
+            {
+                maxSuffix = Math.Max(maxSuffix, 0);
+            }
+            else if (int.TryParse(suffixPart, out int suffixNum))
+            {
+                if (suffixNum > maxSuffix)
+                    maxSuffix = suffixNum;
+            }
+        }
+
+        // Increment suffix for new login
+        string newLoginLocalPart = maxSuffix == -1 ? baseLocalPart : $"{baseLocalPart}{maxSuffix + 1}";
+
+        string newLogin = $"{newLoginLocalPart}@{domain}";
+        
+        return newLogin;
     }
 
     public Task<string> GenerateDefaultPassword(string firstname, string lastname, short birthYear)

@@ -4,9 +4,9 @@ namespace TimeTile.Core.Models;
 
 public partial class Student : User
 {
-    public int GroupId { get; set; }
+    public int? GroupId { get; set; }
 
-    public virtual Group Group { get; set; } = null!;
+    public virtual Group? Group { get; set; }
 
     // LessonsToStudents
     public virtual ICollection<LessonToStudent> LessonsToStudents { get; set; } = new List<LessonToStudent>();

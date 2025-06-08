@@ -12,9 +12,10 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("students");
 
             // Property Configuration
-            builder.Property(e => e.GroupId)
-                .HasColumnName("group_id");
-
+            builder.Property(s => s.GroupId)
+                .HasColumnName("group_id")
+                .IsRequired(false);
+            
             // Relationship Configuration
             builder.HasOne(d => d.Group).WithMany(p => p.Students)
                 .HasForeignKey(d => d.GroupId)

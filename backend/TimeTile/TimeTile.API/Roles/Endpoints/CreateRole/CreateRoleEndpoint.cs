@@ -103,7 +103,7 @@ public class CreateRoleEndpoint : IEndpoint
     {
         var existing = await db.Roles
             .AsNoTracking()
-            .AnyAsync(r => r.Title == title, cancellationToken);
+            .AnyAsync(r => r.DeletedAt == null && r.Title == title, cancellationToken);
         
         if (existing)
             return Result.Failure(

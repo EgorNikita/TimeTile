@@ -35,11 +35,11 @@ public class FileService : IFileService
 
     public Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken)
     {
-        // var fileName = Path.GetFileName(filePath);
-        //
-        // var fileUrl = $"{FileDownloadBaseUrl}/{Uri.EscapeDataString(fileName)}";
-        // return Task.FromResult(fileUrl);
-        throw new NotImplementedException("File URL generation is not implemented yet.");
+        var fileName = Path.GetFileName(filePath);
+        
+        var fileUrl = $"{STORAGE_FOLDER}/{Uri.EscapeDataString(fileName)}";
+        return Task.FromResult(fileUrl);
+        //throw new NotImplementedException("File URL generation is not implemented yet.");
     }
     
     public async Task<string> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)

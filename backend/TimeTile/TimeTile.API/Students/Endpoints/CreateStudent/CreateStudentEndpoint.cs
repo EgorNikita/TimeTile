@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
@@ -18,7 +19,8 @@ public class CreateStudentEndpoint : IEndpoint
     public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
         .MapPost("/", Handle)
         .WithSummary("Creates a new Student")
-        .WithRequestValidation<Request>();
+        .WithRequestValidation<Request>()
+        .DisableAntiforgery();
 
     public record Request(
         IFormFile? Avatar,
@@ -37,7 +39,7 @@ public class CreateStudentEndpoint : IEndpoint
     );
 
     private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>>> Handle(
-        Request request, 
+        [FromForm] Request request, 
         TimetileDbContext db,
         IUserService userService,
         IFileService fileService,
@@ -45,8 +47,15 @@ public class CreateStudentEndpoint : IEndpoint
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
+        var duplicateCheckResult = await IsStudentDuplicate(
+            request, db, cancellationToken);
+
+        if (duplicateCheckResult.IsFailure)
+            return TypedResults.BadRequest(duplicateCheckResult);
+
+        
         var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-        if (!institutionResult.IsSuccess)
+        if (institutionResult.IsFailure)
             return TypedResults.NotFound(Result.Failure(institutionResult.Error));
 
         var institutionId = institutionResult.Data;
@@ -59,16 +68,23 @@ public class CreateStudentEndpoint : IEndpoint
         var birthYear = (short)request.BirthDate.Year;
        
         var password = await userService.GenerateDefaultPassword(firstName, lastName, birthYear);
-        var login = await userService.GenerateLogin(firstName, lastName, birthYear, institution.Domain);
+        var login = await userService.GenerateUniqueLoginAsync(firstName, lastName, birthYear, institution.Domain);
 
         var avatarPath = await GetAvatarPath(
             request.Avatar,
             firstName,
             lastName,
+            request.BirthDate,
             userService,
             fileService,
             cancellationToken
         );
+
+        var roleResult = await GetStudentRoleAsync(db, cancellationToken);
+        if (roleResult.IsFailure)
+            return TypedResults.NotFound(Result.Failure(roleResult.Error));
+        
+        var studentRoleId = roleResult.Data!.Id;
         
         var student = new Student
         {
@@ -79,7 +95,8 @@ public class CreateStudentEndpoint : IEndpoint
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
             AvatarPath = avatarPath,
             Login = login,
-            InstitutionId = institution.Id
+            InstitutionId = institution.Id,
+            RoleId = studentRoleId
         };
         
         student.PasswordHash = hasher.HashPassword(student, password);
@@ -106,11 +123,12 @@ public class CreateStudentEndpoint : IEndpoint
         
         return TypedResults.Created($"/students/{student.Id}", result);
     }
-    
+
     private static async Task<string> GetAvatarPath(
         IFormFile? avatar, 
         string firstname, 
-        string lastname, 
+        string lastname,
+        DateTime birthday,
         IUserService userService,
         IFileService fileService,
         CancellationToken cancellationToken)
@@ -119,7 +137,7 @@ public class CreateStudentEndpoint : IEndpoint
             ? avatar.OpenReadStream()
             : await userService.GenerateDefaultAvatar(firstname, lastname);
 
-        var fileName = $"{firstname}_{lastname}_avatar.png";
+        var fileName = $"{firstname}_{lastname}_{birthday}_avatar.png";
 
         var avatarPath = await fileService.SaveFile(
             avatarStream,
@@ -130,4 +148,40 @@ public class CreateStudentEndpoint : IEndpoint
         return avatarPath;
     }
     
+    private static async Task<Result> IsStudentDuplicate(
+        Request request, 
+        TimetileDbContext db, 
+        CancellationToken cancellationToken)
+    {
+        var existingStudent = await db.Students
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.DeletedAt == null && 
+                                      s.Firstname == request.Firstname &&
+                                      s.Lastname == request.Lastname &&
+                                      s.BirthDate == DateOnly.FromDateTime(request.BirthDate),
+                cancellationToken);
+
+        if (existingStudent != null)
+        {
+            var error = Error.From(
+                $"A student with the name '{request.Firstname} {request.Lastname}' and birth date '{request.BirthDate:yyyy-MM-dd}' already exists.",
+                "ENTITY_ALREADY_EXISTS"
+            );
+            return Result.Failure(error);
+        }
+
+        return Result.Success();
+    }
+    
+    private static async Task<Result<Role>> GetStudentRoleAsync(TimetileDbContext db, CancellationToken cancellationToken)
+    {
+        var studentRole = await db.Roles.FirstOrDefaultAsync(r => r.Title == "Student", cancellationToken);
+        if (studentRole != null) return Result.Success(studentRole);
+        
+        var error = Error.From(
+            "The 'Student' role does not exist. Please create it before adding a student.",
+            "ROLE_NOT_FOUND"
+        );
+        return Result.Failure<Role>(error);
+    }
 }

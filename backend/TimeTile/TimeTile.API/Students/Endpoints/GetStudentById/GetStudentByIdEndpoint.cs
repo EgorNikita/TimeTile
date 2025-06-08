@@ -1,10 +1,12 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Files.Services;
+using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -35,7 +37,7 @@ public class GetStudentByIdEndpoint : IEndpoint
     private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
         [AsParameters] Request request,
         TimetileDbContext db,
-        FileService fileService,
+        IFileService fileService,
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {

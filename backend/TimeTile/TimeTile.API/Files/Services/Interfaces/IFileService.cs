@@ -4,6 +4,7 @@ namespace TimeTile.API.Files.Services.Interfaces;
 
 public interface IFileService
 {
+    Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken);
     Task<string> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken);
     Task<Result<Stream>> GetFileStream(int id, CancellationToken cancellationToken);
 }

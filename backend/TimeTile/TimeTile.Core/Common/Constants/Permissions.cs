@@ -5,7 +5,7 @@ public static class Permissions
     public const string AddStudent = "AddStudent";
     public const string DeleteStudent = "DeleteStudent";
     public const string CreateStudent = "CreateStudent";
-    public const string GetStudents = "CreateStudent";
+    public const string GetStudents = "GetStudents";
     public const string CreateRole = "CreateRole";
     public const string CreateInstitution = "CreateInstitution";
 

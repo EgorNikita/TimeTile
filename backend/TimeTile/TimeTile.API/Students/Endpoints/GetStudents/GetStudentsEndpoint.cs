@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
@@ -7,6 +8,7 @@ using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Files.Services;
+using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -21,20 +23,20 @@ public class GetStudentsEndpoint : IEndpoint
          .WithRequestValidation<Request>();
     
     public sealed record Request(
-        List<int>? GroupIds = null,
-        List<int>? CourseIds = null,
-        List<int>? LessonIds = null,
+        int[]? GroupIds = null,
+        int[]? CourseIds = null,
+        int[]? LessonIds = null,
 
-        string? Search = null,
+        [FromQuery] string? Search = null,
 
-        DateOnly? BirthDateFrom = null,
-        DateOnly? BirthDateTo = null,
+        [FromQuery] DateOnly? BirthDateFrom = null,
+        [FromQuery] DateOnly? BirthDateTo = null,
 
-        int? Page = 1,
-        int? PageSize = 10,
+        [FromQuery] int? Page = 1,
+        [FromQuery] int? PageSize = 10,
 
-        string? SortBy = null,
-        bool Descending = false
+        [FromQuery] string? SortBy = null,
+        [FromQuery] bool Descending = false
     ) : IPagedRequest;
 
     public sealed record Response(
@@ -47,8 +49,8 @@ public class GetStudentsEndpoint : IEndpoint
     
     private static async Task<Results<Ok<Result<PagedList<Response>>>, NotFound<Result>>> Handle(
         [AsParameters] Request request,
-        TimetileDbContext db,
-        FileService fileService,
+        [FromServices] TimetileDbContext db,
+        [FromServices] IFileService fileService,
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
@@ -95,14 +97,17 @@ public class GetStudentsEndpoint : IEndpoint
             .AsNoTracking()
             .Where(s => s.InstitutionId == institutionId);
 
-        if (request.GroupIds is { Count: > 0 })
-            query = query.Where(s => request.GroupIds.Contains(s.GroupId));
+        if (request.GroupIds != null && request.GroupIds.Any())
+        {
+            query = query.Where(s =>
+                s.GroupId != null && request.GroupIds.Cast<int?>().Contains(s.GroupId));
+        }
 
-        if (request.CourseIds is { Count: > 0 })
+        if (request.CourseIds != null && request.CourseIds.Any())
             query = query.Where(s =>
                 db.CoursesStudents.Any(cs => cs.StudentId == s.Id && request.CourseIds.Contains(cs.CourseId)));
 
-        if (request.LessonIds is { Count: > 0 })
+        if (request.LessonIds != null && request.LessonIds.Any())
             query = query.Where(s =>
                 db.LessonsStudents.Any(ls => ls.StudentId == s.Id && request.LessonIds.Contains(ls.LessonId)));
 
@@ -157,7 +162,7 @@ public class GetStudentsEndpoint : IEndpoint
     
     private static async Task<List<Response>> MapToResponses(
         IEnumerable<Student> students,
-        FileService fileService,
+        IFileService fileService,
         CancellationToken cancellationToken)
     {
         var responses = await Task.WhenAll(students.Select(async s =>

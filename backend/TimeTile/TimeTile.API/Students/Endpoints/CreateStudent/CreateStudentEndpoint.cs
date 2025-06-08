@@ -46,7 +46,6 @@ public class CreateStudentEndpoint : IEndpoint
         CancellationToken cancellationToken)
     {
         var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-
         if (!institutionResult.IsSuccess)
             return TypedResults.NotFound(Result.Failure(institutionResult.Error));
 

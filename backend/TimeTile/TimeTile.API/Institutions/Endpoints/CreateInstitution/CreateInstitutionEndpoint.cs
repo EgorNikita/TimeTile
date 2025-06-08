@@ -37,7 +37,7 @@ public class CreateInstitutionEndpoint : IEndpoint
         TimetileDbContext database,
         CancellationToken cancellationToken)
     {
-        var duplicateCheckResult = await IsInstitutionDuplicateAsync(
+        var duplicateCheckResult = await IsInstitutionDuplicate(
             request.Title, request.Email, request.Domain, database, cancellationToken);
 
         if (duplicateCheckResult.IsFailure)
@@ -78,7 +78,7 @@ public class CreateInstitutionEndpoint : IEndpoint
         return TypedResults.Created($"/institutions/{institution.Id}", result);
     }
     
-    private static async Task<Result> IsInstitutionDuplicateAsync(
+    private static async Task<Result> IsInstitutionDuplicate(
         string title,
         string email,
         string domain,

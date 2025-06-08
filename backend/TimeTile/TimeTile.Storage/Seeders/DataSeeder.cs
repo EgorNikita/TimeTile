@@ -92,7 +92,7 @@ namespace TimeTile.Storage.Seeders
             var groups = new GroupFaker(institutions).Generate(GROUPS_COUNT);
             await _context.Groups.AddRangeAsync(groups);
 
-            var admins = new AdminFaker(adminRole).Generate(ADMINS_COUNT);
+            var admins = await new AdminFaker(adminRole).GenerateAsync(ADMINS_COUNT);
             await _context.Users.AddRangeAsync(admins);
 
             await _context.SaveChangesAsync();
@@ -103,12 +103,12 @@ namespace TimeTile.Storage.Seeders
             var rolesToPermissions = new RoleToPermissionFaker(roles, permissions).Generate(ROLES_TO_PERMISSIONS_COUNT);
             await _context.RolesPermissions.AddRangeAsync(rolesToPermissions);
 
-            var students = new StudentFaker(studentRole, institutions, groups).Generate(STUDENTS_COUNT);
+            var students = await new StudentFaker(studentRole, institutions, groups).GenerateAsync(STUDENTS_COUNT);
             await _context.Students.AddRangeAsync(students);
 
             await _context.SaveChangesAsync();
 
-            var institutionMembers = new InstitutionMemberFaker(roles, institutions, classrooms).Generate(INSTITUTION_MEMBERS_COUNT);
+            var institutionMembers = await new InstitutionMemberFaker(roles, institutions, classrooms).GenerateAsync(INSTITUTION_MEMBERS_COUNT);
             await _context.InstitutionMembers.AddRangeAsync(institutionMembers);
 
             await _context.SaveChangesAsync();

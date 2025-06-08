@@ -10,34 +10,20 @@ namespace TimeTile.API.Institutions.Endpoints.CreateInstitution;
 
 public class CreateInstitutionEndpoint : IEndpoint
 {
-    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
-        .MapPost("/", Handle)
-        .WithSummary("Creates a new Institution")
-        .WithRequestValidation<Request>();
-
-    public sealed record Request(
-        string Title,
-        string Address,
-        string PhoneNumber,
-        string Email,
-        string Domain
-    );
-    
-    private sealed record Response(
-        int Id,
-        string Title,
-        string Address,
-        string PhoneNumber,
-        string Email,
-        string Domain
-    );
+    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
+    {
+        return app
+            .MapPost("/", Handle)
+            .WithSummary("Creates a new Institution")
+            .WithRequestValidation<Request>();
+    }
 
     private static async Task<Results<Created<Result<Response>>, BadRequest<Result>>> Handle(
-        Request request, 
+        Request request,
         TimetileDbContext database,
         CancellationToken cancellationToken)
     {
-        var duplicateCheckResult = await IsInstitutionDuplicateAsync(
+        var duplicateCheckResult = await IsInstitutionDuplicate(
             request.Title, request.Email, request.Domain, database, cancellationToken);
 
         if (duplicateCheckResult.IsFailure)
@@ -74,11 +60,11 @@ public class CreateInstitutionEndpoint : IEndpoint
         );
 
         var result = Result.Success(response);
-        
+
         return TypedResults.Created($"/institutions/{institution.Id}", result);
     }
-    
-    private static async Task<Result> IsInstitutionDuplicateAsync(
+
+    private static async Task<Result> IsInstitutionDuplicate(
         string title,
         string email,
         string domain,
@@ -104,5 +90,21 @@ public class CreateInstitutionEndpoint : IEndpoint
 
         return Result.Failure(Error.From("Institution already exists.", "ENTITY_EXISTS"));
     }
-    
+
+    public sealed record Request(
+        string Title,
+        string Address,
+        string PhoneNumber,
+        string Email,
+        string Domain
+    );
+
+    private sealed record Response(
+        int Id,
+        string Title,
+        string Address,
+        string PhoneNumber,
+        string Email,
+        string Domain
+    );
 }

@@ -11,7 +11,7 @@ public static class FluentValidationExtensions
         bool allowEmpty = false) where T : class
     {
         var patternInfo = RegexPatterns.Patterns[patternKey];
-        
+
         var options = allowEmpty
             ? ruleBuilder
                 .Matches(patternInfo.Pattern).WithMessage(patternInfo.Description)

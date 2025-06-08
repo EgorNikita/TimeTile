@@ -22,7 +22,7 @@ public class RequestValidator : AbstractValidator<CreateInstitutionEndpoint.Requ
             .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
             .WithMessage("PhoneE164 contains invalid characters.")
             .ApplyRegexPattern(RegexPatterns.Pattern.PhoneE164);
-        
+
         RuleFor(x => x.Email)
             .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
             .WithMessage("Email contains invalid characters.")

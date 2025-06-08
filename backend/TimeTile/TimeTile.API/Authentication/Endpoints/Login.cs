@@ -14,26 +14,17 @@ namespace TimeTile.API.Authentication.Endpoints;
 
 public class Login : IEndpoint
 {
-    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app) => app
-        .MapPost("/login", Handle)
-        .WithSummary("Authenticates a user and returns a JWT token with roles and institution claims")
-        .WithRequestValidation<Request>();
-    
-    public record Request(string Login, string Password);
-    public record Response(string Token);
-    
-    public class RequestValidator : AbstractValidator<Request>
+    public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
     {
-        public RequestValidator()
-        {
-            RuleFor(x => x.Login).NotEmpty();
-            RuleFor(x => x.Password).NotEmpty();
-        }
+        return app
+            .MapPost("/login", Handle)
+            .WithSummary("Authenticates a user and returns a JWT token with roles and institution claims")
+            .WithRequestValidation<Request>();
     }
-    
+
     private static async Task<Results<Ok<Response>, UnauthorizedHttpResult>> Handle(
-        Request request, 
-        TimetileDbContext database, 
+        Request request,
+        TimetileDbContext database,
         Jwt jwt,
         IPasswordHasher<User> hasher,
         CancellationToken cancellationToken)
@@ -44,13 +35,13 @@ public class Login : IEndpoint
 
         var claims = BuildClaims(user);
         var token = jwt.GenerateToken(claims);
-    
+
         return TypedResults.Ok(new Response(token));
     }
-    
+
     private static async Task<User?> FindUserAsync(
-        string login, 
-        TimetileDbContext database, 
+        string login,
+        TimetileDbContext database,
         CancellationToken cancellationToken)
     {
         return await database.Users
@@ -59,7 +50,7 @@ public class Login : IEndpoint
             .ThenInclude(r => r.RoleToPermissions)
             .ThenInclude(rtp => rtp.Permission)
             .Where(u => u.Login == login)
-            .FirstOrDefaultAsync(cancellationToken); 
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     private static bool ValidatePassword(
@@ -73,7 +64,9 @@ public class Login : IEndpoint
 
     private static List<Claim> BuildClaims(User user)
     {
-        var effectiveRole = user.Role.Title == GeneralRoles.Student ? GeneralRoles.Student : GeneralRoles.InstitutionMember;
+        var effectiveRole = user.Role.Title == GeneralRoles.Student
+            ? GeneralRoles.Student
+            : GeneralRoles.InstitutionMember;
 
         var claims = new List<Claim>
         {
@@ -87,5 +80,18 @@ public class Login : IEndpoint
             .Select(p => new Claim(CustomClaimTypes.Permission, p.Description)));
 
         return claims;
+    }
+
+    public record Request(string Login, string Password);
+
+    public record Response(string Token);
+
+    public class RequestValidator : AbstractValidator<Request>
+    {
+        public RequestValidator()
+        {
+            RuleFor(x => x.Login).NotEmpty();
+            RuleFor(x => x.Password).NotEmpty();
+        }
     }
 }

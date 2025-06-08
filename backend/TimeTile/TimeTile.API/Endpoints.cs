@@ -1,11 +1,13 @@
-﻿using TimeTile.API.Authentication.Endpoints;
+using TimeTile.API.Authentication.Endpoints;
 using TimeTile.API.Common.Api;
-using TimeTile.API.Common.Constants;
 using TimeTile.API.Institutions.Endpoints.CreateInstitution;
 using TimeTile.API.Institutions.Endpoints.GetInstitutionById;
 using TimeTile.API.Institutions.Endpoints.GetInstitutions;
 using TimeTile.API.Roles.Endpoints.CreateRole;
-using TimeTile.API.Students.Endpoints;
+using TimeTile.API.Students.Endpoints.CreateStudent;
+using TimeTile.API.Students.Endpoints.GetStudentById;
+using TimeTile.API.Students.Endpoints.GetStudents;
+using TimeTile.Core.Common.Constants;
 
 namespace TimeTile.API;
 
@@ -34,10 +36,16 @@ public static class Endpoints
         var endpoints = app.MapGroup("/students")
             .WithTags("Students");
 
-        endpoints.MapEndpoint<CreateStudent>()
+        endpoints.MapEndpoint<CreateStudentEndpoint>()
             .RequireAuthorization(Permissions.CreateStudent);
+
+        endpoints.MapEndpoint<GetStudentByIdEndpoint>()
+            .RequireAuthorization(Permissions.GetStudents);
+
+        endpoints.MapEndpoint<GetStudentsEndpoint>()
+            .RequireAuthorization(Permissions.GetStudents);
     }
-    
+
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
     {
         var endpoints = app.MapGroup("/roles")
@@ -46,7 +54,7 @@ public static class Endpoints
         endpoints.MapEndpoint<CreateRoleEndpoint>()
             .RequireAuthorization("CreateRole");
     }
-    
+
     private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)
     {
         var endpoints = app.MapGroup("/institutions")
@@ -58,22 +66,23 @@ public static class Endpoints
         endpoints.MapEndpoint<CreateInstitutionEndpoint>()
             .RequireAuthorization(Permissions.CreateInstitution);
     }
-    
+
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)
     {
         return app.MapGroup(prefix ?? string.Empty)
             .AllowAnonymous();
     }
-    
+
     private static IEndpointConventionBuilder MapEndpoint<TEndpoint>(this IEndpointRouteBuilder app)
         where TEndpoint : IEndpoint
     {
         var mapMethod = typeof(TEndpoint).GetMethod("Map", new[] { typeof(IEndpointRouteBuilder) });
         if (mapMethod == null)
-            throw new InvalidOperationException($"Type {typeof(TEndpoint).Name} must have a static Map method with IEndpointRouteBuilder parameter.");
+            throw new InvalidOperationException(
+                $"Type {typeof(TEndpoint).Name} must have a static Map method with IEndpointRouteBuilder parameter.");
 
         var result = mapMethod.Invoke(null, new object[] { app });
-        return result as IEndpointConventionBuilder ?? throw new InvalidOperationException("Map method must return IEndpointConventionBuilder");
+        return result as IEndpointConventionBuilder ??
+               throw new InvalidOperationException("Map method must return IEndpointConventionBuilder");
     }
-    
 }

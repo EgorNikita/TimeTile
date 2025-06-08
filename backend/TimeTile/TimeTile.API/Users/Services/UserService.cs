@@ -2,54 +2,67 @@
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Users.Services.Interfaces;
-using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Users.Services;
 
 public class UserService : IUserService
 {
-    private readonly TimetileDbContext _dbContext;
     private readonly IAvatarService _avatarService;
-    
-    public UserService(TimetileDbContext dbContext, IAvatarService avatarService)
+    private readonly TimetileDbContext _db;
+
+    public UserService(TimetileDbContext db, IAvatarService avatarService)
     {
-        _dbContext = dbContext;
+        _db = db;
         _avatarService = avatarService;
     }
-    
-    public Task<Institution> GetInstitutionId(string institutionDomain)
+
+    public async Task<string> GenerateUniqueLoginAsync(string firstname, string lastname, int birthYear,
+        string institutionDomain)
     {
-        return _dbContext.Institutions
+        var fn = firstname.Length >= 4 ? firstname[..4].ToLowerInvariant() : firstname.ToLowerInvariant();
+        var ln = lastname.Length >= 5 ? lastname[..5].ToLowerInvariant() : lastname.ToLowerInvariant();
+
+        var baseLocalPart = $"{fn}.{ln}{birthYear}";
+        var domain = institutionDomain.ToLowerInvariant();
+
+        // Query all existing logins starting with baseLocalPart@
+        var existingLogins = await _db.Users
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Domain == institutionDomain)
-            .ContinueWith(t =>
-            {
-                if (t.Result == null)
-                {
-                    throw new Exception($"Institution with domain {institutionDomain} not found.");
-                }
-                return t.Result;
-            });
-    }
+            .Where(u => u.Login.StartsWith(baseLocalPart) && u.Login.EndsWith("@" + domain))
+            .Select(u => u.Login)
+            .ToListAsync();
 
-    public Task<string> GenerateLogin(string firstname, string lastname, int birthYear, string institutionDomain)
-    {
-        var fn = firstname.Length >= 4 
-            ? firstname[..4].ToLower(CultureInfo.InvariantCulture) 
-            : firstname.ToLower(CultureInfo.InvariantCulture);
+        // Extract numeric suffixes (if any)
+        // Example: baseLocalPart@domain (no suffix)
+        // Or baseLocalPart1234@domain (with suffix)
+        var maxSuffix = -1;
+        foreach (var login in existingLogins)
+        {
+            // Extract part between baseLocalPart and @domain
+            var startIndex = baseLocalPart.Length;
+            var endIndex = login.IndexOf('@');
+            var suffixPart = login.Substring(startIndex, endIndex - startIndex);
 
-        var ln = lastname.Length >= 5 
-            ? lastname[..5].ToLower(CultureInfo.InvariantCulture) 
-            : lastname.ToLower(CultureInfo.InvariantCulture);
+            if (string.IsNullOrEmpty(suffixPart))
+                maxSuffix = Math.Max(maxSuffix, 0);
+            else if (int.TryParse(suffixPart, out var suffixNum))
+                if (suffixNum > maxSuffix)
+                    maxSuffix = suffixNum;
+        }
 
-        var login = $"{fn}.{ln}{birthYear}@{institutionDomain}";
-        return Task.FromResult(login);
+        // Increment suffix for new login
+        var newLoginLocalPart = maxSuffix == -1 ? baseLocalPart : $"{baseLocalPart}{maxSuffix + 1}";
+
+        var newLogin = $"{newLoginLocalPart}@{domain}";
+
+        return newLogin;
     }
 
     public Task<string> GenerateDefaultPassword(string firstname, string lastname, short birthYear)
     {
-        var basePart = $"{firstname[..1].ToUpper(CultureInfo.InvariantCulture)}{lastname[..1].ToLower(CultureInfo.InvariantCulture)}{birthYear % 100:D2}";
+        var basePart =
+            $"{firstname[..1].ToUpper(CultureInfo.InvariantCulture)}{lastname[..1].ToLower(CultureInfo.InvariantCulture)}{birthYear % 100:D2}";
         var suffix = RandomNumberGenerator.GetInt32(1000, 10000);
         var password = $"{basePart}{suffix}";
         return Task.FromResult(password);

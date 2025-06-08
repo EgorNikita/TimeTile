@@ -1,26 +1,24 @@
 using System.Threading.RateLimiting;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using TimeTile.Storage.Contexts;
 using Serilog;
 using TimeTile.API.Authentication.Services;
 using TimeTile.API.Common.Api;
-using TimeTile.API.Users;
-using TimeTile.API.Users.Services;
-using TimeTile.Core.Models;
-using FluentValidation;
-using Microsoft.AspNetCore.RateLimiting;
-using TimeTile.API.Common.Constants;
-using TimeTile.Storage.Seeders;
+using TimeTile.API.Files.Repositories;
+using TimeTile.API.Files.Repositories.Interfaces;
 using TimeTile.API.Files.Services;
 using TimeTile.API.Files.Services.Interfaces;
+using TimeTile.API.Users.Services;
 using TimeTile.API.Users.Services.Interfaces;
-using File = TimeTile.Core.Models.File;
-using TimeTile.API.Files.Repositories.Interfaces;
-using TimeTile.API.Files.Repositories;
+using TimeTile.Core.Common.Constants;
+using TimeTile.Core.Models;
+using TimeTile.Storage.Contexts;
+using TimeTile.Storage.Seeders;
 
 namespace TimeTile.API;
 
@@ -29,14 +27,14 @@ public static class ConfigureServices
     public static void AddServices(this WebApplicationBuilder builder)
     {
         Log.Information("Starting service configuration...");
-        
+
         builder.AddSwagger();
         builder.AddDatabase();
         builder.AddSerilog();
         builder.AddJwtAuthentication();
         builder.AddAuthorization();
         builder.AddRateLimiting();
-        
+
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
 
         builder.Services.AddScoped<DataSeeder>();
@@ -45,7 +43,7 @@ public static class ConfigureServices
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IAvatarService, AvatarService>();
         builder.Services.AddScoped<IFileRepository, FileRepository>();
-        
+
         Log.Information("Service configuration completed.");
     }
 
@@ -72,11 +70,12 @@ public static class ConfigureServices
         var jwtSection = builder.Configuration.GetSection("Jwt");
         builder.Services.Configure<JwtOptions>(jwtSection);
 
-        var jwtOptions = jwtSection.Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
+        var jwtOptions = jwtSection.Get<JwtOptions>() ??
+                         throw new InvalidOperationException("JWT configuration is missing.");
 
         if (string.IsNullOrWhiteSpace(jwtOptions.Key))
             throw new InvalidOperationException("JWT Key is not configured.");
-        
+
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -109,7 +108,7 @@ public static class ConfigureServices
                 }
             };
         });
-        
+
         builder.Services.AddTransient<Jwt>();
     }
 
@@ -118,17 +117,13 @@ public static class ConfigureServices
         builder.Services.AddAuthorization(options =>
         {
             foreach (var permission in Permissions.All)
-            {
-                options.AddPolicy(permission, policy =>
-                {
-                    policy.Requirements.Add(new PermissionRequirement(permission));
-                });
-            }
+                options.AddPolicy(permission,
+                    policy => { policy.Requirements.Add(new PermissionRequirement(permission)); });
         });
 
         builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
     }
-    
+
     private static void AddRateLimiting(this WebApplicationBuilder builder)
     {
         builder.Services.AddRateLimiter(options =>
@@ -158,17 +153,20 @@ public static class ConfigureServices
     {
         Log.Information("Configuring database...");
         var connectionString = builder.Configuration.GetConnectionString("Local")
-            ?? throw new InvalidOperationException("Connection string 'Local' not found.");
+                               ?? throw new InvalidOperationException("Connection string 'Local' not found.");
 
         connectionString = connectionString
             .Replace("${POSTGRES_HOST}", Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost")
-            .Replace("${POSTGRES_DB}", Environment.GetEnvironmentVariable("POSTGRES_DB") ?? throw new InvalidOperationException("POSTGRES_DB environment variable not set"))
-            .Replace("${POSTGRES_USER}", Environment.GetEnvironmentVariable("POSTGRES_USER") ?? throw new InvalidOperationException("POSTGRES_USER environment variable not set"))
-            .Replace("${POSTGRES_PASSWORD}", Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? throw new InvalidOperationException("POSTGRES_PASSWORD environment variable not set"));
+            .Replace("${POSTGRES_DB}",
+                Environment.GetEnvironmentVariable("POSTGRES_DB") ??
+                throw new InvalidOperationException("POSTGRES_DB environment variable not set"))
+            .Replace("${POSTGRES_USER}",
+                Environment.GetEnvironmentVariable("POSTGRES_USER") ??
+                throw new InvalidOperationException("POSTGRES_USER environment variable not set"))
+            .Replace("${POSTGRES_PASSWORD}",
+                Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ??
+                throw new InvalidOperationException("POSTGRES_PASSWORD environment variable not set"));
 
-        builder.Services.AddDbContext<TimetileDbContext>(options =>
-        {
-            options.UseNpgsql(connectionString);
-        });
+        builder.Services.AddDbContext<TimetileDbContext>(options => { options.UseNpgsql(connectionString); });
     }
 }

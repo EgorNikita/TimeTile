@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 
-namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById;
+namespace TimeTile.API.Students.Endpoints.GetStudentById;
 
-public class RequestValidator : AbstractValidator<GetInstitutionByIdEndpoint.Request>
+public class RequestValidator : AbstractValidator<GetStudentByIdEndpoint.Request>
 {
     public RequestValidator()
     {

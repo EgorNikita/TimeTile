@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
-using TimeTile.Storage.Seeders;
 using TimeTile.Storage.DataSeeders;
+using TimeTile.Storage.Seeders;
 
 namespace TimeTile.API;
 
@@ -23,7 +24,7 @@ public static class ConfigureApp
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
             await seeder.Seed();
             app.UseDeveloperExceptionPage();
-        } 
+        }
         else
         {
             app.UseRateLimiter();
@@ -31,7 +32,7 @@ public static class ConfigureApp
             {
                 errorApp.Run(async context =>
                 {
-                    var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+                    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
                     if (exceptionHandlerPathFeature?.Error is not null)
                     {
                         Log.Error(exceptionHandlerPathFeature.Error, "Unhandled exception occurred.");
@@ -49,7 +50,7 @@ public static class ConfigureApp
 
         await app.EnsureDatabaseCreated();
     }
-    
+
     private static async Task EnsureDatabaseCreated(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();

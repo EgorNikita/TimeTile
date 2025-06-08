@@ -1,3 +1,4 @@
+using DotNetEnv;
 using Serilog;
 using TimeTile.API;
 
@@ -8,11 +9,11 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting web application");
-    
+
     var builder = WebApplication.CreateBuilder(args);
-    
-    DotNetEnv.Env.TraversePath().Load();
-    
+
+    Env.TraversePath().Load();
+
     builder.Host.UseSerilog((context, services, configuration) =>
     {
         configuration
@@ -21,9 +22,9 @@ try
             .Enrich.FromLogContext()
             .WriteTo.Console();
     });
-    
+
     builder.AddServices();
-    
+
     var app = builder.Build();
     await app.Configure();
     app.Run();

@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TimeTile.Storage.Contexts;
-
-namespace TimeTile.API.Common.Api.Filters;
+﻿namespace TimeTile.API.Common.Api.Filters;
 
 // public class EnsureEntityExistsFilter<TRequest, TEntity>(TimetileDbContext database, Func<TRequest, int?> idSelector) : IEndpointFilter
 //     where TEntity : class//, IEntity

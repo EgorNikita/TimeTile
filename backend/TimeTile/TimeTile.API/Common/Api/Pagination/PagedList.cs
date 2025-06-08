@@ -1,30 +1,29 @@
-﻿namespace TimeTile.API.Common.Api.Pagination
+﻿namespace TimeTile.API.Common.Api.Pagination;
+
+public class PagedList<T>
 {
-    public class PagedList<T>
+    public PagedList(
+        IEnumerable<T> items,
+        int page,
+        int pageSize,
+        int totalPages,
+        int totalCount)
     {
-        public int Page { get; set; }
-        public int PageSize { get; set; }
-        public int TotalPages { get; set; }
-        public int TotalCount { get; set; }
+        Items = items;
 
-        public IEnumerable<T> Items { get; set; } = null!;
-
-        public PagedList(
-            IEnumerable<T> items, 
-            int page, 
-            int pageSize,
-            int totalPages,
-            int totalCount)
-        {
-            Items = items;
-
-            Page = page;
-            PageSize = pageSize;
-            TotalPages = totalPages;
-            TotalCount = totalCount;
-        }
-
-        public bool HasNextPage => Page < TotalPages;
-        public bool HasPreviousPage => Page > 1;
+        Page = page;
+        PageSize = pageSize;
+        TotalPages = totalPages;
+        TotalCount = totalCount;
     }
+
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages { get; set; }
+    public int TotalCount { get; set; }
+
+    public IEnumerable<T> Items { get; set; } = null!;
+
+    public bool HasNextPage => Page < TotalPages;
+    public bool HasPreviousPage => Page > 1;
 }

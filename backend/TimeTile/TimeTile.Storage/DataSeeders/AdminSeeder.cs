@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -8,7 +9,12 @@ namespace TimeTile.Storage.DataSeeders;
 
 public static class AdminSeeder
 {
-    public static async Task SeedAsync(TimetileDbContext context, IPasswordHasher<User> passwordHasher, ILogger? logger = null)
+    public static async Task SeedAsync(
+        TimetileDbContext context, 
+        IPasswordHasher<User> passwordHasher, 
+        IUserService userService, 
+        IFileService fileService, 
+        ILogger? logger = null)
     {
         if (context == null)
         {
@@ -25,7 +31,7 @@ public static class AdminSeeder
         {
             await SeedPermissionAsync(context, logger);
             await SeedRoleAsync(context, logger);
-            await SeedUserAsync(context, passwordHasher, logger);
+            await SeedUserAsync(context, passwordHasher, userService, fileService, logger);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
             logger?.Information("Admin seeding completed successfully.");
@@ -92,7 +98,12 @@ public static class AdminSeeder
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedUserAsync(TimetileDbContext context, IPasswordHasher<User> passwordHasher, ILogger? logger)
+    private static async Task SeedUserAsync(
+        TimetileDbContext context, 
+        IPasswordHasher<User> passwordHasher, 
+        IUserService userService,
+        IFileService fileService,
+        ILogger? logger)
     {
         const string adminLogin = "admin@timetile.dev";
 
@@ -114,12 +125,16 @@ public static class AdminSeeder
             Role = adminRole,
             Firstname = "John",
             Lastname = "Adminovich",
-            AvatarPath = "avatar/default.png",
             BirthDate = new DateOnly(2002, 1, 2),
             PhoneNumber = "+1234567890",
             HomeAddress = "123 Admin St, Admin City, Admin Country",
             CreatedAt = DateTime.UtcNow
         };
+
+        var avatarStream = await userService.GenerateDefaultAvatar(user.Firstname, user.Lastname);
+        var avatarId = await fileService.SaveFile(avatarStream, "avatar/default.png", CancellationToken.None);
+
+        user.AvatarId = avatarId;
 
         user.PasswordHash = passwordHasher.HashPassword(user, "admin123!");
         

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 using TimeTile.Storage.DataSeeders;
@@ -21,8 +22,12 @@ public static class ConfigureApp
             app.UseSwaggerUI();
 
             using var scope = app.Services.CreateScope();
+
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-            await seeder.Seed();
+            var lifetime = scope.ServiceProvider.GetRequiredService<IHostApplicationLifetime>();
+
+            await seeder.Seed(lifetime.ApplicationStopping);
+
             app.UseDeveloperExceptionPage();
         }
         else
@@ -54,12 +59,15 @@ public static class ConfigureApp
     private static async Task EnsureDatabaseCreated(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+
         var db = scope.ServiceProvider.GetRequiredService<TimetileDbContext>();
+        var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();
 
         try
         {
             await db.Database.MigrateAsync();
-            await AdminSeeder.SeedAsync(db, new PasswordHasher<User>(), Log.Logger);
+            await AdminSeeder.SeedAsync(db, new PasswordHasher<User>(), userService, fileService, Log.Logger);
         }
         catch (Exception ex)
         {

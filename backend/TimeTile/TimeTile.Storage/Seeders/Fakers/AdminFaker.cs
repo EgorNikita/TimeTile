@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -15,16 +17,17 @@ namespace TimeTile.Storage.Seeders.Fakers
         // For saving passwords
         private const string LOGIN_DATA_FILE_NAME = "admins_login_data.txt";
 
-        private readonly UserFaker _userFaker = new UserFaker();
+        private readonly UserFaker _userFaker;
 
         // BirthDate constraints
         private const int MIN_AGE = 20;
         private const int MAX_AGE = 80;
 
-        public AdminFaker(Role adminRole)
+        public AdminFaker(Role adminRole, IUserService userService, IFileService fileService)
         {
+            _userFaker = new UserFaker(userService, fileService);
+
             _faker
-                .RuleFor(s => s.AvatarPath, f => "undefined")           // TODO: add avatars
                 .RuleFor(s => s.BirthDate, f => UserFaker.GenerateValidBirthDate(f, MIN_AGE, MAX_AGE))
                 .RuleFor(s => s.Firstname, _userFaker.GenerateValidFirstname)
                 .RuleFor(s => s.Lastname, _userFaker.GenerateValidLastname)
@@ -37,20 +40,25 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         public override List<User> Generate(int count)
         {
-            var users = base.Generate(count);
+            var admins = base.Generate(count);
+
+            Task.Run(async () => 
+                await _userFaker.GenerateAvatars(admins, CancellationToken.None)).Wait();
 
             System.IO.File.AppendAllText(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
 
-            return users;
+            return admins;
         }
 
-        public async Task<List<User>> GenerateAsync(int count)
+        public async Task<List<User>> GenerateAsync(int count, CancellationToken cancellationToken)
         {
-            var users = base.Generate(count);
+            var admins = base.Generate(count);
 
-            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+            await _userFaker.GenerateAvatars(admins, cancellationToken);
 
-            return users;
+            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted, cancellationToken);
+
+            return admins;
         }
     }
 }

@@ -61,9 +61,8 @@ namespace TimeTile.Storage.Configurations
                 .ValueGeneratedOnAdd()
                 .HasColumnName("id");
 
-            builder.Property(e => e.AvatarPath)
-                .HasMaxLength(255)
-                .HasColumnName("avatar_path");
+            builder.Property(e => e.AvatarId)
+                .HasColumnName("avatar_id");
 
             builder.Property(e => e.BirthDate)
                 .HasColumnName("birth_date");
@@ -100,6 +99,12 @@ namespace TimeTile.Storage.Configurations
                 .IsRequired(false);
 
             // Relationships
+            builder.HasOne(d => d.Avatar)
+                .WithOne(p => p.User)
+                .HasForeignKey<User>(d => d.AvatarId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("users_avatar_id_fkey");
+
             builder.HasOne(d => d.Role)
                 .WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)

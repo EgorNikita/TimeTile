@@ -1,4 +1,6 @@
 ﻿using Bogus;
+using Microsoft.EntityFrameworkCore;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 using TimeTile.Storage.Seeders.Fakers;
@@ -37,116 +39,120 @@ namespace TimeTile.Storage.Seeders
         private const int LESSONS_TO_STUDENTS_COUNT = 5000;
 
         private readonly TimetileDbContext _context;
+        private readonly IUserService _userService;
+        private readonly IFileService _fileService;
 
-        public DataSeeder(TimetileDbContext context)
+        public DataSeeder(TimetileDbContext context, IUserService userService, IFileService fileService)
         {
             _context = context;
+            _userService = userService;
+            _fileService = fileService;
         }
 
-        public async Task Seed()
+        public async Task Seed(CancellationToken cancellationToken = default)
         {
             // if database is not empty
-            if (_context.Institutions.Any())
+            if (await _context.Institutions.AnyAsync(cancellationToken))
                 return;
 
-            await ClearAllTxtFiles();
+            await ClearAllTxtFiles(cancellationToken);
 
             var institutions = new InstitutionFaker().Generate(INSTITUTIONS_COUNT);
-            await _context.Institutions.AddRangeAsync(institutions);
+            await _context.Institutions.AddRangeAsync(institutions, cancellationToken);
 
             var permissions = new PermissionFaker().Generate();
-            await _context.Permissions.AddRangeAsync(permissions);
+            await _context.Permissions.AddRangeAsync(permissions, cancellationToken);
 
             // Essential for Student generation
             Role studentRole = new Role()
             {
                 Title = "Student"
             };
-            await _context.Roles.AddAsync(studentRole);
+            await _context.Roles.AddAsync(studentRole, cancellationToken);
 
             // Essential for Admin generation
             Role adminRole = new Role()
             {
                 Title = "Admin"
             };
-            await _context.Roles.AddAsync(adminRole);
+            await _context.Roles.AddAsync(adminRole, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             var classroomTypes = new ClassroomTypeFaker(institutions).Generate(CLASSROOM_TYPES_COUNT);
-            await _context.ClassroomTypes.AddRangeAsync(classroomTypes);
+            await _context.ClassroomTypes.AddRangeAsync(classroomTypes, cancellationToken);
 
             var lessonStatuses = new LessonStatusFaker(institutions).Generate(LESSON_STATUSES_COUNT);
-            await _context.LessonStatuses.AddRangeAsync(lessonStatuses);
+            await _context.LessonStatuses.AddRangeAsync(lessonStatuses, cancellationToken);
 
             var timetableUnits = new TimetableUnitFaker(institutions).Generate(TIMETABLE_UNITS_COUNT);
-            await _context.TimetableUnits.AddRangeAsync(timetableUnits);
+            await _context.TimetableUnits.AddRangeAsync(timetableUnits, cancellationToken);
 
             var subjects = new SubjectFaker(institutions).Generate(SUBJECTS_COUNT);
-            await _context.Subjects.AddRangeAsync(subjects);
+            await _context.Subjects.AddRangeAsync(subjects, cancellationToken);
 
             var terms = new TermFaker(institutions).Generate(TERMS_COUNT);
-            await _context.Terms.AddRangeAsync(terms);
+            await _context.Terms.AddRangeAsync(terms, cancellationToken);
 
             var roles = new RoleFaker(institutions).Generate(ROLES_COUNT);
-            await _context.Roles.AddRangeAsync(roles);
+            await _context.Roles.AddRangeAsync(roles, cancellationToken);
 
             var groups = new GroupFaker(institutions).Generate(GROUPS_COUNT);
-            await _context.Groups.AddRangeAsync(groups);
+            await _context.Groups.AddRangeAsync(groups, cancellationToken);
 
-            var admins = await new AdminFaker(adminRole).GenerateAsync(ADMINS_COUNT);
-            await _context.Users.AddRangeAsync(admins);
+            var admins = await new AdminFaker(adminRole, _userService, _fileService).GenerateAsync(ADMINS_COUNT, cancellationToken);
+            await _context.Users.AddRangeAsync(admins, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             var classrooms = new ClassroomFaker(institutions, classroomTypes).Generate(CLASSROOMS_COUNT);
-            await _context.Classrooms.AddRangeAsync(classrooms);
+            await _context.Classrooms.AddRangeAsync(classrooms, cancellationToken);
 
             var rolesToPermissions = new RoleToPermissionFaker(roles, permissions).Generate(ROLES_TO_PERMISSIONS_COUNT);
-            await _context.RolesPermissions.AddRangeAsync(rolesToPermissions);
+            await _context.RolesPermissions.AddRangeAsync(rolesToPermissions, cancellationToken);
 
-            var students = await new StudentFaker(studentRole, institutions, groups).GenerateAsync(STUDENTS_COUNT);
-            await _context.Students.AddRangeAsync(students);
+            var students = await new StudentFaker(studentRole, institutions, groups, _userService, _fileService).GenerateAsync(STUDENTS_COUNT, cancellationToken);
+            await _context.Students.AddRangeAsync(students, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
-            var institutionMembers = await new InstitutionMemberFaker(roles, institutions, classrooms).GenerateAsync(INSTITUTION_MEMBERS_COUNT);
-            await _context.InstitutionMembers.AddRangeAsync(institutionMembers);
+            var institutionMembers = await new InstitutionMemberFaker(roles, institutions, classrooms, _userService, _fileService).GenerateAsync(INSTITUTION_MEMBERS_COUNT, cancellationToken);
+            await _context.InstitutionMembers.AddRangeAsync(institutionMembers, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             var institutionMembersToGroups = new InstitutionMemberToGroupFaker(institutionMembers, groups).Generate(INSTITUTION_MEMBERS_TO_GROUPS_COUNT);
-            await _context.InstitutionMembersGroups.AddRangeAsync(institutionMembersToGroups);
+            await _context.InstitutionMembersGroups.AddRangeAsync(institutionMembersToGroups, cancellationToken);
 
             var teachersToSubjects = new TeacherToSubjectFaker(institutionMembers, subjects).Generate(TEACHERS_TO_SUBJECTS_COUNT);
-            await _context.TeachersSubjects.AddRangeAsync(teachersToSubjects);
+            await _context.TeachersSubjects.AddRangeAsync(teachersToSubjects, cancellationToken);
 
             var courses = new CourseFaker(subjects, institutionMembers, institutions, terms).Generate(COURSES_COUNT);
-            await _context.Courses.AddRangeAsync(courses);
+            await _context.Courses.AddRangeAsync(courses, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             var coursesToStudents = new CourseToStudentFaker(courses, students).Generate(COURSES_TO_STUDENTS_COUNT);
-            await _context.CoursesStudents.AddRangeAsync(coursesToStudents);
+            await _context.CoursesStudents.AddRangeAsync(coursesToStudents, cancellationToken);
 
             var lessons = new LessonFaker(institutions, classrooms, courses, lessonStatuses, timetableUnits).Generate(LESSONS_COUNT);
-            await _context.Lessons.AddRangeAsync(lessons);
+            await _context.Lessons.AddRangeAsync(lessons, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             var lessonsToStudents = new LessonToStudentFaker(lessons, students).Generate(LESSONS_TO_STUDENTS_COUNT);
-            await _context.LessonsStudents.AddRangeAsync(lessonsToStudents);
+            await _context.LessonsStudents.AddRangeAsync(lessonsToStudents, cancellationToken);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        private async Task ClearAllTxtFiles()
+        private static async Task ClearAllTxtFiles(CancellationToken cancellationToken)
         {
             var filesPaths = Directory.GetFiles(CURRENT_DIRECTORY, "*.txt");
 
             foreach (var path in filesPaths)
             {
-                await System.IO.File.WriteAllTextAsync(path, string.Empty);
+                await System.IO.File.WriteAllTextAsync(path, string.Empty, cancellationToken);
             }
         }
     }

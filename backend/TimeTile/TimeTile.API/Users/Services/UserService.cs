@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
-using TimeTile.API.Users.Services.Interfaces;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Users.Services;

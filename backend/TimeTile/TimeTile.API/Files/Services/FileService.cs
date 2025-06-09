@@ -1,6 +1,6 @@
 using TimeTile.API.Files.Helpers;
-using TimeTile.API.Files.Repositories.Interfaces;
-using TimeTile.API.Files.Services.Interfaces;
+using TimeTile.Core.Common.Interfaces.Repositories;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -36,7 +36,7 @@ public class FileService : IFileService
         return Task.FromResult(fileUrl);
     }
 
-    public async Task<string> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)
+    public async Task<int> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(_storagePath)) Directory.CreateDirectory(_storagePath);
 
@@ -54,12 +54,9 @@ public class FileService : IFileService
         await using var fileStreamOutput = File.Create(filePath);
         await fileStream.CopyToAsync(fileStreamOutput, cancellationToken);
 
-        await _fileRepository.Add(fileName, extension, fileStreamOutput.Length, filePath, cancellationToken);
+        var file = await _fileRepository.Add(fileName, extension, fileStreamOutput.Length, filePath, cancellationToken);
 
-        // Return the relative path
-        var relativePath = Path.Combine(STORAGE_FOLDER, newFileName).Replace(@"\", @"/");
-
-        return relativePath;
+        return file.Id;
     }
 
     public async Task<Result<Stream>> GetFileStream(int id, CancellationToken cancellationToken)

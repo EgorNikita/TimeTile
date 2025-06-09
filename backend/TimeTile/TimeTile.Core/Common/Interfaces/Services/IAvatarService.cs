@@ -1,4 +1,4 @@
-﻿namespace TimeTile.API.Users.Services.Interfaces;
+﻿namespace TimeTile.Core.Common.Interfaces.Services;
 
 public interface IAvatarService
 {

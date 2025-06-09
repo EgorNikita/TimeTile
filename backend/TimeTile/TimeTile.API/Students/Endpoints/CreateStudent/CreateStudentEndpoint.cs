@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Files.Services.Interfaces;
-using TimeTile.API.Users.Services.Interfaces;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -62,8 +61,8 @@ public class CreateStudentEndpoint : IEndpoint
             return TypedResults.NotFound(Result.Failure(roleResult.Error));
 
         var studentRoleId = roleResult.Data!.Id;
-        
-        var avatarPath = await GetAvatarPath(
+
+        var avatarId = await GetAvatarId(
             request.Avatar,
             firstName,
             lastName,
@@ -80,7 +79,7 @@ public class CreateStudentEndpoint : IEndpoint
             HomeAddress = request.HomeAddress.Trim(),
             PhoneNumber = request.PhoneNumber.Trim(),
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
-            AvatarPath = avatarPath,
+            AvatarId = avatarId,
             Login = login,
             InstitutionId = institution.Id,
             RoleId = studentRoleId
@@ -111,7 +110,7 @@ public class CreateStudentEndpoint : IEndpoint
         return TypedResults.Created($"/students/{student.Id}", result);
     }
 
-    private static async Task<string> GetAvatarPath(
+    private static async Task<int> GetAvatarId(
         IFormFile? avatar,
         string firstname,
         string lastname,
@@ -126,13 +125,13 @@ public class CreateStudentEndpoint : IEndpoint
 
         var fileName = $"{firstname}_{lastname}_{birthday}_avatar.png";
 
-        var avatarPath = await fileService.SaveFile(
+        var avatarId = await fileService.SaveFile(
             avatarStream,
             fileName,
             cancellationToken
         );
 
-        return avatarPath;
+        return avatarId;
     }
 
     private static async Task<Result> IsStudentDuplicate(

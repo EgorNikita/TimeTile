@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimeTile.API.Files.Repositories.Interfaces;
+using TimeTile.Core.Common.Interfaces.Repositories;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
 using TimeTile.Storage.Contexts;
@@ -16,7 +16,7 @@ public class FileRepository : IFileRepository
         _db = db;
     }
 
-    public async Task Add(string fileName, string extension, long fileLength, string filePath,
+    public async Task<File> Add(string fileName, string extension, long fileLength, string filePath,
         CancellationToken cancellationToken)
     {
         var file = new File
@@ -29,6 +29,8 @@ public class FileRepository : IFileRepository
 
         await _db.Files.AddAsync(file, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
+
+        return file;
     }
 
     public async Task<Result<File>> GetById(int id, CancellationToken cancellationToken)

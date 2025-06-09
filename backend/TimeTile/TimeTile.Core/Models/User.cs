@@ -4,7 +4,7 @@ public partial class User : AuditableEntity
 {
     public int Id { get; set; }
 
-    public string AvatarPath { get; set; } = null!;
+    public int AvatarId { get; set; }
 
     public string Firstname { get; set; } = null!;
 
@@ -23,7 +23,9 @@ public partial class User : AuditableEntity
     public int RoleId { get; set; }
     
     public int? InstitutionId { get; set; }
-    
+
+    public virtual File Avatar { get; set; } = null!;
+
     public virtual Institution? Institution { get; set; }
     
     public virtual Role Role { get; set; } = null!;

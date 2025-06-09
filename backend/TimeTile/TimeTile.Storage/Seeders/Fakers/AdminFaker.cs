@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
@@ -44,11 +45,11 @@ namespace TimeTile.Storage.Seeders.Fakers
             return users;
         }
 
-        public async Task<List<User>> GenerateAsync(int count)
+        public async Task<List<User>> GenerateAsync(int count, CancellationToken cancellationToken)
         {
             var users = base.Generate(count);
 
-            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted, cancellationToken);
 
             return users;
         }

@@ -21,8 +21,12 @@ public static class ConfigureApp
             app.UseSwaggerUI();
 
             using var scope = app.Services.CreateScope();
+
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-            await seeder.Seed();
+            var lifetime = scope.ServiceProvider.GetRequiredService<IHostApplicationLifetime>();
+
+            await seeder.Seed(lifetime.ApplicationStopping);
+
             app.UseDeveloperExceptionPage();
         }
         else

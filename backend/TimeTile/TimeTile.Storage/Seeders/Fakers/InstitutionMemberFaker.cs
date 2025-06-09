@@ -79,11 +79,11 @@ namespace TimeTile.Storage.Seeders.Fakers
             return institutionMembers;
         }
 
-        public async Task<List<InstitutionMember>> GenerateAsync(int count)
+        public async Task<List<InstitutionMember>> GenerateAsync(int count, CancellationToken cancellationToken)
         {
             var institutionMembers = base.Generate(count);
 
-            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
+            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted, cancellationToken);
 
             return institutionMembers;
         }

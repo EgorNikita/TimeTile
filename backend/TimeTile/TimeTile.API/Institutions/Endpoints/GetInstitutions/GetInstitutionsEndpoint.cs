@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
+using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Institutions.Endpoints.GetInstitutions;
@@ -26,6 +29,11 @@ public class GetInstitutionsEndpoint : IEndpoint
     {
         var institutions = await context.Institutions
             .AsNoTracking()
+            .ApplySorting(
+                request.SortBy,
+                request.Descending,
+                AllowedSortFields.Title,
+                _sortOptions)
             .Select(x => new Response
             (
                 x.Id,
@@ -42,10 +50,21 @@ public class GetInstitutionsEndpoint : IEndpoint
         return TypedResults.Ok(result);
     }
 
+    private static readonly Dictionary<AllowedSortFields, Expression<Func<Institution, object>>> _sortOptions = new()
+    {
+        { AllowedSortFields.Title, x => x.Title },
+        { AllowedSortFields.Address, x => x.Address },
+        { AllowedSortFields.PhoneNumber, x => x.PhoneNumber },
+        { AllowedSortFields.Email, x => x.Email },
+        { AllowedSortFields.Domain, x => x.Domain }
+    };
+
     public sealed record Request(
         int? Page = 1,
-        int? PageSize = 10
-    ) : IPagedRequest;
+        int? PageSize = 10,
+        string? SortBy = null,
+        bool Descending = false
+    ) : IPagedRequest, ISortRequest;
 
     public sealed record Response(
         int Id,

@@ -114,7 +114,7 @@ public static class AdminSeeder
             Role = adminRole,
             Firstname = "John",
             Lastname = "Adminovich",
-            AvatarPath = "avatar/default.png",
+            //AvatarPath = "avatar/default.png",
             BirthDate = new DateOnly(2002, 1, 2),
             PhoneNumber = "+1234567890",
             HomeAddress = "123 Admin St, Admin City, Admin Country",

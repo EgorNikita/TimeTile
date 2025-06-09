@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Files.Services.Interfaces;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -49,7 +49,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             return TypedResults.NotFound(Result.Failure(error));
         }
 
-        var avatarUrl = await fileService.GetFileUrl(student.AvatarPath, cancellationToken);
+        //var avatarUrl = await fileService.GetFileUrl(student.AvatarPath, cancellationToken);
 
         var response = new Response(
             student.Id,
@@ -59,7 +59,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             student.HomeAddress,
             student.PhoneNumber,
             student.BirthDate,
-            avatarUrl
+            string.Empty                               //TODO: change
         );
 
         var result = Result.Success(response);

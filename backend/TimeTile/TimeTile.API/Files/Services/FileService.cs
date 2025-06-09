@@ -1,6 +1,6 @@
 using TimeTile.API.Files.Helpers;
-using TimeTile.API.Files.Repositories.Interfaces;
-using TimeTile.API.Files.Services.Interfaces;
+using TimeTile.Core.Common.Interfaces.Repositories;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 

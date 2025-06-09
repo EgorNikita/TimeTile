@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Files.Services.Interfaces;
-using TimeTile.API.Users.Services.Interfaces;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -80,7 +79,7 @@ public class CreateStudentEndpoint : IEndpoint
             HomeAddress = request.HomeAddress.Trim(),
             PhoneNumber = request.PhoneNumber.Trim(),
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
-            AvatarPath = avatarPath,
+            //AvatarPath = avatarPath,
             Login = login,
             InstitutionId = institution.Id,
             RoleId = studentRoleId

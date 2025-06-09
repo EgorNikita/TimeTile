@@ -1,7 +1,7 @@
 ﻿using TimeTile.Core.Common.UnifiedResponse;
 using File = TimeTile.Core.Models.File;
 
-namespace TimeTile.API.Files.Repositories.Interfaces;
+namespace TimeTile.Core.Common.Interfaces.Repositories;
 
 public interface IFileRepository
 {

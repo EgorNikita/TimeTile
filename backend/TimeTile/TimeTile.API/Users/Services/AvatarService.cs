@@ -1,5 +1,5 @@
 ﻿using SkiaSharp;
-using TimeTile.API.Users.Services.Interfaces;
+using TimeTile.Core.Common.Interfaces.Services;
 
 namespace TimeTile.API.Users.Services;
 

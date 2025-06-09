@@ -39,7 +39,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 throw new InvalidOperationException("There are no associations between institutions, roles and classrooms.");
 
             _faker
-                .RuleFor(m => m.AvatarPath, f => "undefined")           // TODO: add avatars
+                //.RuleFor(m => m.AvatarPath, f => "undefined")           // TODO: add avatars
                 .RuleFor(m => m.BirthDate, f => UserFaker.GenerateValidBirthDate(f, MIN_AGE, MAX_AGE))
                 .RuleFor(m => m.Firstname, _userFaker.GenerateValidFirstname)
                 .RuleFor(m => m.Lastname, _userFaker.GenerateValidLastname)

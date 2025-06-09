@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TimeTile.API.Files.Repositories.Interfaces;
+using TimeTile.Core.Common.Interfaces.Repositories;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
 using TimeTile.Storage.Contexts;

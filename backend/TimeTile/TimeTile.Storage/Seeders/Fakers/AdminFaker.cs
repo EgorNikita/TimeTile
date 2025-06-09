@@ -24,7 +24,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         public AdminFaker(Role adminRole)
         {
             _faker
-                .RuleFor(s => s.AvatarPath, f => "undefined")           // TODO: add avatars
+                //.RuleFor(s => s.AvatarPath, f => "undefined")           // TODO: add avatars
                 .RuleFor(s => s.BirthDate, f => UserFaker.GenerateValidBirthDate(f, MIN_AGE, MAX_AGE))
                 .RuleFor(s => s.Firstname, _userFaker.GenerateValidFirstname)
                 .RuleFor(s => s.Lastname, _userFaker.GenerateValidLastname)

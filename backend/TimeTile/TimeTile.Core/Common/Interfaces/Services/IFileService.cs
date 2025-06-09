@@ -1,6 +1,6 @@
 ﻿using TimeTile.Core.Common.UnifiedResponse;
 
-namespace TimeTile.API.Files.Services.Interfaces;
+namespace TimeTile.Core.Common.Interfaces.Services;
 
 public interface IFileService
 {

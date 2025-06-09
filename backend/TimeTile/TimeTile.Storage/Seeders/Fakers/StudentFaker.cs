@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -17,12 +18,12 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const int MIN_AGE = 6;
         private const int MAX_AGE = 25;
 
-        private readonly UserFaker _userFaker = new UserFaker();
+        private readonly UserFaker _userFaker;
 
         // Caching for optimization
         private readonly Dictionary<int, List<Group>> _institutionGroups = new();
 
-        public StudentFaker(Role studentRole, List<Institution> institutions, List<Group> groups)
+        public StudentFaker(Role studentRole, List<Institution> institutions, List<Group> groups, IUserService userService, IFileService fileService)
         {
             var suitableInstitutions = institutions
                 .Where(i => groups.Any(g => g.InstitutionId == i.Id));
@@ -30,8 +31,9 @@ namespace TimeTile.Storage.Seeders.Fakers
             if (!suitableInstitutions.Any())
                 throw new InvalidOperationException("There are no associations between institutions and groups.");
 
+            _userFaker = new UserFaker(userService, fileService);
+
             _faker
-                //.RuleFor(m => m.AvatarPath, f => "undefined")           // TODO: add avatars
                 .RuleFor(s => s.BirthDate, f => UserFaker.GenerateValidBirthDate(f, MIN_AGE, MAX_AGE))
                 .RuleFor(s => s.Firstname, _userFaker.GenerateValidFirstname)
                 .RuleFor(s => s.Lastname, _userFaker.GenerateValidLastname)
@@ -58,6 +60,9 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             var students = base.Generate(count);
 
+            Task.Run(async () =>
+                await _userFaker.GenerateAvatars(students.Cast<User>().ToList(), CancellationToken.None)).Wait();
+
             System.IO.File.AppendAllText(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted);
 
             return students;
@@ -66,6 +71,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         public async Task<List<Student>> GenerateAsync(int count, CancellationToken cancellationToken)
         {
             var students = base.Generate(count);
+
+            await _userFaker.GenerateAvatars(students.Cast<User>().ToList(), cancellationToken);
 
             await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted, cancellationToken);
 

@@ -5,7 +5,7 @@ namespace TimeTile.Core.Common.Interfaces.Repositories;
 
 public interface IFileRepository
 {
-    Task Add(string fileName, string extension, long fileLength, string filePath, CancellationToken cancellationToken);
+    Task<File> Add(string fileName, string extension, long fileLength, string filePath, CancellationToken cancellationToken);
 
     Task<Result<File>> GetById(int id, CancellationToken cancellationToken);
 }

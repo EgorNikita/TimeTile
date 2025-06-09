@@ -39,10 +39,14 @@ namespace TimeTile.Storage.Seeders
         private const int LESSONS_TO_STUDENTS_COUNT = 5000;
 
         private readonly TimetileDbContext _context;
+        private readonly IUserService _userService;
+        private readonly IFileService _fileService;
 
-        public DataSeeder(TimetileDbContext context)
+        public DataSeeder(TimetileDbContext context, IUserService userService, IFileService fileService)
         {
             _context = context;
+            _userService = userService;
+            _fileService = fileService;
         }
 
         public async Task Seed(CancellationToken cancellationToken = default)
@@ -96,7 +100,7 @@ namespace TimeTile.Storage.Seeders
             var groups = new GroupFaker(institutions).Generate(GROUPS_COUNT);
             await _context.Groups.AddRangeAsync(groups, cancellationToken);
 
-            var admins = await new AdminFaker(adminRole).GenerateAsync(ADMINS_COUNT, cancellationToken);
+            var admins = await new AdminFaker(adminRole, _userService, _fileService).GenerateAsync(ADMINS_COUNT, cancellationToken);
             await _context.Users.AddRangeAsync(admins, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -107,12 +111,12 @@ namespace TimeTile.Storage.Seeders
             var rolesToPermissions = new RoleToPermissionFaker(roles, permissions).Generate(ROLES_TO_PERMISSIONS_COUNT);
             await _context.RolesPermissions.AddRangeAsync(rolesToPermissions, cancellationToken);
 
-            var students = await new StudentFaker(studentRole, institutions, groups).GenerateAsync(STUDENTS_COUNT, cancellationToken);
+            var students = await new StudentFaker(studentRole, institutions, groups, _userService, _fileService).GenerateAsync(STUDENTS_COUNT, cancellationToken);
             await _context.Students.AddRangeAsync(students, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            var institutionMembers = await new InstitutionMemberFaker(roles, institutions, classrooms).GenerateAsync(INSTITUTION_MEMBERS_COUNT, cancellationToken);
+            var institutionMembers = await new InstitutionMemberFaker(roles, institutions, classrooms, _userService, _fileService).GenerateAsync(INSTITUTION_MEMBERS_COUNT, cancellationToken);
             await _context.InstitutionMembers.AddRangeAsync(institutionMembers, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);

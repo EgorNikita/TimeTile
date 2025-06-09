@@ -39,6 +39,11 @@ namespace TimeTile.Storage.Configurations
                 .AreNullsDistinct(false)
                 .IsUnique();
 
+            builder.HasIndex(e => new { e.Email, e.DeletedAt })
+                .HasDatabaseName("institutions_email_deleted_at_key")
+                .AreNullsDistinct(false)
+                .IsUnique();
+
             builder.HasIndex(e => new { e.Domain, e.DeletedAt })
                 .HasDatabaseName("institutions_domain_deleted_at_constraint")
                 .AreNullsDistinct(false)

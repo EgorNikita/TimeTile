@@ -49,7 +49,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             return TypedResults.NotFound(Result.Failure(error));
         }
 
-        //var avatarUrl = await fileService.GetFileUrl(student.AvatarPath, cancellationToken);
+        var avatarUrl = await fileService.GetFileUrl(student.Avatar.StoragePath, cancellationToken);
 
         var response = new Response(
             student.Id,
@@ -59,7 +59,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             student.HomeAddress,
             student.PhoneNumber,
             student.BirthDate,
-            string.Empty                               //TODO: change
+            avatarUrl
         );
 
         var result = Result.Success(response);

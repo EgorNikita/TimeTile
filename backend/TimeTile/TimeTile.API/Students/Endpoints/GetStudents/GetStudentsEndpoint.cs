@@ -130,7 +130,7 @@ public class GetStudentsEndpoint : IEndpoint
     {
         var responses = await Task.WhenAll(students.Select(async s =>
         {
-            var avatarUrl = await fileService.GetFileUrl(string.Empty, cancellationToken);      // TODO: change
+            var avatarUrl = await fileService.GetFileUrl(s.Avatar.StoragePath, cancellationToken);
             return new Response(
                 s.Id,
                 s.Firstname,

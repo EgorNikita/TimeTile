@@ -61,16 +61,16 @@ public class CreateStudentEndpoint : IEndpoint
             return TypedResults.NotFound(Result.Failure(roleResult.Error));
 
         var studentRoleId = roleResult.Data!.Id;
-        
-        //var avatarPath = await GetAvatarPath(
-        //    request.Avatar,
-        //    firstName,
-        //    lastName,
-        //    request.BirthDate,
-        //    userService,
-        //    fileService,
-        //    cancellationToken
-        //);
+
+        var avatarId = await GetAvatarId(
+            request.Avatar,
+            firstName,
+            lastName,
+            request.BirthDate,
+            userService,
+            fileService,
+            cancellationToken
+        );
 
         var student = new Student
         {
@@ -79,7 +79,7 @@ public class CreateStudentEndpoint : IEndpoint
             HomeAddress = request.HomeAddress.Trim(),
             PhoneNumber = request.PhoneNumber.Trim(),
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
-            //AvatarPath = avatarPath,
+            AvatarId = avatarId,
             Login = login,
             InstitutionId = institution.Id,
             RoleId = studentRoleId
@@ -110,29 +110,29 @@ public class CreateStudentEndpoint : IEndpoint
         return TypedResults.Created($"/students/{student.Id}", result);
     }
 
-    //private static async Task<string> GetAvatarPath(
-    //    IFormFile? avatar,
-    //    string firstname,
-    //    string lastname,
-    //    DateTime birthday,
-    //    IUserService userService,
-    //    IFileService fileService,
-    //    CancellationToken cancellationToken)
-    //{
-    //    await using var avatarStream = avatar != null
-    //        ? avatar.OpenReadStream()
-    //        : await userService.GenerateDefaultAvatar(firstname, lastname);
+    private static async Task<int> GetAvatarId(
+        IFormFile? avatar,
+        string firstname,
+        string lastname,
+        DateTime birthday,
+        IUserService userService,
+        IFileService fileService,
+        CancellationToken cancellationToken)
+    {
+        await using var avatarStream = avatar != null
+            ? avatar.OpenReadStream()
+            : await userService.GenerateDefaultAvatar(firstname, lastname);
 
-    //    var fileName = $"{firstname}_{lastname}_{birthday}_avatar.png";
+        var fileName = $"{firstname}_{lastname}_{birthday}_avatar.png";
 
-    //    var avatarPath = await fileService.SaveFile(
-    //        avatarStream,
-    //        fileName,
-    //        cancellationToken
-    //    );
+        var avatarId = await fileService.SaveFile(
+            avatarStream,
+            fileName,
+            cancellationToken
+        );
 
-    //    return avatarPath;
-    //}
+        return avatarId;
+    }
 
     private static async Task<Result> IsStudentDuplicate(
         Request request,

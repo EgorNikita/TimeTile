@@ -40,7 +40,7 @@ public class CreateInstitutionEndpoint : IEndpoint
 
         try
         {
-            database.Institutions.Add(institution);
+            await database.Institutions.AddAsync(institution, cancellationToken);
             await database.SaveChangesAsync(cancellationToken);
         }
         catch (Exception e)
@@ -72,7 +72,7 @@ public class CreateInstitutionEndpoint : IEndpoint
         CancellationToken cancellationToken)
     {
         var existing = await db.Institutions
-            .Where(i => i.Title == title || i.Email == email || i.Domain == domain)
+            .Where(i => i.DeletedAt == null && (i.Title == title || i.Email == email || i.Domain == domain))
             .Select(i => new { i.Title, i.Email, i.Domain })
             .FirstOrDefaultAsync(cancellationToken);
 

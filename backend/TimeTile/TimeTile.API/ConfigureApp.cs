@@ -21,12 +21,10 @@ public static class ConfigureApp
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            using var scope = app.Services.CreateScope();
+            //using var scope = app.Services.CreateScope();
 
-            var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-            var lifetime = scope.ServiceProvider.GetRequiredService<IHostApplicationLifetime>();
-
-            await seeder.Seed(lifetime.ApplicationStopping);
+            //var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+            //await seeder.Seed();
 
             app.UseDeveloperExceptionPage();
         }
@@ -61,13 +59,21 @@ public static class ConfigureApp
         using var scope = app.Services.CreateScope();
 
         var db = scope.ServiceProvider.GetRequiredService<TimetileDbContext>();
+
+        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+
         var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
         var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();
+
+        var logger = Log.Logger;
 
         try
         {
             await db.Database.MigrateAsync();
-            await AdminSeeder.SeedAsync(db, new PasswordHasher<User>(), userService, fileService, Log.Logger);
+
+            await PermissionsSeeder.Seed(db, logger);
+            await RolesSeeder.SeedRequiredRoles(db, logger);
+            await AdminSeeder.Seed(db, hasher, userService, fileService, logger);
         }
         catch (Exception ex)
         {

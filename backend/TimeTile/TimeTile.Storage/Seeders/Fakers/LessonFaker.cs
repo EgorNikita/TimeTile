@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TimeTile.Core.Common.Regex;
+using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -63,25 +64,24 @@ namespace TimeTile.Storage.Seeders.Fakers
                             ? _institutionClassrooms[institutionId]
                             : classrooms.Where(c => c.InstitutionId == institutionId);
 
-                        try
-                        {
-                            (int courseId, int classroomId, int timetableUnitId, DateTimeOffset date) = 
-                                FindPossibleCombinationOfDependencies(
-                                    suitableCourses.OrderBy(_ => Guid.NewGuid()), 
-                                    suitableTimetableUnits.OrderBy(_ => Guid.NewGuid()), 
-                                    suitableClassrooms.OrderBy(_ => Guid.NewGuid())
-                                );
+                        Result<(int courseId, int classroomId, int timetableUnitId, DateTimeOffset date)> result =
+                            FindPossibleCombinationOfDependencies(
+                                suitableCourses.OrderBy(_ => Guid.NewGuid()),
+                                suitableTimetableUnits.OrderBy(_ => Guid.NewGuid()),
+                                suitableClassrooms.OrderBy(_ => Guid.NewGuid())
+                            );
 
-                            lesson.CourseId = courseId;
-                            lesson.ClassroomId = classroomId;
-                            lesson.TimetableUnitId = timetableUnitId;
-                            lesson.Date = date;
-
-                            return;
-                        } catch (ArgumentException)
-                        {
+                        if (result.IsFailure)
                             continue;
-                        }
+
+                        var combination = result.Data;
+
+                        lesson.CourseId = combination.courseId;
+                        lesson.ClassroomId = combination.classroomId;
+                        lesson.TimetableUnitId = combination.timetableUnitId;
+                        lesson.Date = combination.date;
+
+                        return;
                     }
 
                     throw new ArgumentException("It is impossible to find combination for all dependencies: classroom, course, timetableUnit and date");
@@ -90,7 +90,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 .RuleFor(l => l.HomeworkDescription, GenerateValidHomeworkDescription);
         }
 
-        private (int CourseId, int ClassroomId, int TimetableUnitId, DateTimeOffset Date) FindPossibleCombinationOfDependencies(IEnumerable<Course> suitableCourses, IEnumerable<TimetableUnit> suitableTimetableUnits, IEnumerable<Classroom> classrooms)
+        private Result<(int CourseId, int ClassroomId, int TimetableUnitId, DateTimeOffset Date)> FindPossibleCombinationOfDependencies(IEnumerable<Course> suitableCourses, IEnumerable<TimetableUnit> suitableTimetableUnits, IEnumerable<Classroom> classrooms)
         {
             foreach (var timetableUnit in suitableTimetableUnits)
             {
@@ -113,7 +113,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                                     _usedTeachers.Add(teacherActivityInfo);
                                     _usedClassrooms.Add(classroomUsageInfo);
 
-                                    return (course.Id, classroom.Id, timetableUnit.Id, currentDate);
+                                    return Result.Success((course.Id, classroom.Id, timetableUnit.Id, currentDate));
                                 }
                             }
                         }
@@ -123,7 +123,9 @@ namespace TimeTile.Storage.Seeders.Fakers
                 }
             }
 
-            throw new ArgumentException("Unable to find combination.");
+            var error = Error.From("Unable to find combination.");
+
+            return Result.Failure<(int, int, int, DateTimeOffset)>(error);
         }
 
         private string GenerateValidDescription(Faker faker)

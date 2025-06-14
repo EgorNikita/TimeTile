@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
+using TimeTile.Storage.DataSeeders;
 
 namespace TimeTile.API.Students.Endpoints.CreateStudent;
 
@@ -161,11 +163,11 @@ public class CreateStudentEndpoint : IEndpoint
 
     private static async Task<Result<Role>> GetStudentRole(TimetileDbContext db, CancellationToken cancellationToken)
     {
-        var studentRole = await db.Roles.FirstOrDefaultAsync(r => r.Title == "Student", cancellationToken);
+        var studentRole = await db.Roles.FirstOrDefaultAsync(r => r.Title == GeneralRoles.Student, cancellationToken);
         if (studentRole != null) return Result.Success(studentRole);
 
         var error = Error.From(
-            "The 'Student' role does not exist. Please create it before adding a student.",
+            $"The '{GeneralRoles.Student}' role does not exist. Please create it before adding a student.",
             "ROLE_NOT_FOUND"
         );
         return Result.Failure<Role>(error);

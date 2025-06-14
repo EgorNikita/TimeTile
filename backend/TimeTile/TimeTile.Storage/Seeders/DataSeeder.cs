@@ -1,8 +1,11 @@
 ﻿using Bogus;
 using Microsoft.EntityFrameworkCore;
+using TimeTile.API.Common.Constants;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
+using TimeTile.Storage.DataSeeders;
 using TimeTile.Storage.Seeders.Fakers;
 
 namespace TimeTile.Storage.Seeders
@@ -57,25 +60,15 @@ namespace TimeTile.Storage.Seeders
 
             await ClearAllTxtFiles(cancellationToken);
 
+            // Get already seeded permissions
+            var permissions = await _context.Permissions.ToListAsync(cancellationToken);
+
+            // Get already seeded roles
+            var adminRole = await _context.Roles.FirstAsync(r => r.Title == GeneralRoles.Admin, cancellationToken);
+            var studentRole = await _context.Roles.FirstAsync(r => r.Title == GeneralRoles.Student, cancellationToken);
+
             var institutions = new InstitutionFaker().Generate(INSTITUTIONS_COUNT);
             await _context.Institutions.AddRangeAsync(institutions, cancellationToken);
-
-            var permissions = new PermissionFaker().Generate();
-            await _context.Permissions.AddRangeAsync(permissions, cancellationToken);
-
-            // Essential for Student generation
-            Role studentRole = new Role()
-            {
-                Title = "Student"
-            };
-            await _context.Roles.AddAsync(studentRole, cancellationToken);
-
-            // Essential for Admin generation
-            Role adminRole = new Role()
-            {
-                Title = "Admin"
-            };
-            await _context.Roles.AddAsync(adminRole, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
 

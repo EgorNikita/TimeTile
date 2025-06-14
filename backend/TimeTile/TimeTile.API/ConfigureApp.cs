@@ -21,11 +21,6 @@ public static class ConfigureApp
             app.UseSwagger();
             app.UseSwaggerUI();
 
-            //using var scope = app.Services.CreateScope();
-
-            //var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-            //await seeder.Seed();
-
             app.UseDeveloperExceptionPage();
         }
         else
@@ -52,6 +47,14 @@ public static class ConfigureApp
         app.MapEndpoints();
 
         await app.EnsureDatabaseCreated();
+
+        if (app.Environment.IsDevelopment())
+        {
+            using var scope = app.Services.CreateScope();
+
+            var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+            await seeder.Seed();
+        }
     }
 
     private static async Task EnsureDatabaseCreated(this WebApplication app)

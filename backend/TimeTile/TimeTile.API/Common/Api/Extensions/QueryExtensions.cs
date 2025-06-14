@@ -1,26 +1,31 @@
-﻿using System.Linq.Expressions;
+﻿using System.Linq.Dynamic.Core;
+using TimeTile.Core.Models;
+using System.Reflection;
 
 namespace TimeTile.API.Common.Api.Extensions
 {
     public static class QueryExtensions
     {
-        public static IQueryable<T> ApplySorting<T, TSortEnum>(
-            this IQueryable<T> query, 
-            string? sortBy, 
+        public static IQueryable<T> ApplySorting<T>(
+            this IQueryable<T> query,
+            string? sortBy,
             bool descending,
-            TSortEnum defaultSortField,
-            Dictionary<TSortEnum, Expression<Func<T, object>>> sortSelectors) where TSortEnum : struct, Enum
+            string? defaultSortField = nameof(AuditableEntity.CreatedAt))
+            where T : AuditableEntity
         {
-            if (string.IsNullOrEmpty(sortBy) ||
-                !Enum.TryParse<TSortEnum>(sortBy, true, out var sortField) ||
-                !sortSelectors.TryGetValue(sortField, out var sortExpression))
+            if (string.IsNullOrEmpty(sortBy) || !IsValidProperty<T>(sortBy))
             {
-                sortExpression = sortSelectors[defaultSortField];
+                sortBy = defaultSortField;
             }
 
-            return descending
-                ? query.OrderByDescending(sortExpression)
-                : query.OrderBy(sortExpression);
+            var direction = descending ? "desc" : "asc";
+            return query.OrderBy($"{sortBy} {direction}");
+        }
+
+        private static bool IsValidProperty<T>(string propertyName)
+        {
+            return typeof(T).GetProperty(propertyName,
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase) != null;
         }
     }
 }

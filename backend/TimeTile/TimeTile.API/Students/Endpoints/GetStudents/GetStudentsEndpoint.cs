@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -42,9 +41,7 @@ public class GetStudentsEndpoint : IEndpoint
         var students = await BuildFilteredQuery(request, institutionId, db)
             .ApplySorting(
                 request.SortBy,
-                request.Descending,
-                AllowedSortFields.Firstname,
-                _sortOptions
+                request.Descending
             )
             .ToPagedListAsync(request, cancellationToken);
 
@@ -118,15 +115,7 @@ public class GetStudentsEndpoint : IEndpoint
 
         return responses.ToList();
     }
-
-    private static readonly Dictionary<AllowedSortFields, Expression<Func<Student, object>>> _sortOptions = new()
-    {
-        { AllowedSortFields.Firstname, x => x.Firstname },
-        { AllowedSortFields.Lastname, x => x.Lastname },
-        { AllowedSortFields.Birthdate, x => x.BirthDate },
-        { AllowedSortFields.Login, x => x.Login }
-    };
-
+    
     public sealed record Request(
         int[]? GroupIds = null,
         int[]? CourseIds = null,

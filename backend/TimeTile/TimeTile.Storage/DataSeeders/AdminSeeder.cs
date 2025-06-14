@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -22,7 +23,7 @@ public static class AdminSeeder
         if (await db.Users.AnyAsync(u => u.Login == ADMIN_LOGIN, cancellationToken))
             return;
 
-        var adminRole = await db.Roles.FirstOrDefaultAsync(r => r.Title == RolesSeeder.ADMIN_ROLE_TITLE, cancellationToken)
+        var adminRole = await db.Roles.FirstOrDefaultAsync(r => r.Title == GeneralRoles.Admin, cancellationToken)
             ?? throw new InvalidOperationException("Admin role not found.");
 
         var user = new User

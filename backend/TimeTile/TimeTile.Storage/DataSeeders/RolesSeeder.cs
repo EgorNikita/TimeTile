@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -14,9 +15,6 @@ namespace TimeTile.Storage.DataSeeders
 {
     public static class RolesSeeder
     {
-        public const string ADMIN_ROLE_TITLE = "Admin";
-        public const string STUDENT_ROLE_TITLE = "Student";
-
         private static readonly List<string> _studentPermissions =
         [
             Permissions.GetSchedule,
@@ -37,7 +35,7 @@ namespace TimeTile.Storage.DataSeeders
             ILogger logger, 
             CancellationToken cancellationToken)
         {
-            if (await db.Roles.AnyAsync(r => r.Title == ADMIN_ROLE_TITLE, cancellationToken))
+            if (await db.Roles.AnyAsync(r => r.Title == GeneralRoles.Admin, cancellationToken))
                 return;
 
             var permission = await db.Permissions.FirstOrDefaultAsync(p => p.Description == Permissions.CreateInstitution, cancellationToken)
@@ -45,7 +43,7 @@ namespace TimeTile.Storage.DataSeeders
 
             var role = new Role()
             {
-                Title = ADMIN_ROLE_TITLE,
+                Title = GeneralRoles.Admin,
                 RoleToPermissions =
                 [
                     new RoleToPermission()
@@ -66,7 +64,7 @@ namespace TimeTile.Storage.DataSeeders
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            if (await db.Roles.AnyAsync(r => r.Title == STUDENT_ROLE_TITLE, cancellationToken))
+            if (await db.Roles.AnyAsync(r => r.Title == GeneralRoles.Student, cancellationToken))
                 return;
 
             var permissions = await db.Permissions
@@ -78,7 +76,7 @@ namespace TimeTile.Storage.DataSeeders
 
             var role = new Role()
             {
-                Title = STUDENT_ROLE_TITLE,
+                Title = GeneralRoles.Student,
                 RoleToPermissions = permissions.Select(p => new RoleToPermission()
                 {
                     PermissionId = p.Id

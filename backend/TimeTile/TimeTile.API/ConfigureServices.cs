@@ -34,6 +34,7 @@ public static class ConfigureServices
         builder.AddJwtAuthentication();
         builder.AddAuthorization();
         builder.AddRateLimiting();
+        builder.AddCors();
 
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
 
@@ -47,6 +48,20 @@ public static class ConfigureServices
         Log.Information("Service configuration completed.");
     }
 
+    private static void AddCors(this WebApplicationBuilder builder)
+    {
+        Log.Information("Configuring CORS...");
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
+    }
+    
     private static void AddSwagger(this WebApplicationBuilder builder)
     {
         Log.Information("Configuring Swagger...");

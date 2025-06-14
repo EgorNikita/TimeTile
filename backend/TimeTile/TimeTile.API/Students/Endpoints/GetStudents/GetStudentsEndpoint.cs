@@ -7,6 +7,7 @@ using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
+using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
@@ -37,11 +38,12 @@ public class GetStudentsEndpoint : IEndpoint
 
         var institutionId = institutionResult.Data;
 
-        var query = BuildFilteredQuery(request, institutionId, db);
-
-        query = ApplySorting(query, request);
-
-        var students = await query.ToPagedListAsync(request, cancellationToken);
+        var students = await BuildFilteredQuery(request, institutionId, db)
+            .ApplySorting(
+                request.SortBy,
+                request.Descending
+            )
+            .ToPagedListAsync(request, cancellationToken);
 
         var responses = await MapToResponses(students.Items, fileService, cancellationToken);
 
@@ -94,35 +96,6 @@ public class GetStudentsEndpoint : IEndpoint
         return query;
     }
 
-    private static IQueryable<Student> ApplySorting(IQueryable<Student> query, Request request)
-    {
-        if (string.IsNullOrEmpty(request.SortBy) ||
-            !Enum.TryParse<AllowedSortFields>(request.SortBy, true, out var sortField))
-            // Default sorting
-            return query.OrderBy(s => s.Firstname);
-
-        return sortField switch
-        {
-            AllowedSortFields.Firstname => request.Descending
-                ? query.OrderByDescending(s => s.Firstname)
-                : query.OrderBy(s => s.Firstname),
-
-            AllowedSortFields.Lastname => request.Descending
-                ? query.OrderByDescending(s => s.Lastname)
-                : query.OrderBy(s => s.Lastname),
-
-            AllowedSortFields.Birthdate => request.Descending
-                ? query.OrderByDescending(s => s.BirthDate)
-                : query.OrderBy(s => s.BirthDate),
-
-            AllowedSortFields.Login => request.Descending
-                ? query.OrderByDescending(s => s.Login)
-                : query.OrderBy(s => s.Login),
-
-            _ => query.OrderBy(s => s.Firstname)
-        };
-    }
-
     private static async Task<List<Response>> MapToResponses(
         IEnumerable<Student> students,
         IFileService fileService,
@@ -142,7 +115,7 @@ public class GetStudentsEndpoint : IEndpoint
 
         return responses.ToList();
     }
-
+    
     public sealed record Request(
         int[]? GroupIds = null,
         int[]? CourseIds = null,
@@ -154,7 +127,7 @@ public class GetStudentsEndpoint : IEndpoint
         [FromQuery] int? PageSize = 10,
         [FromQuery] string? SortBy = null,
         [FromQuery] bool Descending = false
-    ) : IPagedRequest;
+    ) : IPagedRequest, ISortRequest;
 
     public sealed record Response(
         int Id,

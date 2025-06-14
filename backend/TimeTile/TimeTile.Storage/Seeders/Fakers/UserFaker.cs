@@ -29,7 +29,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         // For saving passwords
         public List<LoginCredential> LoginData { get; } = new();
-        public string LoginDataFormatted => string.Join(Environment.NewLine, LoginData.Select(x => $"Login: {x.Login}; Password: {x.Password}"));
+        public string LoginDataFormatted => string.Join(Environment.NewLine, LoginData.Select(x => $"Login: {x.Login}; Password: {x.Password};"));
 
         private readonly IUserService _userService;
         private readonly IFileService _fileService;

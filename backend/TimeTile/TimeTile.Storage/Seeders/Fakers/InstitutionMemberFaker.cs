@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,13 +55,13 @@ namespace TimeTile.Storage.Seeders.Fakers
                 {
                     member.InstitutionId = faker.PickRandom(suitableInstitutions).Id;
 
-                    member.RoleId = PickAssociatedEntity(
+                    member.Role = PickAssociatedEntity(
                         faker,
                         (int)member.InstitutionId,
                         roles,
                         _institutionRoles,
                         r => r.InstitutionId == member.InstitutionId
-                    ).Id;
+                    );
 
                     member.PreferredClassroomId = PickAssociatedEntity(
                         faker,
@@ -90,9 +91,30 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             await _userFaker.GenerateAvatars(institutionMembers.Cast<User>().ToList(), cancellationToken);
 
-            await System.IO.File.AppendAllTextAsync(FormFullPath(LOGIN_DATA_FILE_NAME), _userFaker.LoginDataFormatted, cancellationToken);
+            await System.IO.File.AppendAllTextAsync(
+                FormFullPath(LOGIN_DATA_FILE_NAME), 
+                FormatLoginDataContent(institutionMembers), 
+                cancellationToken
+            );
 
             return institutionMembers;
+        }
+
+        private string FormatLoginDataContent(List<InstitutionMember> institutionMembers)
+        {
+            var dictionary = institutionMembers.ToDictionary(x => x.Login);
+
+            return string.Join(Environment.NewLine, _userFaker.LoginData.Select(loginData =>
+            {
+                var institutionMember = dictionary[loginData.Login];
+
+                var loginDataFormatted = $"Login: {loginData.Login}; Password: {loginData.Password};";
+                var permissions = string.Join(Environment.NewLine, institutionMember.Role.Permissions.Select(p => '\t' + p.Description));
+
+                return loginDataFormatted + '\n' +
+                    "Permissions:" + '\n' +
+                    permissions + '\n';
+            }));
         }
     }
 }

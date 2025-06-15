@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using TimeTile.API.Common;
+using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.Regex;
 
 namespace TimeTile.API.Students.Endpoints.CreateStudent;

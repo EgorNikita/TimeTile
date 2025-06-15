@@ -30,7 +30,6 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Get
             [AsParameters] Request request,
             TimetileDbContext db,
             IClassroomTypeService classroomTypeService,
-            IFileService fileService,
             ClaimsPrincipal claimsPrincipal,
             CancellationToken cancellationToken)
         {

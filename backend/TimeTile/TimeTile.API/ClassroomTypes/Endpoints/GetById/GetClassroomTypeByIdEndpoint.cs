@@ -26,7 +26,6 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.GetById
             [AsParameters] Request request,
             TimetileDbContext db, 
             IClassroomTypeService classroomTypeService,
-            IFileService fileService,
             ClaimsPrincipal claimsPrincipal,
             CancellationToken cancellationToken)
         {

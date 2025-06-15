@@ -59,6 +59,16 @@ public class FileService : IFileService
         return file.Id;
     }
 
+    public async Task DeleteFilePhysically(int id, CancellationToken cancellationToken)
+    {
+        var file = await _fileRepository.GetById(id, cancellationToken);
+
+        if (file.IsSuccess && File.Exists(file.Data!.StoragePath))
+        {
+            File.Delete(file.Data!.StoragePath);
+        }
+    }
+
     public async Task<Result<Stream>> GetFileStream(int id, CancellationToken cancellationToken)
     {
         var result = await _fileRepository.GetById(id, cancellationToken);

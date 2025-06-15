@@ -21,18 +21,31 @@ public class CreateRoleEndpoint : IEndpoint
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>>> Handle(
+    private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>, JsonHttpResult<Result>>> Handle(
         Request request,
         TimetileDbContext db,
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
+        // Extract InstitutionId
+        var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
+
+        if (institutionResult.IsFailure)
+            return TypedResults.Json(
+                Result.Failure(institutionResult.Error),
+                statusCode: StatusCodes.Status401Unauthorized
+            );
+
+        var institutionId = institutionResult.Data;
+
+        // Check if already exists
         var duplicateCheckResult = await IsRoleTitleExists(
-            request.Title, db, cancellationToken);
+            request.Title, institutionId, db, cancellationToken);
 
         if (duplicateCheckResult.IsFailure)
             return TypedResults.BadRequest(duplicateCheckResult);
 
+        // Save role
         var permissionsResult = await GetPermissionsAsync(
             request.PermissionsIds,
             db,
@@ -44,14 +57,10 @@ public class CreateRoleEndpoint : IEndpoint
 
         var permissions = permissionsResult.Data!;
 
-        var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-        if (!institutionResult.IsSuccess)
-            return TypedResults.NotFound(Result.Failure(institutionResult.Error));
-
         var role = new Role
         {
             Title = request.Title,
-            InstitutionId = institutionResult.Data,
+            InstitutionId = institutionId,
             RoleToPermissions = permissions
                 .Select(permission => new RoleToPermission
                 {
@@ -60,10 +69,10 @@ public class CreateRoleEndpoint : IEndpoint
                 .ToList()
         };
 
-        var saveResult = await SaveRole(db, role, cancellationToken);
-        if (saveResult.IsFailure)
-            return TypedResults.BadRequest(Result.Failure(saveResult.Error));
+        await db.Roles.AddAsync(role, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
 
+        // Return result
         var response = new Response(role.Id, role.Title);
 
         var result = Result.Success(response);
@@ -71,31 +80,15 @@ public class CreateRoleEndpoint : IEndpoint
         return TypedResults.Created($"/roles/{role.Id}", result);
     }
 
-    private static async Task<Result> SaveRole(
-        TimetileDbContext db,
-        Role role,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await db.Roles.AddAsync(role, cancellationToken);
-            await db.SaveChangesAsync(cancellationToken);
-            return Result.Success();
-        }
-        catch (Exception e)
-        {
-            Log.Error(e, "Error while saving new role");
-            return Result.Failure(new Error("DatabaseError", "Failed to save role"));
-        }
-    }
-
     private static async Task<Result> IsRoleTitleExists(
         string title,
+        int institutionId,
         TimetileDbContext db,
         CancellationToken cancellationToken)
     {
         var existing = await db.Roles
             .AsNoTracking()
+            .Where(r => r.InstitutionId == institutionId)
             .AnyAsync(r => r.DeletedAt == null && r.Title == title, cancellationToken);
 
         if (existing)

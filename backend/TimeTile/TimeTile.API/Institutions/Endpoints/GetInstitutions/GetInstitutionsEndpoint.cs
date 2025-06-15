@@ -16,7 +16,7 @@ public class GetInstitutionsEndpoint : IEndpoint
     {
         return app
             .MapGet("/", Handle)
-            .WithSummary("Returns a page of Institutions")
+            .WithSummary("Returns a page of institutions")
             .WithRequestValidation<Request>();
     }
 

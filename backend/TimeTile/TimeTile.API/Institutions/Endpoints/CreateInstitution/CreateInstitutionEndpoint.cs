@@ -38,17 +38,8 @@ public class CreateInstitutionEndpoint : IEndpoint
             Domain = request.Domain
         };
 
-        try
-        {
-            await database.Institutions.AddAsync(institution, cancellationToken);
-            await database.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception e)
-        {
-            var error = Error.From(e.Message);
-
-            return TypedResults.BadRequest(Result.Failure(error));
-        }
+        await database.Institutions.AddAsync(institution, cancellationToken);
+        await database.SaveChangesAsync(cancellationToken);
 
         var response = new Response(
             institution.Id,

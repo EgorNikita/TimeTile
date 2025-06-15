@@ -20,7 +20,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
+    private static async Task<Results<Ok<Result<Response>>, NotFound<Result>, JsonHttpResult<Result>>> Handle(
         [AsParameters] Request request,
         TimetileDbContext db,
         IFileService fileService,
@@ -28,15 +28,18 @@ public class GetStudentByIdEndpoint : IEndpoint
         CancellationToken cancellationToken)
     {
         var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-        if (!institutionResult.IsSuccess)
-            return TypedResults.NotFound(Result.Failure(institutionResult.Error));
+        if (institutionResult.IsFailure)
+            return TypedResults.Json(
+                Result.Failure(institutionResult.Error),
+                statusCode: StatusCodes.Status401Unauthorized
+            );
 
         var institutionId = institutionResult.Data;
 
         var student = await db.Students
             .AsNoTracking()
             .FirstOrDefaultAsync(s =>
-                    s.Id == request.Id && s.InstitutionId == institutionId, cancellationToken
+                s.Id == request.Id && s.InstitutionId == institutionId, cancellationToken
             );
 
         if (student is null)
@@ -49,7 +52,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             return TypedResults.NotFound(Result.Failure(error));
         }
 
-        var avatarUrl = await fileService.GetFileUrl(student.Avatar.StoragePath, cancellationToken);
+        var avatarUrl = fileService.GetFileUrl(student.Avatar.StoragePath);
 
         var response = new Response(
             student.Id,

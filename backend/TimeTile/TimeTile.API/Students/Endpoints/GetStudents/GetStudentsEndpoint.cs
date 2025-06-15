@@ -21,11 +21,11 @@ public class GetStudentsEndpoint : IEndpoint
     {
         return app
             .MapGet("/", Handle)
-            .WithSummary("Retrieves a list of all students")
+            .WithSummary("Returns a page of students")
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<Results<Ok<Result<PagedList<Response>>>, NotFound<Result>>> Handle(
+    private static async Task<Results<Ok<Result<PagedList<Response>>>, JsonHttpResult<Result>>> Handle(
         [AsParameters] Request request,
         TimetileDbContext db,
         IFileService fileService,
@@ -33,29 +33,30 @@ public class GetStudentsEndpoint : IEndpoint
         CancellationToken cancellationToken)
     {
         var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-        if (!institutionResult.IsSuccess)
-            return TypedResults.NotFound(Result.Failure(institutionResult.Error));
+
+        if (institutionResult.IsFailure)
+            return TypedResults.Json(
+                Result.Failure(institutionResult.Error),
+                statusCode: StatusCodes.Status401Unauthorized
+            );
 
         var institutionId = institutionResult.Data;
 
+        // Form a final paged list
         var students = await BuildFilteredQuery(request, institutionId, db)
             .ApplySorting(
                 request.SortBy,
                 request.Descending
-            )
+            ).Select(s => new Response(
+                s.Id,
+                s.Firstname,
+                s.Lastname,
+                s.Login,
+                fileService.GetFileUrl(s.Avatar.StoragePath)
+            ))
             .ToPagedListAsync(request, cancellationToken);
 
-        var responses = await MapToResponses(students.Items, fileService, cancellationToken);
-
-        var pagedResponse = new PagedList<Response>(
-            responses,
-            students.Page,
-            students.PageSize,
-            students.TotalPages,
-            students.TotalCount
-        );
-
-        var result = Result.Success(pagedResponse);
+        var result = Result.Success(students);
 
         return TypedResults.Ok(result);
     }
@@ -96,26 +97,6 @@ public class GetStudentsEndpoint : IEndpoint
         return query;
     }
 
-    private static async Task<List<Response>> MapToResponses(
-        IEnumerable<Student> students,
-        IFileService fileService,
-        CancellationToken cancellationToken)
-    {
-        var responses = await Task.WhenAll(students.Select(async s =>
-        {
-            var avatarUrl = await fileService.GetFileUrl(s.Avatar.StoragePath, cancellationToken);
-            return new Response(
-                s.Id,
-                s.Firstname,
-                s.Lastname,
-                s.Login,
-                avatarUrl
-            );
-        }));
-
-        return responses.ToList();
-    }
-    
     public sealed record Request(
         int[]? GroupIds = null,
         int[]? CourseIds = null,

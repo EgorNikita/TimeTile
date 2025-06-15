@@ -28,12 +28,12 @@ public class FileService : IFileService
         _fileRepository = repository;
     }
 
-    public Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken)
+    public string GetFileUrl(string filePath)
     {
         var fileName = Path.GetFileName(filePath);                  //TODO: Reconsider
 
         var fileUrl = $"{STORAGE_FOLDER}/{Uri.EscapeDataString(fileName)}";
-        return Task.FromResult(fileUrl);
+        return fileUrl;
     }
 
     public async Task<int> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)
@@ -57,6 +57,16 @@ public class FileService : IFileService
         var file = await _fileRepository.Add(fileName, extension, fileStreamOutput.Length, filePath, cancellationToken);
 
         return file.Id;
+    }
+
+    public async Task DeleteFilePhysically(int id, CancellationToken cancellationToken)
+    {
+        var file = await _fileRepository.GetById(id, cancellationToken);
+
+        if (file.IsSuccess && File.Exists(file.Data!.StoragePath))
+        {
+            File.Delete(file.Data!.StoragePath);
+        }
     }
 
     public async Task<Result<Stream>> GetFileStream(int id, CancellationToken cancellationToken)

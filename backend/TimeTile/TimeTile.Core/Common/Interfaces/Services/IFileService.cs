@@ -4,7 +4,8 @@ namespace TimeTile.Core.Common.Interfaces.Services;
 
 public interface IFileService
 {
-    Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken);
+    string GetFileUrl(string filePath);
     Task<int> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken);
+    Task DeleteFilePhysically(int id, CancellationToken cancellationToken);
     Task<Result<Stream>> GetFileStream(int id, CancellationToken cancellationToken);
 }

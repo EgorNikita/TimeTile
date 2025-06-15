@@ -1,4 +1,5 @@
 using TimeTile.API.Authentication.Endpoints;
+using TimeTile.API.ClassroomTypes.Endpoints.Create;
 using TimeTile.API.ClassroomTypes.Endpoints.Get;
 using TimeTile.API.ClassroomTypes.Endpoints.GetById;
 using TimeTile.API.Common.Api;
@@ -42,6 +43,8 @@ public static class Endpoints
         endpoints.MapEndpoint<GetClassroomTypesEndpoint>();
 
         endpoints.MapEndpoint<GetClassroomTypeByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateClassroomTypeEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)

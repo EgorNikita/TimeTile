@@ -20,7 +20,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
+    private static async Task<Results<Ok<Result<Response>>, NotFound<Result>, JsonHttpResult<Result>>> Handle(
         [AsParameters] Request request,
         TimetileDbContext db,
         IFileService fileService,
@@ -28,8 +28,11 @@ public class GetStudentByIdEndpoint : IEndpoint
         CancellationToken cancellationToken)
     {
         var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-        if (!institutionResult.IsSuccess)
-            return TypedResults.NotFound(Result.Failure(institutionResult.Error));
+        if (institutionResult.IsFailure)
+            return TypedResults.Json(
+                Result.Failure(institutionResult.Error),
+                statusCode: StatusCodes.Status401Unauthorized
+            );
 
         var institutionId = institutionResult.Data;
 

@@ -34,7 +34,8 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Get
             CancellationToken cancellationToken)
         {
             var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-            if (!institutionResult.IsSuccess)
+
+            if (institutionResult.IsFailure)
                 return TypedResults.Json(
                     Result.Failure(institutionResult.Error),
                     statusCode: StatusCodes.Status401Unauthorized

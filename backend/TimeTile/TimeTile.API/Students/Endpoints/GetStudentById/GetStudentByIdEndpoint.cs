@@ -24,17 +24,10 @@ public class GetStudentByIdEndpoint : IEndpoint
         [AsParameters] Request request,
         TimetileDbContext db,
         IFileService fileService,
-        ClaimsPrincipal claimsPrincipal,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
-        var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-        if (institutionResult.IsFailure)
-            return TypedResults.Json(
-                Result.Failure(institutionResult.Error),
-                statusCode: StatusCodes.Status401Unauthorized
-            );
-
-        var institutionId = institutionResult.Data;
+        var institutionId = httpContext.GetInstitutionId();
 
         var student = await db.Students
             .AsNoTracking()

@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Threading;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,8 @@ using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Constants;
+using TimeTile.API.Files.Services;
+using TimeTile.API.Users.Services;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
@@ -26,7 +29,7 @@ public class CreateStudentEndpoint : IEndpoint
             .DisableAntiforgery();
     }
 
-    private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>>> Handle(
+    private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>, JsonHttpResult<Result>>> Handle(
         [FromForm] Request request,
         TimetileDbContext db,
         IUserService userService,
@@ -35,18 +38,25 @@ public class CreateStudentEndpoint : IEndpoint
         ClaimsPrincipal claimsPrincipal,
         CancellationToken cancellationToken)
     {
-        var duplicateCheckResult = await IsStudentDuplicate(
+        // Extract institutionId
+        var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
+
+        if (institutionResult.IsFailure)
+            return TypedResults.Json(
+                Result.Failure(institutionResult.Error),
+                statusCode: StatusCodes.Status401Unauthorized
+            );
+
+        var institutionId = institutionResult.Data;
+
+        // Check if already exists in db
+        var duplicateCheckResult = await IsStudentDuplicate(            // TODO: will return false, but login will be already taken
             request, db, cancellationToken);
 
         if (duplicateCheckResult.IsFailure)
             return TypedResults.BadRequest(duplicateCheckResult);
 
-
-        var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-        if (institutionResult.IsFailure)
-            return TypedResults.NotFound(Result.Failure(institutionResult.Error));
-
-        var institutionId = institutionResult.Data;
+        // Save student
         var institution = await db.Institutions
             .AsNoTracking()
             .FirstAsync(i => i.Id == institutionId, cancellationToken);
@@ -58,21 +68,7 @@ public class CreateStudentEndpoint : IEndpoint
         var password = await userService.GenerateDefaultPassword(firstName, lastName, birthYear);
         var login = await userService.GenerateUniqueLoginAsync(firstName, lastName, birthYear, institution.Domain);
 
-        var roleResult = await GetStudentRole(db, cancellationToken);
-        if (roleResult.IsFailure)
-            return TypedResults.NotFound(Result.Failure(roleResult.Error));
-
-        var studentRoleId = roleResult.Data!.Id;
-
-        var avatarId = await GetAvatarId(
-            request.Avatar,
-            firstName,
-            lastName,
-            request.BirthDate,
-            userService,
-            fileService,
-            cancellationToken
-        );
+        var studentRole = await GetStudentRole(db, cancellationToken);
 
         var student = new Student
         {
@@ -81,25 +77,23 @@ public class CreateStudentEndpoint : IEndpoint
             HomeAddress = request.HomeAddress.Trim(),
             PhoneNumber = request.PhoneNumber.Trim(),
             BirthDate = DateOnly.FromDateTime(request.BirthDate),
-            AvatarId = avatarId,
             Login = login,
             InstitutionId = institution.Id,
-            RoleId = studentRoleId
+            RoleId = studentRole.Id
         };
 
         student.PasswordHash = hasher.HashPassword(student, password);
 
-        try
-        {
-            await db.Students.AddAsync(student, cancellationToken);
-            await db.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception e)
-        {
-            var error = Error.From(e.Message);
-            return TypedResults.BadRequest(Result.Failure(error));
-        }
+        await SaveStudent(
+            student,
+            request,
+            db,
+            userService,
+            fileService,
+            cancellationToken
+        );
 
+        // Return result
         var response = new Response(
             student.Id,
             student.Firstname,
@@ -110,6 +104,44 @@ public class CreateStudentEndpoint : IEndpoint
         var result = Result.Success(response);
 
         return TypedResults.Created($"/students/{student.Id}", result);
+    }
+
+    private static async Task SaveStudent(
+        Student student,
+        Request request,
+        TimetileDbContext db,
+        IUserService userService,
+        IFileService fileService,
+        CancellationToken cancellationToken)
+    {
+        using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            var avatarId = await GetAvatarId(
+                request.Avatar,
+                student.Firstname,
+                student.Lastname,
+                request.BirthDate,
+                userService,
+                fileService,
+                cancellationToken
+            );
+
+            student.AvatarId = avatarId;
+
+            await db.Students.AddAsync(student, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await fileService.DeleteFilePhysically(student.AvatarId, cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
+
+            throw;
+        }
     }
 
     private static async Task<int> GetAvatarId(
@@ -161,26 +193,20 @@ public class CreateStudentEndpoint : IEndpoint
         return Result.Success();
     }
 
-    private static async Task<Result<Role>> GetStudentRole(TimetileDbContext db, CancellationToken cancellationToken)
+    private static async Task<Role> GetStudentRole(TimetileDbContext db, CancellationToken cancellationToken)
     {
-        var studentRole = await db.Roles.FirstOrDefaultAsync(r => r.Title == GeneralRoles.Student, cancellationToken);
-        if (studentRole != null) return Result.Success(studentRole);
-
-        var error = Error.From(
-            $"The '{GeneralRoles.Student}' role does not exist. Please create it before adding a student.",
-            "ROLE_NOT_FOUND"
-        );
-        return Result.Failure<Role>(error);
+        return await db.Roles.FirstAsync(r => r.Title == GeneralRoles.Student, cancellationToken);
     }
 
-    public record Request(
-        IFormFile? Avatar,
-        string Firstname,
-        string Lastname,
-        string HomeAddress,
-        string PhoneNumber,
-        DateTime BirthDate
-    );
+    public record Request
+    {
+        public IFormFile? Avatar { get; init; }
+        public string Firstname { get; init; } = null!;
+        public string Lastname { get; init; } = null!;
+        public string HomeAddress { get; init; } = null!;
+        public string PhoneNumber { get; init; } = null!;
+        public DateTime BirthDate { get; init; }
+    };
 
     private record Response(
         int Id,

@@ -101,9 +101,9 @@ public class GetStudentsEndpoint : IEndpoint
         IFileService fileService,
         CancellationToken cancellationToken)
     {
-        var responses = await Task.WhenAll(students.Select(async s =>
+        var responses = students.Select(s =>
         {
-            var avatarUrl = await fileService.GetFileUrl(s.Avatar.StoragePath, cancellationToken);
+            var avatarUrl = fileService.GetFileUrl(s.Avatar.StoragePath);
             return new Response(
                 s.Id,
                 s.Firstname,
@@ -111,7 +111,7 @@ public class GetStudentsEndpoint : IEndpoint
                 s.Login,
                 avatarUrl
             );
-        }));
+        });
 
         return responses.ToList();
     }

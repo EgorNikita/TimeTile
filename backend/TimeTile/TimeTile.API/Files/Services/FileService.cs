@@ -28,12 +28,12 @@ public class FileService : IFileService
         _fileRepository = repository;
     }
 
-    public Task<string> GetFileUrl(string filePath, CancellationToken cancellationToken)
+    public string GetFileUrl(string filePath)
     {
         var fileName = Path.GetFileName(filePath);                  //TODO: Reconsider
 
         var fileUrl = $"{STORAGE_FOLDER}/{Uri.EscapeDataString(fileName)}";
-        return Task.FromResult(fileUrl);
+        return fileUrl;
     }
 
     public async Task<int> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)

@@ -36,7 +36,7 @@ public class GetStudentByIdEndpoint : IEndpoint
         var student = await db.Students
             .AsNoTracking()
             .FirstOrDefaultAsync(s =>
-                    s.Id == request.Id && s.InstitutionId == institutionId, cancellationToken
+                s.Id == request.Id && s.InstitutionId == institutionId, cancellationToken
             );
 
         if (student is null)
@@ -49,7 +49,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             return TypedResults.NotFound(Result.Failure(error));
         }
 
-        var avatarUrl = await fileService.GetFileUrl(student.Avatar.StoragePath, cancellationToken);
+        var avatarUrl = fileService.GetFileUrl(student.Avatar.StoragePath);
 
         var response = new Response(
             student.Id,

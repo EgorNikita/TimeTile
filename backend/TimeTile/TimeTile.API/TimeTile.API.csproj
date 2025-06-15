@@ -35,7 +35,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Common\Api\Results\UnifiedResponse\" />
         <Folder Include="Filter\" />
         <Folder Include="Users\Endpoints\" />
     </ItemGroup>

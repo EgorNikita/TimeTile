@@ -1,4 +1,5 @@
 using TimeTile.API.Authentication.Endpoints;
+using TimeTile.API.ClassroomTypes.Endpoints.Get;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Institutions.Endpoints.CreateInstitution;
 using TimeTile.API.Institutions.Endpoints.GetInstitutionById;
@@ -16,6 +17,7 @@ public static class Endpoints
     public static void MapEndpoints(this WebApplication app)
     {
         app.MapAuthenticationEndpoints();
+        app.MapClassroomTypesEndpoints();
         app.MapStudentEndpoints();
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
@@ -29,6 +31,14 @@ public static class Endpoints
 
         endpoints.MapPublicGroup()
             .MapEndpoint<Login>();
+    }
+
+    private static void MapClassroomTypesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/classroom-types")
+            .WithTags("ClassroomTypes");
+
+        endpoints.MapEndpoint<GetClassroomTypesEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)

@@ -29,6 +29,7 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Get
         private static async Task<Results<Ok<Result<PagedList<Response>>>, JsonHttpResult<Result>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
+            IClassroomTypeService classroomTypeService,
             IFileService fileService,
             ClaimsPrincipal claimsPrincipal,
             CancellationToken cancellationToken)
@@ -55,7 +56,7 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Get
                 (
                     x.Id,
                     x.Description,
-                    x.IconId == null ? null : fileService.GetFileUrl(x.Icon!.StoragePath)
+                    classroomTypeService.GetIconUrl(x)
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 

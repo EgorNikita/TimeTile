@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using TimeTile.API.Authentication.Services;
+using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
@@ -42,6 +43,7 @@ public static class ConfigureServices
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IAvatarService, AvatarService>();
         builder.Services.AddScoped<IFileRepository, FileRepository>();
+        builder.Services.AddScoped<IClassroomTypeService, ClassroomTypeService>();
 
         Log.Information("Service configuration completed.");
     }

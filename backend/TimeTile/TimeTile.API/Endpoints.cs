@@ -4,6 +4,7 @@ using TimeTile.API.ClassroomTypes.Endpoints.Get;
 using TimeTile.API.ClassroomTypes.Endpoints.GetById;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Filters;
 using TimeTile.API.Institutions.Endpoints.CreateInstitution;
 using TimeTile.API.Institutions.Endpoints.GetInstitutionById;
 using TimeTile.API.Institutions.Endpoints.GetInstitutions;
@@ -91,6 +92,11 @@ public static class Endpoints
     {
         return app.MapGroup(prefix ?? string.Empty)
             .AllowAnonymous();
+    }
+
+    public static RouteGroupBuilder RequireInstitution(this RouteGroupBuilder group)
+    {
+        return group.AddEndpointFilter<RequireInstitutionFilter>();
     }
 
     private static IEndpointConventionBuilder MapEndpoint<TEndpoint>(this IEndpointRouteBuilder app)

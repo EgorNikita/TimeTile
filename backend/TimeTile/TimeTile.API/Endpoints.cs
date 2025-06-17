@@ -9,6 +9,7 @@ using TimeTile.API.Institutions.Endpoints.CreateInstitution;
 using TimeTile.API.Institutions.Endpoints.GetInstitutionById;
 using TimeTile.API.Institutions.Endpoints.GetInstitutions;
 using TimeTile.API.LessonStatus.Endpoints.Get;
+using TimeTile.API.LessonStatus.Endpoints.GetById;
 using TimeTile.API.Roles.Endpoints.CreateRole;
 using TimeTile.API.Students.Endpoints.CreateStudent;
 using TimeTile.API.Students.Endpoints.GetStudentById;
@@ -59,6 +60,8 @@ public static class Endpoints
             .RequireInstitution();
 
         endpoints.MapEndpoint<GetLessonStatusesEndpoint>();
+
+        endpoints.MapEndpoint<GetLessonStatusByIdEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)

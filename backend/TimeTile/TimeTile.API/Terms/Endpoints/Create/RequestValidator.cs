@@ -3,7 +3,7 @@ using TimeTile.API.Common;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.Regex;
 
-namespace TimeTile.API.Term.Endpoints.Create
+namespace TimeTile.API.Terms.Endpoints.Create
 {
     public class RequestValidator : AbstractValidator<CreateTermEndpoint.Request>
     {

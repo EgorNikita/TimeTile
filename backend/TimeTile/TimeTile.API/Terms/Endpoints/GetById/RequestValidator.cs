@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace TimeTile.API.Term.Endpoints.GetById
+namespace TimeTile.API.Terms.Endpoints.GetById
 {
     public class RequestValidator : AbstractValidator<GetTermByIdEndpoint.Request>
     {

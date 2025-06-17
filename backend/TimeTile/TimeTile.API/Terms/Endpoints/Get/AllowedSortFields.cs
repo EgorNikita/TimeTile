@@ -1,4 +1,4 @@
-﻿namespace TimeTile.API.Term.Endpoints.Get
+﻿namespace TimeTile.API.Terms.Endpoints.Get
 {
     public enum AllowedSortFields
     {

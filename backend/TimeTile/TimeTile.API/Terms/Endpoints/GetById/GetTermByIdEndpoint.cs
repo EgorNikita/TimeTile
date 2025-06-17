@@ -6,7 +6,7 @@ using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Term.Endpoints.GetById
+namespace TimeTile.API.Terms.Endpoints.GetById
 {
     public class GetTermByIdEndpoint : IEndpoint
     {

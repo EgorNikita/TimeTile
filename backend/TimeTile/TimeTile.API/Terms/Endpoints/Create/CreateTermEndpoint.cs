@@ -4,9 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Term.Endpoints.Create
+namespace TimeTile.API.Terms.Endpoints.Create
 {
     public class CreateTermEndpoint : IEndpoint
     {
@@ -34,7 +35,7 @@ namespace TimeTile.API.Term.Endpoints.Create
                 return TypedResults.BadRequest(duplicateCheckResult);
 
             // Save term
-            var term = new Core.Models.Term
+            var term = new Term
             {
                 InstitutionId = institutionId,
                 Title = request.Title.Trim(),

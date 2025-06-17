@@ -9,7 +9,7 @@ using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Term.Endpoints.Get
+namespace TimeTile.API.Terms.Endpoints.Get
 {
     public class GetTermsEndpoint : IEndpoint
     {

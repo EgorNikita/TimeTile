@@ -12,9 +12,9 @@ using TimeTile.API.Roles.Endpoints.CreateRole;
 using TimeTile.API.Students.Endpoints.CreateStudent;
 using TimeTile.API.Students.Endpoints.GetStudentById;
 using TimeTile.API.Students.Endpoints.GetStudents;
-using TimeTile.API.Term.Endpoints.Create;
-using TimeTile.API.Term.Endpoints.Get;
-using TimeTile.API.Term.Endpoints.GetById;
+using TimeTile.API.Terms.Endpoints.Create;
+using TimeTile.API.Terms.Endpoints.Get;
+using TimeTile.API.Terms.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
 
 namespace TimeTile.API;

@@ -25,19 +25,11 @@ namespace TimeTile.API.Classrooms.Endpoints.GetById
         private static async Task<Results<Ok<Result<Response>>, NotFound<Result>, JsonHttpResult<Result>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            ClaimsPrincipal claimsPrincipal,
+            HttpContext httpContext,
             CancellationToken cancellationToken)
         {
             // Extracts institutionId
-            var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-
-            if (institutionResult.IsFailure)
-                return TypedResults.Json(
-                    Result.Failure(institutionResult.Error),
-                    statusCode: StatusCodes.Status401Unauthorized
-                );
-
-            var institutionId = institutionResult.Data;
+            var institutionId = httpContext.GetInstitutionId();
 
             // Find Classroom
             var classroom = await db.Classrooms

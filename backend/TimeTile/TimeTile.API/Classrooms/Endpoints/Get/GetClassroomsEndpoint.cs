@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TimeTile.API.Authentication;
@@ -26,19 +27,11 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
         private static async Task<Results<Ok<Result<PagedList<Response>>>, JsonHttpResult<Result>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            ClaimsPrincipal claimsPrincipal,
+            HttpContext httpContext,
             CancellationToken cancellationToken)
         {
             // Extracts institutionId
-            var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-
-            if (institutionResult.IsFailure)
-                return TypedResults.Json(
-                    Result.Failure(institutionResult.Error),
-                    statusCode: StatusCodes.Status401Unauthorized
-                );
-
-            var institutionId = institutionResult.Data;
+            var institutionId = httpContext.GetInstitutionId();
 
             var classrooms = await db.Classrooms
                 .AsNoTracking()

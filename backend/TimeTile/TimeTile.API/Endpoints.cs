@@ -57,7 +57,8 @@ public static class Endpoints
     private static void MapClassroomsEndpoints(this IEndpointRouteBuilder app)
     {
         var endpoints = app.MapGroup("/classrooms")
-            .WithTags("ClassroomTypes");
+            .WithTags("ClassroomTypes")
+            .RequireInstitution();
 
         endpoints.MapEndpoint<GetClassroomsEndpoint>();
 

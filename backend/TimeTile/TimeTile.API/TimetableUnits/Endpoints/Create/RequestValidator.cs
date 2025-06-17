@@ -14,9 +14,9 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Create
                 .WithMessage("Title contains invalid characters.")
                 .ApplyRegexPattern(RegexPatterns.Pattern.Title);
 
-            RuleFor(x => x.EndTime)
-                .GreaterThan(x => x.StartTime)
-                .WithMessage("EndTime cannot be before StartTime.");
+            RuleFor(x => x.EndTime.UtcDateTime.TimeOfDay)
+                .GreaterThan(x => x.StartTime.UtcDateTime.TimeOfDay)
+                .WithMessage("EndTime must be after StartTime.");
         }
     }
 }

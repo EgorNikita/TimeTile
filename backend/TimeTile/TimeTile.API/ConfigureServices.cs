@@ -10,6 +10,7 @@ using Serilog;
 using TimeTile.API.Authentication.Services;
 using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
+using TimeTile.API.Common.Api.Filters;
 using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
 using TimeTile.API.Users.Services;
@@ -37,6 +38,7 @@ public static class ConfigureServices
 
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
 
+        builder.Services.AddScoped<RequireInstitutionFilter>();
         builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();

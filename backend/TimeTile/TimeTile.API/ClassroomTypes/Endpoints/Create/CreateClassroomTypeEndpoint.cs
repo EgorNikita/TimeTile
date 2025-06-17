@@ -30,19 +30,11 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Create
             TimetileDbContext db,
             IClassroomTypeService classroomTypeService,
             IFileService fileService,
-            ClaimsPrincipal claimsPrincipal,
+            HttpContext httpContext,
             CancellationToken cancellationToken)
         {
             // Extract InstitutionId
-            var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-
-            if (institutionResult.IsFailure)
-                return TypedResults.Json(
-                    Result.Failure(institutionResult.Error),
-                    statusCode: StatusCodes.Status401Unauthorized
-                );
-
-            var institutionId = institutionResult.Data;
+            var institutionId = httpContext.GetInstitutionId();
 
             // Check if already exists
             var duplicateCheckResult = await IsClassroomTypeDuplicate(request, institutionId, db, cancellationToken);

@@ -35,19 +35,11 @@ public class CreateStudentEndpoint : IEndpoint
         IUserService userService,
         IFileService fileService,
         IPasswordHasher<User> hasher,
-        ClaimsPrincipal claimsPrincipal,
+        HttpContext httpContext,
         CancellationToken cancellationToken)
     {
         // Extract institutionId
-        var institutionResult = await claimsPrincipal.GetValidatedInstitutionIdAsync(db, cancellationToken);
-
-        if (institutionResult.IsFailure)
-            return TypedResults.Json(
-                Result.Failure(institutionResult.Error),
-                statusCode: StatusCodes.Status401Unauthorized
-            );
-
-        var institutionId = institutionResult.Data;
+        var institutionId = httpContext.GetInstitutionId();
 
         // Check if already exists in db
         var duplicateCheckResult = await IsStudentDuplicate(            // TODO: will return false, but login will be already taken

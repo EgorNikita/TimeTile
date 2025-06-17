@@ -9,7 +9,7 @@ using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace TimeTile.API.LessonStatus.Endpoints.Get
+namespace TimeTile.API.LessonStatuses.Endpoints.Get
 {
     public class GetLessonStatusesEndpoint : IEndpoint
     {

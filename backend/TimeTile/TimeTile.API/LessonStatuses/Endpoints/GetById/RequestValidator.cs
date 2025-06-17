@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace TimeTile.API.LessonStatus.Endpoints.GetById
+namespace TimeTile.API.LessonStatuses.Endpoints.GetById
 {
     public class RequestValidator : AbstractValidator<GetLessonStatusByIdEndpoint.Request>
     {

@@ -6,7 +6,7 @@ using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.LessonStatus.Endpoints.GetById
+namespace TimeTile.API.LessonStatuses.Endpoints.GetById
 {
     public class GetLessonStatusByIdEndpoint : IEndpoint
     {

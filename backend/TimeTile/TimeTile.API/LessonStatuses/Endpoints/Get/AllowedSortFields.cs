@@ -1,4 +1,4 @@
-﻿namespace TimeTile.API.LessonStatus.Endpoints.Get
+﻿namespace TimeTile.API.LessonStatuses.Endpoints.Get
 {
     public enum AllowedSortFields
     {

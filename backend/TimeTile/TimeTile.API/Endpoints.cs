@@ -15,6 +15,9 @@ using TimeTile.API.Roles.Endpoints.CreateRole;
 using TimeTile.API.Students.Endpoints.CreateStudent;
 using TimeTile.API.Students.Endpoints.GetStudentById;
 using TimeTile.API.Students.Endpoints.GetStudents;
+using TimeTile.API.Terms.Endpoints.Create;
+using TimeTile.API.Terms.Endpoints.Get;
+using TimeTile.API.Terms.Endpoints.GetById;
 using TimeTile.API.TimetableUnits.Endpoints.Create;
 using TimeTile.API.TimetableUnits.Endpoints.Get;
 using TimeTile.API.TimetableUnits.Endpoints.GetById;
@@ -28,6 +31,7 @@ public static class Endpoints
     {
         app.MapAuthenticationEndpoints();
         app.MapClassroomTypesEndpoints();
+        app.MapTermsEndpoints();
         app.MapTimetableUnitsEndpoints();
         app.MapClassroomsEndpoints();
         app.MapStudentEndpoints();
@@ -58,6 +62,17 @@ public static class Endpoints
         endpoints.MapEndpoint<CreateClassroomTypeEndpoint>();
     }
 
+    private static void MapTermsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/terms")
+            .WithTags("Terms")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetTermsEndpoint>();
+
+        endpoints.MapEndpoint<GetTermByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateTermEndpoint>();
 
     private static void MapTimetableUnitsEndpoints(this IEndpointRouteBuilder app)
     {

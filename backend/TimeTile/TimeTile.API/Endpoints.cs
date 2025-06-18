@@ -77,6 +77,7 @@ public static class Endpoints
         endpoints.MapEndpoint<GetLessonStatusByIdEndpoint>();
 
         endpoints.MapEndpoint<CreateLessonStatusEndpoint>();
+    }
 
     private static void MapTermsEndpoints(this IEndpointRouteBuilder app)
     {
@@ -89,6 +90,7 @@ public static class Endpoints
         endpoints.MapEndpoint<GetTermByIdEndpoint>();
 
         endpoints.MapEndpoint<CreateTermEndpoint>();
+    }
 
     private static void MapTimetableUnitsEndpoints(this IEndpointRouteBuilder app)
     {
@@ -101,11 +103,12 @@ public static class Endpoints
         endpoints.MapEndpoint<GetTimetableUnitByIdEndpoint>();
 
         endpoints.MapEndpoint<CreateTimetableUnitEndpoint>();
+    }
 
     private static void MapClassroomsEndpoints(this IEndpointRouteBuilder app)
     {
         var endpoints = app.MapGroup("/classrooms")
-            .WithTags("Classrooms)
+            .WithTags("Classrooms")
             .RequireInstitution();
 
         endpoints.MapEndpoint<GetClassroomsEndpoint>();

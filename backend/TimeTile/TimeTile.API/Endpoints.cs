@@ -11,6 +11,9 @@ using TimeTile.API.Common.Api.Filters;
 using TimeTile.API.Institutions.Endpoints.CreateInstitution;
 using TimeTile.API.Institutions.Endpoints.GetInstitutionById;
 using TimeTile.API.Institutions.Endpoints.GetInstitutions;
+using TimeTile.API.LessonStatuses.Endpoints.Create;
+using TimeTile.API.LessonStatuses.Endpoints.Get;
+using TimeTile.API.LessonStatuses.Endpoints.GetById;
 using TimeTile.API.Roles.Endpoints.CreateRole;
 using TimeTile.API.Students.Endpoints.CreateStudent;
 using TimeTile.API.Students.Endpoints.GetStudentById;
@@ -31,6 +34,7 @@ public static class Endpoints
     {
         app.MapAuthenticationEndpoints();
         app.MapClassroomTypesEndpoints();
+        app.MapLessonStatusesEndpoints();
         app.MapTermsEndpoints();
         app.MapTimetableUnitsEndpoints();
         app.MapClassroomsEndpoints();
@@ -61,6 +65,18 @@ public static class Endpoints
 
         endpoints.MapEndpoint<CreateClassroomTypeEndpoint>();
     }
+
+    private static void MapLessonStatusesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/lesson-statuses")
+            .WithTags("LessonStatuses")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetLessonStatusesEndpoint>();
+
+        endpoints.MapEndpoint<GetLessonStatusByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateLessonStatusEndpoint>();
 
     private static void MapTermsEndpoints(this IEndpointRouteBuilder app)
     {

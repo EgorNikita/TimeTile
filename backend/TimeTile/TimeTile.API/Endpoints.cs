@@ -1,4 +1,7 @@
 using TimeTile.API.Authentication.Endpoints;
+using TimeTile.API.Classrooms.Endpoints.Create;
+using TimeTile.API.Classrooms.Endpoints.Get;
+using TimeTile.API.Classrooms.Endpoints.GetById;
 using TimeTile.API.ClassroomTypes.Endpoints.Create;
 using TimeTile.API.ClassroomTypes.Endpoints.Get;
 using TimeTile.API.ClassroomTypes.Endpoints.GetById;
@@ -15,6 +18,9 @@ using TimeTile.API.Students.Endpoints.GetStudents;
 using TimeTile.API.Terms.Endpoints.Create;
 using TimeTile.API.Terms.Endpoints.Get;
 using TimeTile.API.Terms.Endpoints.GetById;
+using TimeTile.API.TimetableUnits.Endpoints.Create;
+using TimeTile.API.TimetableUnits.Endpoints.Get;
+using TimeTile.API.TimetableUnits.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
 
 namespace TimeTile.API;
@@ -26,6 +32,8 @@ public static class Endpoints
         app.MapAuthenticationEndpoints();
         app.MapClassroomTypesEndpoints();
         app.MapTermsEndpoints();
+        app.MapTimetableUnitsEndpoints();
+        app.MapClassroomsEndpoints();
         app.MapStudentEndpoints();
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
@@ -65,6 +73,30 @@ public static class Endpoints
         endpoints.MapEndpoint<GetTermByIdEndpoint>();
 
         endpoints.MapEndpoint<CreateTermEndpoint>();
+
+    private static void MapTimetableUnitsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/timetable-units")
+            .WithTags("TimetableUnits")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetTimetableUnitsEndpoint>();
+
+        endpoints.MapEndpoint<GetTimetableUnitByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateTimetableUnitEndpoint>();
+
+    private static void MapClassroomsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/classrooms")
+            .WithTags("Classrooms)
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetClassroomsEndpoint>();
+
+        endpoints.MapEndpoint<GetClassroomByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateClassroomEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)

@@ -4,6 +4,9 @@ public enum AllowedSortFields
 {
     Firstname,
     Lastname,
-    Birthdate,
-    Login
+    HomeAddress,
+    PhoneNumber,
+    BirthDate,
+    Login,
+    GroupId
 }

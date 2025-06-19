@@ -26,17 +26,18 @@ public class GetStudentsEndpoint : IEndpoint
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<Results<Ok<Result<PagedList<Response>>>, JsonHttpResult<Result>>> Handle(
+    private static async Task<Ok<Result<PagedList<Response>>>> Handle(
         [AsParameters] Request request,
         TimetileDbContext db,
         IFileService fileService,
-        HttpContext httpContext,
+        IInstitutionProvider institutionProvider,
         CancellationToken cancellationToken)
     {
-        var institutionId = httpContext.GetInstitutionId();
+        var institutionId = institutionProvider.GetInstitutionId();
 
         // Form a final paged list
         var students = await BuildFilteredQuery(request, institutionId, db)
+            .Include(s => s.Avatar)
             .ApplySorting(
                 request.SortBy,
                 request.Descending
@@ -44,7 +45,11 @@ public class GetStudentsEndpoint : IEndpoint
                 s.Id,
                 s.Firstname,
                 s.Lastname,
+                s.HomeAddress,
+                s.PhoneNumber,
+                s.BirthDate,
                 s.Login,
+                s.GroupId,
                 fileService.GetFileUrl(s.Avatar.StoragePath)
             ))
             .ToPagedListAsync(request, cancellationToken);
@@ -60,6 +65,12 @@ public class GetStudentsEndpoint : IEndpoint
             .AsNoTracking()
             .Where(s => s.InstitutionId == institutionId);
 
+        if (request.BirthDateFrom is not null)
+            query = query.Where(s => s.BirthDate >= request.BirthDateFrom.Value);
+
+        if (request.BirthDateTo is not null)
+            query = query.Where(s => s.BirthDate <= request.BirthDateTo.Value);
+
         if (request.GroupIds != null && request.GroupIds.Any())
             query = query.Where(s =>
                 s.GroupId != null && request.GroupIds.Cast<int?>().Contains(s.GroupId));
@@ -71,12 +82,6 @@ public class GetStudentsEndpoint : IEndpoint
         if (request.LessonIds != null && request.LessonIds.Any())
             query = query.Where(s =>
                 db.LessonsStudents.Any(ls => ls.StudentId == s.Id && request.LessonIds.Contains(ls.LessonId)));
-
-        if (request.BirthDateFrom is not null)
-            query = query.Where(s => s.BirthDate >= request.BirthDateFrom.Value);
-
-        if (request.BirthDateTo is not null)
-            query = query.Where(s => s.BirthDate <= request.BirthDateTo.Value);
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
@@ -94,20 +99,24 @@ public class GetStudentsEndpoint : IEndpoint
         int[]? GroupIds = null,
         int[]? CourseIds = null,
         int[]? LessonIds = null,
-        [FromQuery] string? Search = null,
-        [FromQuery] DateOnly? BirthDateFrom = null,
-        [FromQuery] DateOnly? BirthDateTo = null,
-        [FromQuery] int? Page = 1,
-        [FromQuery] int? PageSize = 10,
-        [FromQuery] string? SortBy = null,
-        [FromQuery] bool Descending = false
+        string? Search = null,
+        DateOnly? BirthDateFrom = null,
+        DateOnly? BirthDateTo = null,
+        int? Page = 1,
+        int? PageSize = 10,
+        string? SortBy = null,
+        bool Descending = false
     ) : IPagedRequest, ISortRequest;
 
-    public sealed record Response(
+    private sealed record Response(
         int Id,
         string Firstname,
         string Lastname,
+        string HomeAddress,
+        string PhoneNumber,
+        DateOnly BirthDate,
         string Login,
+        int? GroupId,
         string AvatarUrl
     );
 }

@@ -32,7 +32,7 @@ public class CreateStudentEndpoint : IEndpoint
             .DisableAntiforgery();
     }
 
-    private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>, JsonHttpResult<Result>>> Handle(
+    private static async Task<Created<Result<Response>>> Handle(
         [FromForm] Request request,
         TimetileDbContext db,
         IUserService userService,

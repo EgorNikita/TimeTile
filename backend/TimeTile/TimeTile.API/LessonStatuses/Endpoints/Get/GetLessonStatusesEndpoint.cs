@@ -8,6 +8,7 @@ using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 using Microsoft.EntityFrameworkCore;
+using TimeTile.API.Common.Api.Http;
 
 namespace TimeTile.API.LessonStatuses.Endpoints.Get
 {

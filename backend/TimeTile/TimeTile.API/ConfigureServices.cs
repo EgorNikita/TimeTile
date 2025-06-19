@@ -11,6 +11,7 @@ using TimeTile.API.Authentication.Services;
 using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Filters;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
 using TimeTile.API.Users.Services;
@@ -36,8 +37,11 @@ public static class ConfigureServices
         builder.AddAuthorization();
         builder.AddRateLimiting();
 
+        builder.Services.AddHttpContextAccessor();
+
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
 
+        builder.Services.AddScoped<IInstitutionProvider, InstitutionProvider>();
         builder.Services.AddScoped<RequireInstitutionFilter>();
         builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

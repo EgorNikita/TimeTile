@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Constants;
 using TimeTile.API.Files.Services;
 using TimeTile.API.Users.Services;

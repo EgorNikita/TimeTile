@@ -29,11 +29,6 @@ public class RequestValidator : AbstractValidator<CreateRoleEndpoint.Request>
 
         RuleFor(x => x.PermissionsIds)
             .MustBeValidListOfIds()
-            .MustAsync(async (list, cancellationToken) =>
-            {       // Check if all PermissionsIds are valid
-                var count = await db.Permissions.CountAsync(p => list.Contains(p.Id), cancellationToken);
-                return count == list.Count();
-            })
-            .WithMessage("Permissions IDs are invalid.");
+            .MustBeValidEntityIdsList<CreateRoleEndpoint.Request, Permission>(db);
     }
 }

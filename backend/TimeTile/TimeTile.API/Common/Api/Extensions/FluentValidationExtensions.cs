@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.Core.Common.Regex;
+using TimeTile.Core.Models;
 using TimeTile.Core.Models.Interfaces;
 using TimeTile.Storage.Contexts;
 
@@ -104,6 +105,52 @@ namespace TimeTile.API.Common.Api.Extensions
                     .WithMessage($"{patternKey} cannot exceed {patternInfo.MaxLength} characters.");
 
             return options;
+        }
+
+        public static IRuleBuilderOptions<T, IEnumerable<int>> MustBeValidEntityIdsList<T, TEntity>(
+            this IRuleBuilder<T, IEnumerable<int>> ruleBuilder,
+            TimetileDbContext db)
+            where TEntity : class, IEntity
+        {
+            return ruleBuilder.MustAsync(async (ids, cancellationToken) =>
+            {
+                var count = await db.Set<TEntity>()
+                    .CountAsync(e => ids.Contains(e.Id), cancellationToken);
+
+                return count == ids.Count();
+            }).WithMessage($"{typeof(TEntity).Name}s Ids are invalid.");
+        }
+
+        public static IRuleBuilderOptions<T, IEnumerable<int>> MustBeValidInstitutionEntityIdsList<T, TEntity>(
+            this IRuleBuilder<T, IEnumerable<int>> ruleBuilder,
+            TimetileDbContext db,
+            int institutionId)
+            where TEntity : class, IInstitutionEntity
+        {
+            return ruleBuilder.MustAsync(async (ids, cancellationToken) =>
+            {
+                var count = await db.Set<TEntity>()
+                    .Where(e => e.InstitutionId == institutionId)
+                    .CountAsync(e => ids.Contains(e.Id), cancellationToken);
+
+                return count == ids.Count();
+            }).WithMessage($"{typeof(TEntity).Name}s Ids are invalid.");
+        }
+
+        public static IRuleBuilderOptions<T, IEnumerable<int>> MustBeValidOptionalInstitutionEntityIdsList<T, TEntity>(
+            this IRuleBuilder<T, IEnumerable<int>> ruleBuilder,
+            TimetileDbContext db,
+            int institutionId)
+            where TEntity : class, IOptionalInstitutionEntity
+        {
+            return ruleBuilder.MustAsync(async (ids, cancellationToken) =>
+            {
+                var count = await db.Set<TEntity>()
+                    .Where(e => e.InstitutionId == null || e.InstitutionId == institutionId)
+                    .CountAsync(e => ids.Contains(e.Id), cancellationToken);
+
+                return count == ids.Count();
+            }).WithMessage($"{typeof(TEntity).Name}s Ids are invalid.");
         }
 
         public static IRuleBuilderOptions<T, int> MustBeValidEntityId<T, TEntity>(

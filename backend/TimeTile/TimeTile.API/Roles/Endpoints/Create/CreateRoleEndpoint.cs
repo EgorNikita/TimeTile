@@ -11,7 +11,7 @@ using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Roles.Endpoints.CreateRole;
+namespace TimeTile.API.Roles.Endpoints.Create;
 
 public class CreateRoleEndpoint : IEndpoint
 {

@@ -9,7 +9,7 @@ using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Students.Endpoints.GetStudentById;
+namespace TimeTile.API.Students.Endpoints.GetById;
 
 public class GetStudentByIdEndpoint : IEndpoint
 {

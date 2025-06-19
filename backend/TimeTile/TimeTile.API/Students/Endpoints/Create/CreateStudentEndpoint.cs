@@ -17,7 +17,7 @@ using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 using TimeTile.Storage.DataSeeders;
 
-namespace TimeTile.API.Students.Endpoints.CreateStudent;
+namespace TimeTile.API.Students.Endpoints.Create;
 
 public class CreateStudentEndpoint : IEndpoint
 {

@@ -2,7 +2,7 @@
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 
-namespace TimeTile.API.Students.Endpoints.GetStudents;
+namespace TimeTile.API.Students.Endpoints.Get;
 
 public class RequestValidator : PagedRequestValidator<GetStudentsEndpoint.Request>
 {

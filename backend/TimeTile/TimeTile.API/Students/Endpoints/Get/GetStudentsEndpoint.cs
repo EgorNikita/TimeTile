@@ -14,7 +14,7 @@ using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Students.Endpoints.GetStudents;
+namespace TimeTile.API.Students.Endpoints.Get;
 
 public class GetStudentsEndpoint : IEndpoint
 {

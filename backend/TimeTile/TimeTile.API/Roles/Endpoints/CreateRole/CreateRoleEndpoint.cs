@@ -6,6 +6,7 @@ using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -22,37 +23,24 @@ public class CreateRoleEndpoint : IEndpoint
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<Results<Created<Result<Response>>, NotFound<Result>, BadRequest<Result>, JsonHttpResult<Result>>> Handle(
+    private static async Task<Created<Result<Response>>> Handle(
         Request request,
         TimetileDbContext db,
-        HttpContext httpContext,
+        IInstitutionProvider institutionProvider,
         CancellationToken cancellationToken)
     {
         // Extract InstitutionId
-        var institutionId = httpContext.GetInstitutionId();
-
-        // Check if already exists
-        var duplicateCheckResult = await IsRoleTitleExists(
-            request.Title, institutionId, db, cancellationToken);
-
-        if (duplicateCheckResult.IsFailure)
-            return TypedResults.BadRequest(duplicateCheckResult);
+        var institutionId = institutionProvider.GetInstitutionId();
 
         // Save role
-        var permissionsResult = await GetPermissionsAsync(
-            request.PermissionsIds,
-            db,
-            cancellationToken);
-
-        if (permissionsResult.IsFailure)
-            return TypedResults.BadRequest(
-                Result.Failure(permissionsResult.Error));
-
-        var permissions = permissionsResult.Data!;
+        var permissions = await db.Permissions
+            .AsNoTracking()
+            .Where(p => request.PermissionsIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
 
         var role = new Role
         {
-            Title = request.Title,
+            Title = request.Title.Trim(),
             InstitutionId = institutionId,
             RoleToPermissions = permissions
                 .Select(permission => new RoleToPermission
@@ -71,47 +59,6 @@ public class CreateRoleEndpoint : IEndpoint
         var result = Result.Success(response);
 
         return TypedResults.Created($"/roles/{role.Id}", result);
-    }
-
-    private static async Task<Result> IsRoleTitleExists(
-        string title,
-        int institutionId,
-        TimetileDbContext db,
-        CancellationToken cancellationToken)
-    {
-        var existing = await db.Roles
-            .AsNoTracking()
-            .Where(r => r.InstitutionId == institutionId)
-            .AnyAsync(r => r.DeletedAt == null && r.Title == title, cancellationToken);
-
-        if (existing)
-            return Result.Failure(
-                Error.From($"Role with title '{title}' already exists.", "ROLE_TITLE_EXISTS")
-            );
-
-        return Result.Success();
-    }
-
-    private static async Task<Result<List<Permission>>> GetPermissionsAsync(
-        List<int> permissionIds,
-        TimetileDbContext db,
-        CancellationToken cancellationToken)
-    {
-        var permissions = await db.Permissions
-            .AsNoTracking()
-            .Where(p => permissionIds.Contains(p.Id))
-            .ToListAsync(cancellationToken);
-
-        var foundIds = permissions.Select(p => p.Id).ToHashSet();
-        var missingIds = permissionIds.Where(id => !foundIds.Contains(id)).ToList();
-
-        if (missingIds.Count == 0) return Result.Success(permissions);
-
-        var error = Error.From(
-            $"Some permissions were not found: {string.Join(", ", missingIds)}",
-            "PERMISSIONS_NOT_FOUND"
-        );
-        return Result.Failure<List<Permission>>(error);
     }
 
     public sealed record Request(

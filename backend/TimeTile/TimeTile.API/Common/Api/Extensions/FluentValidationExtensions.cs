@@ -106,7 +106,7 @@ namespace TimeTile.API.Common.Api.Extensions
             return options;
         }
 
-        public static IRuleBuilderOptions<T, int> MustBeValidForeignKey<T, TEntity>(
+        public static IRuleBuilderOptions<T, int> MustBeValidEntityId<T, TEntity>(
             this IRuleBuilder<T, int> ruleBuilder,
             TimetileDbContext db,
             int institutionId)

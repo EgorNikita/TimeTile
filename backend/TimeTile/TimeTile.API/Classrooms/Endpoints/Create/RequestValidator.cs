@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using TimeTile.API.Common;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
@@ -23,7 +23,7 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
 
             RuleFor(x => x.ClassroomTypeId)
                 .MustBeValidId()
-                .MustBeValidForeignKey<CreateClassroomEndpoint.Request, ClassroomType>(db, institutionId);
+                .MustBeValidEntityId<CreateClassroomEndpoint.Request, ClassroomType>(db, institutionId);
         }
     }
 }

@@ -3,7 +3,7 @@ using TimeTile.Core.Models.Interfaces;
 
 namespace TimeTile.Core.Models;
 
-public class Role : AuditableEntity, IInstitutionEntity
+public class Role : AuditableEntity, IOptionalInstitutionEntity
 {
     public int Id { get; set; }
 
@@ -20,6 +20,4 @@ public class Role : AuditableEntity, IInstitutionEntity
 
     [NotMapped]
     public virtual IEnumerable<Permission> Permissions => RoleToPermissions.Select(x => x.Permission);
-
-    int IInstitutionEntity.InstitutionId => InstitutionId ?? -1;
 }

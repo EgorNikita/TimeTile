@@ -2,7 +2,7 @@
 
 namespace TimeTile.Core.Models;
 
-public partial class User : AuditableEntity, IInstitutionEntity
+public partial class User : AuditableEntity, IOptionalInstitutionEntity
 {
     public int Id { get; set; }
 
@@ -31,6 +31,4 @@ public partial class User : AuditableEntity, IInstitutionEntity
     public virtual Institution? Institution { get; set; }
     
     public virtual Role Role { get; set; } = null!;
-
-    int IInstitutionEntity.InstitutionId => InstitutionId ?? -1;
 }

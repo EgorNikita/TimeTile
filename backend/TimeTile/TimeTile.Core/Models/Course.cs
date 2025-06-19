@@ -2,7 +2,7 @@
 
 namespace TimeTile.Core.Models;
 
-public partial class Course : AuditableEntity
+public partial class Course : AuditableEntity, IInstitutionEntity
 {
     public int Id { get; set; }
 

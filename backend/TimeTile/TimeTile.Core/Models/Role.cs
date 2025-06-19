@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TimeTile.Core.Models;
 
-public class Role : AuditableEntity
+public class Role : AuditableEntity, IInstitutionEntity
 {
     public int Id { get; set; }
 
@@ -19,4 +19,6 @@ public class Role : AuditableEntity
 
     [NotMapped]
     public virtual IEnumerable<Permission> Permissions => RoleToPermissions.Select(x => x.Permission);
+
+    int IInstitutionEntity.InstitutionId => InstitutionId ?? -1;
 }

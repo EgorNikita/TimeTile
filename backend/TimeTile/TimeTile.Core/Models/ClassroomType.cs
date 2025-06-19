@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TimeTile.Core.Models
 {
-    public class ClassroomType : AuditableEntity
+    public class ClassroomType : AuditableEntity, IInstitutionEntity
     {
         public int Id { get; set; }
 

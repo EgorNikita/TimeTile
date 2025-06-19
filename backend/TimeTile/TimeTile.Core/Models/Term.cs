@@ -1,6 +1,6 @@
 ﻿namespace TimeTile.Core.Models;
 
-public partial class Term : AuditableEntity
+public partial class Term : AuditableEntity, IInstitutionEntity
 {
     public int Id { get; set; }
 

@@ -9,9 +9,7 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Create
         public RequestValidator()
         {
             RuleFor(x => x.Description)
-                .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
-                .WithMessage("Description contains invalid characters.")
-                .ApplyRegexPattern(Core.Common.Regex.RegexPatterns.Pattern.Description);
+                .MustBeValidDescription();
         }
     }
 }

@@ -10,28 +10,19 @@ public class RequestValidator : AbstractValidator<CreateStudentEndpoint.Request>
     public RequestValidator()
     {
         RuleFor(u => u.Firstname)
-            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
-            .WithMessage("Firstname contains invalid characters.")
-            .ApplyRegexPattern(RegexPatterns.Pattern.Name);
+            .MustBeValidName();
 
         RuleFor(u => u.Lastname)
-            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
-            .WithMessage("Lastname contains invalid characters.")
-            .ApplyRegexPattern(RegexPatterns.Pattern.Name);
+            .MustBeValidName();
 
         RuleFor(u => u.BirthDate)
             .LessThanOrEqualTo(DateTime.Now)
             .WithMessage("BirthDate cannot be in the future.");
 
-
         RuleFor(u => u.PhoneNumber)
-            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
-            .WithMessage("PhoneNumber contains invalid characters.")
-            .ApplyRegexPattern(RegexPatterns.Pattern.PhoneE164);
+            .MustBeValidPhoneNumber();
 
         RuleFor(u => u.HomeAddress)
-            .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
-            .WithMessage("HomeAddress contains invalid characters.")
-            .ApplyRegexPattern(RegexPatterns.Pattern.Address);
+            .MustBeValidAddress();
     }
 }

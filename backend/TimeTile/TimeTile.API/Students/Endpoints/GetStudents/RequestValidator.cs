@@ -6,7 +6,7 @@ namespace TimeTile.API.Students.Endpoints.GetStudents;
 
 public class RequestValidator : PagedRequestValidator<GetStudentsEndpoint.Request>
 {
-    public RequestValidator()
+    public RequestValidator()           // TODO: change logic of validation
     {
         RuleFor(x => x)
             .Must(x => !x.BirthDateFrom.HasValue || !x.BirthDateTo.HasValue || x.BirthDateFrom <= x.BirthDateTo)

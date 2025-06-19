@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using TimeTile.API.Common.Api.Extensions;
 
 namespace TimeTile.API.TimetableUnits.Endpoints.GetById
 {
@@ -7,8 +8,7 @@ namespace TimeTile.API.TimetableUnits.Endpoints.GetById
         public RequestValidator()
         {
             RuleFor(x => x.Id)
-                .GreaterThanOrEqualTo(1)
-                .WithMessage("Id should be greater or equal to 1");
+                .MustBeValidId();
         }
     }
 }

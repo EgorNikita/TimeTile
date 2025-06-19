@@ -1,26 +1,29 @@
 ﻿using FluentValidation;
 using TimeTile.API.Common;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.Regex;
+using TimeTile.Core.Models;
+using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Classrooms.Endpoints.Create
 {
     public class RequestValidator : AbstractValidator<CreateClassroomEndpoint.Request>
     {
-        public RequestValidator()
+        public RequestValidator(TimetileDbContext db, IInstitutionProvider institutionProvider)
         {
+            var institutionId = institutionProvider.GetInstitutionId();
+
             RuleFor(x => x.Title)
-                .Must(x => string.IsNullOrEmpty(x) || InputSanitizer.Sanitize(x) == x)
-                .WithMessage("Title contains invalid characters.")
-                .ApplyRegexPattern(RegexPatterns.Pattern.Title);
+                .MustBeValidTitle();
 
             RuleFor(x => x.Capacity)
                 .GreaterThanOrEqualTo(1)
                 .WithMessage("Capacity should be greater or equal to 1");
 
             RuleFor(x => x.ClassroomTypeId)
-                .GreaterThanOrEqualTo(1)
-                .WithMessage("ClassroomTypeId should be greater or equal to 1");
+                .MustBeValidId()
+                .MustBeValidForeignKey<CreateClassroomEndpoint.Request, ClassroomType>(db, institutionId);
         }
     }
 }

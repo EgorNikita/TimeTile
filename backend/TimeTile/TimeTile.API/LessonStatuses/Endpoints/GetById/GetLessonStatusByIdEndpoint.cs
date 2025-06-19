@@ -19,31 +19,15 @@ namespace TimeTile.API.LessonStatuses.Endpoints.GetById
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
+        private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
             CancellationToken cancellationToken)
         {
-            // Extracts institutionId
-            var institutionId = httpContext.GetInstitutionId();
-
             // Find LessonStatus
             var lessonStatus = await db.LessonStatuses
                 .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
-                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-
-            // Return error in case of invalid id
-            if (lessonStatus is null)
-            {
-                var error = Error.From(
-                    $"LessonStatus with id '{request.Id}' does not exist.",
-                    "ENTITY_DOES_NOT_EXIST"
-                );
-
-                return TypedResults.NotFound(Result.Failure(error));
-            }
+                .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(
                 lessonStatus.Id,

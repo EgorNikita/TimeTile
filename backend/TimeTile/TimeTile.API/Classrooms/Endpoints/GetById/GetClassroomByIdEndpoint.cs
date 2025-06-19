@@ -26,16 +26,11 @@ namespace TimeTile.API.Classrooms.Endpoints.GetById
         private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
-            // Extracts institutionId
-            var institutionId = institutionProvider.GetInstitutionId();
-
             // Find Classroom
             var classroom = await db.Classrooms
                 .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
                 .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(

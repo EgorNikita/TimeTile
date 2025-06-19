@@ -27,16 +27,11 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.GetById
             [AsParameters] Request request,
             TimetileDbContext db, 
             IClassroomTypeService classroomTypeService,
-            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
-            // Extracts InstitutionId
-            var institutionId = institutionProvider.GetInstitutionId();
-
             // Find ClassroomType
             var classroomType = await db.ClassroomTypes
                 .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
                 .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             // Return response

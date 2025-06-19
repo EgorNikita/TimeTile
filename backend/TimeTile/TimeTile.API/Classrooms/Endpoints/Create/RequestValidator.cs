@@ -1,4 +1,5 @@
-using FluentValidation;
+﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
@@ -15,7 +16,16 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
             var institutionId = institutionProvider.GetInstitutionId();
 
             RuleFor(x => x.Title)
-                .MustBeValidTitle();
+                .MustBeValidTitle()
+                .MustAsync(async (title, cancellationToken) =>
+                {
+                    title = title.Trim();
+
+                    return !await db.Classrooms
+                        .Where(c => c.InstitutionId == institutionId)
+                        .AnyAsync(c => c.Title == title, cancellationToken);
+                })
+                .WithMessage("Title is already taken.");
 
             RuleFor(x => x.Capacity)
                 .GreaterThanOrEqualTo(1)

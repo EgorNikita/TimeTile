@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TimeTile.Core.Models
+namespace TimeTile.Core.Models.Interfaces
 {
-    public interface IInstitutionEntity
+    public interface IInstitutionEntity : IEntity
     {
-        int Id { get; }
         int InstitutionId { get; }
     }
 }

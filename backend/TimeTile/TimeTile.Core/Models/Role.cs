@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using TimeTile.Core.Models.Interfaces;
 
 namespace TimeTile.Core.Models;
 

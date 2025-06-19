@@ -1,7 +1,7 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.Core.Common.Regex;
-using TimeTile.Core.Models;
+using TimeTile.Core.Models.Interfaces;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Common.Api.Extensions

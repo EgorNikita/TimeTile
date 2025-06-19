@@ -1,5 +1,8 @@
 ﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.Core.Common.Regex;
+using TimeTile.Core.Models;
+using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Common.Api.Extensions
 {
@@ -24,6 +27,20 @@ namespace TimeTile.API.Common.Api.Extensions
                     .WithMessage($"{patternKey} cannot exceed {patternInfo.MaxLength} characters.");
 
             return options;
+        }
+
+        public static IRuleBuilderOptions<T, int> MustBeValidForeignKey<T, TEntity>(
+            this IRuleBuilder<T, int> ruleBuilder,
+            TimetileDbContext db,
+            int institutionId)
+            where TEntity : class, IInstitutionEntity
+        {
+            return ruleBuilder.MustAsync(async (id, cancellationToken) =>
+            {
+                return await db.Set<TEntity>()
+                    .Where(e => e.InstitutionId == institutionId)
+                    .AnyAsync(e => e.Id == id, cancellationToken);
+            }).WithMessage($"{typeof(TEntity).Name}'s ID is invalid.");
         }
 
         public static IRuleBuilderOptions<T, string?> MustBeValidSortField<T, TEnum>(this IRuleBuilder<T, string?> ruleBuilder)

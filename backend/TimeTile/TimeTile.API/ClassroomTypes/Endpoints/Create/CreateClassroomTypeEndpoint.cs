@@ -26,37 +26,30 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Create
                 .DisableAntiforgery();
         }
 
-        private static async Task<Results<Created<Result<Response>>, BadRequest<Result>, JsonHttpResult<Result>>> Handle(
+        private static async Task<Created<Result<Response>>> Handle(
             [FromForm] Request request,
             TimetileDbContext db,
             IClassroomTypeService classroomTypeService,
             IFileService fileService,
-            HttpContext httpContext,
+            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
             // Extract InstitutionId
-            var institutionId = httpContext.GetInstitutionId();
-
-            // Check if already exists
-            var duplicateCheckResult = await IsClassroomTypeDuplicate(request, institutionId, db, cancellationToken);
-
-            if (duplicateCheckResult.IsFailure)
-                return TypedResults.BadRequest(duplicateCheckResult);
+            var institutionId = institutionProvider.GetInstitutionId();
 
             // Save classroom type
-            var description = request.Description.Trim();
-
             var classroomType = new ClassroomType
             {
-                Description = description,
+                Description = request.Description.Trim(),
                 InstitutionId = institutionId,
             };
 
             await SaveClassroomType(
-                classroomType, 
-                request, 
-                db, 
-                fileService, 
+                classroomType,
+                request,
+                db,
+                classroomTypeService,
+                fileService,
                 cancellationToken
             );
 
@@ -76,6 +69,7 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Create
             ClassroomType classroomType,
             Request request,
             TimetileDbContext db,
+            IClassroomTypeService classroomTypeService,
             IFileService fileService,
             CancellationToken cancellationToken)
         {
@@ -85,7 +79,7 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Create
             {
                 if (request.Icon is not null)
                 {
-                    classroomType.IconId = await SaveIcon(request.Icon, fileService, cancellationToken);
+                    classroomType.IconId = await classroomTypeService.SaveIcon(request.Icon, cancellationToken);
                 }
 
                 await db.ClassroomTypes.AddAsync(classroomType, cancellationToken);
@@ -104,43 +98,6 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Create
 
                 throw;
             }
-        }
-
-        private static async Task<Result> IsClassroomTypeDuplicate(
-            Request request,
-            int institutionId,
-            TimetileDbContext db,
-            CancellationToken cancellationToken)
-        {
-            var existingStudent = await db.ClassroomTypes
-                .AsNoTracking()
-                .Where(s => s.InstitutionId == institutionId)
-                .AnyAsync(s => s.DeletedAt == null && s.Description == request.Description, cancellationToken);
-
-            if (existingStudent)
-            {
-                var error = Error.From(
-                    $"A classroom type with the description '{request.Description}' already exists in your institution.",
-                    "ENTITY_ALREADY_EXISTS"
-                );
-                return Result.Failure(error);
-            }
-
-            return Result.Success();
-        }
-
-        private static async Task<int> SaveIcon(
-            IFormFile icon,
-            IFileService fileService,
-            CancellationToken cancellationToken)
-        {
-            await using var iconStream = icon.OpenReadStream();
-
-            return await fileService.SaveFile(
-                iconStream,
-                icon.FileName,
-                cancellationToken
-            );
         }
 
         public record Request

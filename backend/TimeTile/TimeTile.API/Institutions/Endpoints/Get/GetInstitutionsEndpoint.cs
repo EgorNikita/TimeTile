@@ -8,7 +8,7 @@ using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Institutions.Endpoints.GetInstitutions;
+namespace TimeTile.API.Institutions.Endpoints.Get;
 
 public class GetInstitutionsEndpoint : IEndpoint
 {

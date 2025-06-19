@@ -28,14 +28,7 @@ public class RequestValidator : AbstractValidator<CreateRoleEndpoint.Request>
             .WithMessage("Title is already taken.");
 
         RuleFor(x => x.PermissionsIds)
-            .NotNull()
-            .WithMessage("PermissionsIds must be provided.")
-            .Must(list => list.Count > 0)
-            .WithMessage("At least one permission ID must be specified.")
-            .ForEach(id => 
-                id.GreaterThanOrEqualTo(1)
-                .WithMessage("Permissions IDs must be greater or equal to 1.")
-            )
+            .MustBeValidListOfIds()
             .MustAsync(async (list, cancellationToken) =>
             {       // Check if all PermissionsIds are valid
                 var count = await db.Permissions.CountAsync(p => list.Contains(p.Id), cancellationToken);

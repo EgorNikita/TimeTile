@@ -146,6 +146,26 @@ namespace TimeTile.API.Common.Api.Extensions
             }).WithMessage($"{typeof(TEntity).Name}'s ID is invalid.");
         }
 
+        public static IRuleBuilderOptions<T, IEnumerable<int>> MustBeValidListOfIds<T>(
+            this IRuleBuilder<T, IEnumerable<int>> ruleBuilder)
+        {
+            return ruleBuilder
+                .NotEmpty()
+                .WithMessage("Ids must be provided and contain at least one item.")
+                .ForEach(id =>
+                    id.GreaterThanOrEqualTo(1)
+                        .WithMessage("Ids must be greater or equal to 1.")
+                );
+        }
+
+        public static IRuleBuilderOptions<T, IEnumerable<int>?> MustBeValidOptionalListOfIds<T>(
+            this IRuleBuilder<T, IEnumerable<int>?> ruleBuilder)
+        {
+            return ruleBuilder
+                .Must(list => list == null || list.All(id => id >= 1))
+                .WithMessage("Ids must be greater or equal to 1.");
+        }
+
         public static IRuleBuilderOptions<T, string?> MustBeValidSortField<T, TEnum>(this IRuleBuilder<T, string?> ruleBuilder)
             where TEnum : Enum
         {

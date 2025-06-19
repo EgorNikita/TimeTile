@@ -13,16 +13,13 @@ public class RequestValidator : PagedRequestValidator<GetStudentsEndpoint.Reques
             .WithMessage("BirthDateFrom must be less than or equal to BirthDateTo");
 
         RuleFor(x => x.GroupIds)
-            .Must(list => list == null || list.All(id => id > 0))
-            .WithMessage("GroupIds must contain positive integers");
+            .MustBeValidOptionalListOfIds();
 
         RuleFor(x => x.CourseIds)
-            .Must(list => list == null || list.All(id => id > 0))
-            .WithMessage("CourseIds must contain positive integers");
+            .MustBeValidOptionalListOfIds();
 
         RuleFor(x => x.LessonIds)
-            .Must(list => list == null || list.All(id => id > 0))
-            .WithMessage("LessonIds must contain positive integers");
+            .MustBeValidOptionalListOfIds();
 
         RuleFor(x => x.SortBy)
             .MustBeValidSortField<GetStudentsEndpoint.Request, AllowedSortFields>();

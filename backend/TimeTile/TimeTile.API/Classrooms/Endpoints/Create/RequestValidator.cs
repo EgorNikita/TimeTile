@@ -33,7 +33,7 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
 
             RuleFor(x => x.ClassroomTypeId)
                 .MustBeValidId()
-                .MustBeValidEntityId<CreateClassroomEndpoint.Request, ClassroomType>(db, institutionId);
+                .MustBeValidInstitutionEntityId<CreateClassroomEndpoint.Request, ClassroomType>(db, institutionId);
         }
     }
 }

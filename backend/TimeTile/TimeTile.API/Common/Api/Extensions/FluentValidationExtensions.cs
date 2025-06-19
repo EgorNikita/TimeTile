@@ -108,6 +108,18 @@ namespace TimeTile.API.Common.Api.Extensions
 
         public static IRuleBuilderOptions<T, int> MustBeValidEntityId<T, TEntity>(
             this IRuleBuilder<T, int> ruleBuilder,
+            TimetileDbContext db)
+            where TEntity : class, IEntity
+        {
+            return ruleBuilder.MustAsync(async (id, cancellationToken) =>
+            {
+                return await db.Set<TEntity>()
+                    .AnyAsync(e => e.Id == id, cancellationToken);
+            }).WithMessage($"{typeof(TEntity).Name}'s ID is invalid.");
+        }
+
+        public static IRuleBuilderOptions<T, int> MustBeValidInstitutionEntityId<T, TEntity>(
+            this IRuleBuilder<T, int> ruleBuilder,
             TimetileDbContext db,
             int institutionId)
             where TEntity : class, IInstitutionEntity
@@ -116,6 +128,20 @@ namespace TimeTile.API.Common.Api.Extensions
             {
                 return await db.Set<TEntity>()
                     .Where(e => e.InstitutionId == institutionId)
+                    .AnyAsync(e => e.Id == id, cancellationToken);
+            }).WithMessage($"{typeof(TEntity).Name}'s ID is invalid.");
+        }
+
+        public static IRuleBuilderOptions<T, int> MustBeValidOptionalInstitutionEntityId<T, TEntity>(
+            this IRuleBuilder<T, int> ruleBuilder,
+            TimetileDbContext db,
+            int institutionId)
+            where TEntity : class, IOptionalInstitutionEntity
+        {
+            return ruleBuilder.MustAsync(async (id, cancellationToken) =>
+            {
+                return await db.Set<TEntity>()
+                    .Where(e => e.InstitutionId == null || e.InstitutionId == institutionId)
                     .AnyAsync(e => e.Id == id, cancellationToken);
             }).WithMessage($"{typeof(TEntity).Name}'s ID is invalid.");
         }

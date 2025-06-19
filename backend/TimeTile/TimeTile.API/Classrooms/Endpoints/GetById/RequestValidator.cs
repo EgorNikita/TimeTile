@@ -12,7 +12,7 @@ namespace TimeTile.API.Classrooms.Endpoints.GetById
         {
             RuleFor(x => x.Id)
                 .MustBeValidId()
-                .MustBeValidEntityId<GetClassroomByIdEndpoint.Request, Classroom>(db, institutionProvider.GetInstitutionId());
+                .MustBeValidInstitutionEntityId<GetClassroomByIdEndpoint.Request, Classroom>(db, institutionProvider.GetInstitutionId());
         }
     }
 }

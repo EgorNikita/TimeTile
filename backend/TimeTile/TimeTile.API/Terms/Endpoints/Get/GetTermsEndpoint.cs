@@ -25,10 +25,10 @@ namespace TimeTile.API.Terms.Endpoints.Get
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
+            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
-            var institutionId = httpContext.GetInstitutionId();
+            var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
             var terms = await db.Terms

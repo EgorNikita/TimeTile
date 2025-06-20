@@ -17,38 +17,46 @@ namespace TimeTile.API.Terms.Endpoints.Create
 
             RuleFor(x => x.Title)
                 .MustBeValidTitle()
-                .MustAsync(async (title, cancellationToken) =>
+                .DependentRules(() =>
                 {
-                    title = title.Trim();
+                    RuleFor(x => x.Title)
+                        .MustAsync(async (title, cancellationToken) =>
+                        {
+                            title = title.Trim();
 
-                    return !await db.Terms
-                        .AsNoTracking()
-                        .Where(t => t.InstitutionId == institutionId)
-                        .AnyAsync(t => t.Title == title, cancellationToken);
-                })
-                .WithMessage("Title is already taken.");
+                            return !await db.Terms
+                                .AsNoTracking()
+                                .Where(t => t.InstitutionId == institutionId)
+                                .AnyAsync(t => t.Title == title, cancellationToken);
+                        })
+                        .WithMessage("Title is already taken.");
+                });
 
             RuleFor(x => x.EndDate.UtcDateTime.Date)
                 .GreaterThan(x => x.StartDate.UtcDateTime.Date)
-                .WithMessage("EndDate must be after StartDate.");
-
-            RuleFor(t => t)
-                .MustAsync(async (request, cancellationToken) =>
+                .WithMessage("EndDate must be after StartDate.")
+                .DependentRules(() =>
                 {
-                    var allTerms = await db.Terms
-                        .AsNoTracking()
-                        .Where(t => t.InstitutionId == institutionId)
-                        .ToListAsync(cancellationToken);
+                    RuleFor(t => t)
+                        .MustAsync(async (request, cancellationToken) =>
+                        {
+                            var allTerms = await db.Terms
+                                .AsNoTracking()
+                                .Where(t => t.InstitutionId == institutionId)
+                                .ToListAsync(cancellationToken);
 
-                    var requestStartDateUtc = request.StartDate.UtcDateTime.Date;
-                    var requestEndDateUtc = request.EndDate.UtcDateTime.Date;
+                            var requestStartDateUtc = request.StartDate.UtcDateTime.Date;
+                            var requestEndDateUtc = request.EndDate.UtcDateTime.Date;
 
-                    return !allTerms
-                        .Any(t =>
-                            t.StartDate.UtcDateTime.Date == requestStartDateUtc &&
-                            t.EndDate.UtcDateTime.Date == requestEndDateUtc);
-                })
-                .WithMessage("Period is already taken.");
+                            return !allTerms
+                                .Any(t =>
+                                    t.StartDate.UtcDateTime.Date == requestStartDateUtc &&
+                                    t.EndDate.UtcDateTime.Date == requestEndDateUtc);
+                        })
+                        .WithMessage("Period is already taken.");
+                });
+
+            
         }
     }
 }

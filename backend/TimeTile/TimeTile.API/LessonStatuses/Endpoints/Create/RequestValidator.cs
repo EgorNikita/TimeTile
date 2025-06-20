@@ -16,15 +16,19 @@ namespace TimeTile.API.LessonStatuses.Endpoints.Create
 
             RuleFor(x => x.Description)
                 .MustBeValidDescription()
-                .MustAsync(async (description, cancellationToken) =>
+                .DependentRules(() =>
                 {
-                    description = description.Trim();
+                    RuleFor(x => x.Description)
+                        .MustAsync(async (description, cancellationToken) =>
+                        {
+                            description = description.Trim();
 
-                    return !await db.LessonStatuses
-                        .Where(x => x.InstitutionId == institutionId)
-                        .AnyAsync(x => x.Description == description, cancellationToken);
-                })
-                .WithMessage("Description is already taken.");
+                            return !await db.LessonStatuses
+                                .Where(x => x.InstitutionId == institutionId)
+                                .AnyAsync(x => x.Description == description, cancellationToken);
+                        })
+                        .WithMessage("Description is already taken.");
+                });                
         }
     }
 }

@@ -11,6 +11,10 @@ public class RequestValidator : AbstractValidator<GetInstitutionByIdEndpoint.Req
     {
         RuleFor(x => x.Id)
             .MustBeValidId()
-            .MustBeValidEntityId<GetInstitutionByIdEndpoint.Request, Institution>(db);
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.Id)
+                    .MustBeValidEntityId<GetInstitutionByIdEndpoint.Request, Institution>(db);
+            });
     }
 }

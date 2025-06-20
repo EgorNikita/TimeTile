@@ -14,7 +14,11 @@ namespace TimeTile.API.Terms.Endpoints.GetById
 
             RuleFor(x => x.Id)
                 .MustBeValidId()
-                .MustBeValidInstitutionEntityId<GetTermByIdEndpoint.Request, Term>(db, institutionId);
+                .DependentRules(() =>
+                {
+                    RuleFor(x => x.Id)
+                        .MustBeValidInstitutionEntityId<GetTermByIdEndpoint.Request, Term>(db, institutionId);
+                });
         }
     }
 }

@@ -61,6 +61,18 @@ public class RequestValidator : AbstractValidator<CreateInstitutionEndpoint.Requ
                         context.AddFailure("Domain", "Domain is already taken");
                     }
                 }
+            })
+            // Call to the database only in case of successfull validation before
+            .When(request =>
+            {
+                var validator = new InlineValidator<CreateInstitutionEndpoint.Request>();
+
+                validator.RuleFor(x => x.Title).MustBeValidTitle();
+                validator.RuleFor(x => x.Email).MustBeValidEmail();
+                validator.RuleFor(x => x.Domain).MustBeValidString().ApplyRegexPattern(RegexPatterns.Pattern.Domain);
+
+                var result = validator.Validate(request);
+                return result.IsValid;
             });
     }
 }

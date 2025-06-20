@@ -17,15 +17,19 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
 
             RuleFor(x => x.Title)
                 .MustBeValidTitle()
-                .MustAsync(async (title, cancellationToken) =>
+                .DependentRules(() =>
                 {
-                    title = title.Trim();
+                    RuleFor(x => x.Title)
+                        .MustAsync(async (title, cancellationToken) =>
+                        {
+                            title = title.Trim();
 
-                    return !await db.Classrooms
-                        .Where(c => c.InstitutionId == institutionId)
-                        .AnyAsync(c => c.Title == title, cancellationToken);
-                })
-                .WithMessage("Title is already taken.");
+                            return !await db.Classrooms
+                                .Where(c => c.InstitutionId == institutionId)
+                                .AnyAsync(c => c.Title == title, cancellationToken);
+                        })
+                        .WithMessage("Title is already taken.");
+                });
 
             RuleFor(x => x.Capacity)
                 .GreaterThanOrEqualTo(1)
@@ -33,7 +37,11 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
 
             RuleFor(x => x.ClassroomTypeId)
                 .MustBeValidId()
-                .MustBeValidInstitutionEntityId<CreateClassroomEndpoint.Request, ClassroomType>(db, institutionId);
+                .DependentRules(() =>
+                {
+                    RuleFor(x => x.ClassroomTypeId)
+                        .MustBeValidInstitutionEntityId<CreateClassroomEndpoint.Request, ClassroomType>(db, institutionId);
+                });
         }
     }
 }

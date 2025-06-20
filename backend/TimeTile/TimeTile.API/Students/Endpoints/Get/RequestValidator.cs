@@ -26,29 +26,37 @@ public class RequestValidator : PagedRequestValidator<GetStudentsEndpoint.Reques
 
         // GroupIds
         RuleFor(x => x.GroupIds)
-            .MustBeValidOptionalListOfIds();
-
-        When(x => x.GroupIds != null, () => {
-            RuleFor(x => x.GroupIds!)
-                .MustBeValidInstitutionEntityIdsList<GetStudentsEndpoint.Request, Group>(db, institutionId);
-        });
+            .MustBeValidOptionalListOfIds()
+            .DependentRules(() =>
+            {
+                When(x => x.GroupIds != null, () => {
+                    RuleFor(x => x.GroupIds!)
+                        .MustBeValidInstitutionEntityIdsList<GetStudentsEndpoint.Request, Group>(db, institutionId);
+                });
+            });
 
         // CourseIds
         RuleFor(x => x.CourseIds)
-            .MustBeValidOptionalListOfIds();
+            .MustBeValidOptionalListOfIds()
+            .DependentRules(() =>
+            {
+                When(x => x.CourseIds != null, () => {
+                    RuleFor(x => x.CourseIds!)
+                        .MustBeValidInstitutionEntityIdsList<GetStudentsEndpoint.Request, Course>(db, institutionId);
+                });
+            });
 
-        When(x => x.CourseIds != null, () => {
-            RuleFor(x => x.CourseIds!)
-                .MustBeValidInstitutionEntityIdsList<GetStudentsEndpoint.Request, Course>(db, institutionId);
-        });
+        
 
         // LessonIds
         RuleFor(x => x.LessonIds)
-            .MustBeValidOptionalListOfIds();
-
-        When(x => x.LessonIds != null, () => {
-            RuleFor(x => x.LessonIds!)
-                .MustBeValidEntityIdsList<GetStudentsEndpoint.Request, Lesson>(db);
-        });
+            .MustBeValidOptionalListOfIds()
+            .DependentRules(() =>
+            {
+                When(x => x.LessonIds != null, () => {
+                    RuleFor(x => x.LessonIds!)
+                        .MustBeValidEntityIdsList<GetStudentsEndpoint.Request, Lesson>(db);
+                });
+            });
     }
 }

@@ -17,18 +17,26 @@ public class RequestValidator : AbstractValidator<CreateRoleEndpoint.Request>
 
         RuleFor(x => x.Title)
             .MustBeValidTitle()
-            .MustAsync(async (title, cancellationToken) =>
+            .DependentRules(() =>
             {
-                title = title.Trim();
+                RuleFor(x => x.Title)
+                    .MustAsync(async (title, cancellationToken) =>
+                    {
+                        title = title.Trim();
 
-                return !await db.Roles
-                    .Where(x => x.InstitutionId == institutionId)
-                    .AnyAsync(x => x.Title == title, cancellationToken);
-            })
-            .WithMessage("Title is already taken.");
+                        return !await db.Roles
+                            .Where(x => x.InstitutionId == institutionId)
+                            .AnyAsync(x => x.Title == title, cancellationToken);
+                    })
+                    .WithMessage("Title is already taken.");
+            });            
 
         RuleFor(x => x.PermissionsIds)
             .MustBeValidListOfIds()
-            .MustBeValidEntityIdsList<CreateRoleEndpoint.Request, Permission>(db);
+            .DependentRules(() =>
+            {
+                RuleFor(x => x.PermissionsIds)
+                    .MustBeValidEntityIdsList<CreateRoleEndpoint.Request, Permission>(db);
+            });
     }
 }

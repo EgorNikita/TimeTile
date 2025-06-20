@@ -33,16 +33,20 @@ public class RequestValidator : AbstractValidator<CreateStudentEndpoint.Request>
         RuleFor(u => u.GroupId)
             .Must(id => id == null || id >= 1)
             .WithMessage("Id must be greater or equal to 1")
-            .MustAsync(async (groupId, cancellationToken) =>
+            .DependentRules(() =>
             {
-                if (groupId is null)
-                    return true;
+                RuleFor(u => u.GroupId)
+                    .MustAsync(async (groupId, cancellationToken) =>
+                    {
+                        if (groupId is null)
+                            return true;
 
-                return await db.Groups
-                    .Where(g => g.InstitutionId == institutionId)    
-                    .AnyAsync(g => g.Id == groupId, cancellationToken);
-            })
-            .WithMessage("Group's ID is invalid.");
+                        return await db.Groups
+                            .Where(g => g.InstitutionId == institutionId)
+                            .AnyAsync(g => g.Id == groupId, cancellationToken);
+                    })
+                    .WithMessage("Group's ID is invalid.");
+            });
 
         RuleFor(u => u)
             .MustAsync(async (request, cancellationToken) =>
@@ -60,6 +64,18 @@ public class RequestValidator : AbstractValidator<CreateStudentEndpoint.Request>
                         cancellationToken
                     );
             })
-            .WithMessage("User with such personal data already exists");
+            .WithMessage("User with such personal data already exists")
+            // Call to the database only in case of successfull validation before
+            .When(request => 
+            {
+                var validator = new InlineValidator<CreateStudentEndpoint.Request>();
+
+                validator.RuleFor(x => x.Firstname).MustBeValidName();
+                validator.RuleFor(x => x.Lastname).MustBeValidName();
+                validator.RuleFor(x => x.BirthDate).LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today));
+
+                var result = validator.Validate(request);
+                return result.IsValid;
+            });
     }
 }

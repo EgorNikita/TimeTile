@@ -14,7 +14,11 @@ namespace TimeTile.API.LessonStatuses.Endpoints.GetById
 
             RuleFor(x => x.Id)
                 .MustBeValidId()
-                .MustBeValidInstitutionEntityId<GetLessonStatusByIdEndpoint.Request, LessonStatus>(db, institutionId);
+                .DependentRules(() =>
+                {
+                    RuleFor(x => x.Id)
+                        .MustBeValidInstitutionEntityId<GetLessonStatusByIdEndpoint.Request, LessonStatus>(db, institutionId);
+                });
         }
     }
 }

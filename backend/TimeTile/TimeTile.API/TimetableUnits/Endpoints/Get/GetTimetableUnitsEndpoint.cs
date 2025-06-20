@@ -21,13 +21,13 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Get
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Results<Ok<Result<PagedList<Response>>>, JsonHttpResult<Result>>> Handle(
+        private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
+            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
-            var institutionId = httpContext.GetInstitutionId();
+            var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
             var timetableUnits = await db.TimetableUnits

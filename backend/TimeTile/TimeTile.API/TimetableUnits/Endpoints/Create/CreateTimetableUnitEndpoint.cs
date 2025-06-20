@@ -21,20 +21,14 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Create
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Results<Created<Result<Response>>, BadRequest<Result>, JsonHttpResult<Result>>> Handle(
+        private static async Task<Created<Result<Response>>> Handle(
             [FromBody] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
+            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
             // Extract InstitutionId
-            var institutionId = httpContext.GetInstitutionId();
-
-            // Check if already exists
-            var duplicateCheckResult = await IsTimetableUnitDuplicate(request, institutionId, db, cancellationToken);
-
-            if (duplicateCheckResult.IsFailure)
-                return TypedResults.BadRequest(duplicateCheckResult);
+            var institutionId = institutionProvider.GetInstitutionId();
 
             // Save timetable unit
             var timetableUnit = new TimetableUnit
@@ -59,52 +53,6 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Create
             var result = Result.Success(response);
 
             return TypedResults.Created($"/timetable-units/{timetableUnit.Id}", result);
-        }
-
-        private static async Task<Result> IsTimetableUnitDuplicate(
-            Request request,
-            int institutionId,
-            TimetileDbContext db,
-            CancellationToken cancellationToken)
-        {
-            var baseQuery = db.TimetableUnits
-                .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId && x.DeletedAt == null);
-
-            // Check timetable_units_institution_title_deleted_at_key
-            var isDuplicateOnTitle = await baseQuery
-                .AnyAsync(x => x.Title == request.Title, cancellationToken);
-
-            if (isDuplicateOnTitle)
-            {
-                var error = Error.From(
-                    $"A timetable unit with the title '{request.Title}' already exists in your institution.",
-                    "ENTITY_ALREADY_EXISTS"
-                );
-                return Result.Failure(error);
-            }
-
-            // Check timetable_units_institution_start_end_deleted_at_key
-            var allUnits = await baseQuery
-                .ToListAsync(cancellationToken);
-
-            var requestStartTimeUtc = request.StartTime.UtcDateTime.TimeOfDay;
-            var requestEndTimeUtc = request.EndTime.UtcDateTime.TimeOfDay;
-
-            var isDuplicateOnTime = allUnits.
-                Any(x => x.StartTime.UtcDateTime.TimeOfDay == requestStartTimeUtc &&
-                    x.EndTime.UtcDateTime.TimeOfDay == requestEndTimeUtc);
-
-            if (isDuplicateOnTime)
-            {
-                var error = Error.From(
-                    $"A timetable unit with the time '{requestStartTimeUtc}' - '{requestEndTimeUtc}' already exists in your institution.",
-                    "ENTITY_ALREADY_EXISTS"
-                );
-                return Result.Failure(error);
-            }
-
-            return Result.Success();
         }
 
         public sealed record Request(

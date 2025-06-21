@@ -25,6 +25,8 @@ using TimeTile.API.TimetableUnits.Endpoints.Create;
 using TimeTile.API.TimetableUnits.Endpoints.Get;
 using TimeTile.API.TimetableUnits.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
+using TimeTile.API.Roles.Endpoints.Get;
+using TimeTile.API.Roles.Endpoints.GetById;
 
 namespace TimeTile.API;
 
@@ -142,6 +144,10 @@ public static class Endpoints
 
         endpoints.MapEndpoint<CreateRoleEndpoint>()
             .RequireAuthorization("CreateRole");
+
+        endpoints.MapEndpoint<GetRolesEndpoint>();
+
+        endpoints.MapEndpoint<GetRoleByIdEndpoint>();
     }
 
     private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)

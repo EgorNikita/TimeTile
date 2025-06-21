@@ -69,20 +69,6 @@ public class FileService : IFileService
         }
     }
 
-    public async Task<Result<Stream>> GetFileStream(int id, CancellationToken cancellationToken)
-    {
-        var result = await _fileRepository.GetById(id, cancellationToken);
-
-        if (result.IsFailure)
-            return Result.Failure<Stream>(result.Error);
-
-        var file = result.Data;
-
-        var fileStream = new FileStream(file!.StoragePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
-
-        return Result.Success<Stream>(fileStream);
-    }
-
     public string GetContentType(FileExtension extension)
     {
         return extension switch

@@ -8,6 +8,7 @@ using TimeTile.API.ClassroomTypes.Endpoints.GetById;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Filters;
+using TimeTile.API.Files.Endpoints.GetByUrl;
 using TimeTile.API.Institutions.Endpoints.CreateInstitution;
 using TimeTile.API.Institutions.Endpoints.GetInstitutionById;
 using TimeTile.API.Institutions.Endpoints.GetInstitutions;
@@ -41,6 +42,7 @@ public static class Endpoints
         app.MapStudentEndpoints();
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
+        app.MapFilesEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -154,6 +156,14 @@ public static class Endpoints
 
         endpoints.MapEndpoint<CreateInstitutionEndpoint>()
             .RequireAuthorization(Permissions.CreateInstitution);
+    }
+
+    private static void MapFilesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/files")
+            .WithTags("Files");
+
+        endpoints.MapEndpoint<GetFileByUrlEndpoint>();
     }
 
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

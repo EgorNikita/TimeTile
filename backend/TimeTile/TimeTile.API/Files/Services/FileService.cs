@@ -2,6 +2,7 @@ using TimeTile.API.Files.Helpers;
 using TimeTile.Core.Common.Interfaces.Repositories;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Enums;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Files.Services;
@@ -10,11 +11,10 @@ public class FileService : IFileService
 {
     private const string STORAGE_ASSEMBLY = "TimeTile.Storage";
     private const string STORAGE_FOLDER = "Uploads";
-    private readonly TimetileDbContext _db;
     private readonly IFileRepository _fileRepository;
     private readonly string _storagePath;
 
-    public FileService(IWebHostEnvironment env, TimetileDbContext db, IFileRepository repository)
+    public FileService(IWebHostEnvironment env, IFileRepository repository)
     {
         var solutionRoot = Directory.GetParent(env.ContentRootPath)!.FullName;
 
@@ -24,15 +24,14 @@ public class FileService : IFileService
             STORAGE_FOLDER
         );
 
-        _db = db;
         _fileRepository = repository;
     }
 
     public string GetFileUrl(string filePath)
     {
-        var fileName = Path.GetFileName(filePath);                  //TODO: Reconsider
+        var fileName = Path.GetFileNameWithoutExtension(filePath);
 
-        var fileUrl = $"{STORAGE_FOLDER}/{Uri.EscapeDataString(fileName)}";
+        var fileUrl = $"{Uri.EscapeDataString(fileName)}";
         return fileUrl;
     }
 
@@ -81,5 +80,20 @@ public class FileService : IFileService
         var fileStream = new FileStream(file!.StoragePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
 
         return Result.Success<Stream>(fileStream);
+    }
+
+    public string GetContentType(FileExtension extension)
+    {
+        return extension switch
+        {
+            FileExtension.Pdf => "application/pdf",
+            FileExtension.Docx => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            FileExtension.Xlsx => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            FileExtension.Png => "image/png",
+            FileExtension.Jpg or FileExtension.Jpeg => "image/jpeg",
+            FileExtension.Txt => "text/plain",
+            FileExtension.Zip => "application/zip",
+            _ => "application/octet-stream"
+        };
     }
 }

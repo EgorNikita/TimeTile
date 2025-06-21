@@ -1,12 +1,12 @@
 ﻿using TimeTile.API.Common.Constants;
 
-namespace TimeTile.API.Common.Api.Extensions
+namespace TimeTile.API.Common.Api.Http
 {
     public static class HttpContextExtensions
     {
         public static int GetInstitutionId(this HttpContext context)
         {
-            return (int) context.Items[HttpContextItemKeys.InstitutionId]!;
+            return (int)context.Items[HttpContextItemKeys.InstitutionId]!;
         }
     }
 }

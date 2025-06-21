@@ -6,6 +6,7 @@ using System.Threading;
 using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
@@ -26,19 +27,20 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Get
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Results<Ok<Result<PagedList<Response>>>, JsonHttpResult<Result>>> Handle(
+        private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
             IClassroomTypeService classroomTypeService,
-            HttpContext httpContext,
+            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
-            var institutionId = httpContext.GetInstitutionId();
+            var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
             var classroomTypes = await db.ClassroomTypes
                 .AsNoTracking()
                 .Where(x => x.InstitutionId == institutionId)
+                .Include(x => x.Icon)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending

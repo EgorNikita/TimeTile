@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
@@ -18,30 +19,15 @@ namespace TimeTile.API.Terms.Endpoints.GetById
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
+        private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
             CancellationToken cancellationToken)
         {
-            var institutionId = httpContext.GetInstitutionId();
-
             // Find Term
             var term = await db.Terms
                 .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
-                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-
-            // Return error in case of invalid id
-            if (term is null)
-            {
-                var error = Error.From(
-                    $"Term with id '{request.Id}' does not exist.",
-                    "ENTITY_DOES_NOT_EXIST"
-                );
-
-                return TypedResults.NotFound(Result.Failure(error));
-            }
+                .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(
                 term.Id,

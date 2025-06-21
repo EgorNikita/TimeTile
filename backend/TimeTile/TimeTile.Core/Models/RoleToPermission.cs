@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Models.Interfaces;
 
 namespace TimeTile.Core.Models
 {
-    public class RoleToPermission : AuditableEntity
+    public class RoleToPermission : AuditableEntity, IEntity
     {
         public int Id { get; set; }
 

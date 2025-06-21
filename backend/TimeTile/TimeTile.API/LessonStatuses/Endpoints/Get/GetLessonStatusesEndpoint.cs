@@ -8,6 +8,7 @@ using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 using Microsoft.EntityFrameworkCore;
+using TimeTile.API.Common.Api.Http;
 
 namespace TimeTile.API.LessonStatuses.Endpoints.Get
 {
@@ -24,11 +25,11 @@ namespace TimeTile.API.LessonStatuses.Endpoints.Get
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
+            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
             // Extracts institutionId
-            var institutionId = httpContext.GetInstitutionId();
+            var institutionId = institutionProvider.GetInstitutionId();
 
             var lessonStatuses = await db.LessonStatuses
                 .AsNoTracking()

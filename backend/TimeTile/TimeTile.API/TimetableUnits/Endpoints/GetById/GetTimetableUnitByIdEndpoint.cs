@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
@@ -19,30 +20,15 @@ namespace TimeTile.API.TimetableUnits.Endpoints.GetById
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Results<Ok<Result<Response>>, NotFound<Result>, JsonHttpResult<Result>>> Handle(
+        private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
             CancellationToken cancellationToken)
         {
-            var institutionId = httpContext.GetInstitutionId();
-
             // Find TimetableUnit
             var timetableUnit = await db.TimetableUnits
                 .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
-                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-
-            // Return error in case of invalid id
-            if (timetableUnit is null)
-            {
-                var error = Error.From(
-                    $"TimetableUnit with id '{request.Id}' does not exist.",
-                    "ENTITY_DOES_NOT_EXIST"
-                );
-
-                return TypedResults.NotFound(Result.Failure(error));
-            }
+                .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(
                 timetableUnit.Id,

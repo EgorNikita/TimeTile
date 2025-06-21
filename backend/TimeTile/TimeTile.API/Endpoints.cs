@@ -125,13 +125,13 @@ public static class Endpoints
             .RequireInstitution();
 
         endpoints.MapEndpoint<CreateStudentEndpoint>()
-            .RequireAuthorization(Permissions.CreateStudent);
+            .RequireAuthorization(Permissions.Students.Create);
 
         endpoints.MapEndpoint<GetStudentByIdEndpoint>()
-            .RequireAuthorization(Permissions.GetStudents);
+            .RequireAuthorization(Permissions.Students.Get);
 
         endpoints.MapEndpoint<GetStudentsEndpoint>()
-            .RequireAuthorization(Permissions.GetStudents);
+            .RequireAuthorization(Permissions.Students.Get);
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
@@ -153,7 +153,7 @@ public static class Endpoints
         endpoints.MapEndpoint<GetInstitutionByIdEndpoint>();
 
         endpoints.MapEndpoint<CreateInstitutionEndpoint>()
-            .RequireAuthorization(Permissions.CreateInstitution);
+            .RequireAuthorization(Permissions.Institutions.Create);
     }
 
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

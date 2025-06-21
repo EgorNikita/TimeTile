@@ -17,8 +17,8 @@ namespace TimeTile.Storage.DataSeeders
     {
         private static readonly List<string> _studentPermissions =
         [
-            Permissions.GetSchedule,
-            Permissions.GetOwnGroup
+            Permissions.Schedule.Get,
+            Permissions.Groups.GetOwn
         ];
 
         public static async Task SeedRequiredRoles(
@@ -38,8 +38,8 @@ namespace TimeTile.Storage.DataSeeders
             if (await db.Roles.AnyAsync(r => r.Title == GeneralRoles.Admin, cancellationToken))
                 return;
 
-            var permission = await db.Permissions.FirstOrDefaultAsync(p => p.Description == Permissions.CreateInstitution, cancellationToken)
-                ?? throw new InvalidOperationException($"Required permission '{Permissions.CreateInstitution}' not found.");
+            var permission = await db.Permissions.FirstOrDefaultAsync(p => p.Description == Permissions.Institutions.Create, cancellationToken)
+                ?? throw new InvalidOperationException($"Required permission '{Permissions.Institutions.Create}' not found.");
 
             var role = new Role()
             {

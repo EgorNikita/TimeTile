@@ -146,7 +146,7 @@ namespace TimeTile.API.Common.Api.Extensions
             return ruleBuilder.MustAsync(async (ids, cancellationToken) =>
             {
                 var count = await db.Set<TEntity>()
-                    .Where(e => e.InstitutionId == null || e.InstitutionId == institutionId)
+                    .Where(e => e.InstitutionId != null && e.InstitutionId == institutionId)
                     .CountAsync(e => ids.Contains(e.Id), cancellationToken);
 
                 return count == ids.Count();
@@ -188,7 +188,7 @@ namespace TimeTile.API.Common.Api.Extensions
             return ruleBuilder.MustAsync(async (id, cancellationToken) =>
             {
                 return await db.Set<TEntity>()
-                    .Where(e => e.InstitutionId == null || e.InstitutionId == institutionId)
+                    .Where(e => e.InstitutionId != null && e.InstitutionId == institutionId)
                     .AnyAsync(e => e.Id == id, cancellationToken);
             }).WithMessage($"{typeof(TEntity).Name}'s ID is invalid.");
         }

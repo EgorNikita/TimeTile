@@ -29,6 +29,7 @@ using TimeTile.API.Roles.Endpoints.Get;
 using TimeTile.API.Roles.Endpoints.GetById;
 using TimeTile.API.Roles.Endpoints.AddPermission;
 using TimeTile.API.Roles.Endpoints.RemovePermission;
+using TimeTile.API.Roles.Endpoints.GetPermissions;
 
 namespace TimeTile.API;
 
@@ -154,6 +155,8 @@ public static class Endpoints
         endpoints.MapEndpoint<AddPermissionToRoleEndpoint>();
 
         endpoints.MapEndpoint<RemovePermissionFromRoleEndpoint>();
+
+        endpoints.MapEndpoint<GetRolePermissionsEndpoint>();
     }
 
     private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)

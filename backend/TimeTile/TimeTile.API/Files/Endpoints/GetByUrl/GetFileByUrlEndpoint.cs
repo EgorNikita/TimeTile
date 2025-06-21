@@ -28,7 +28,7 @@ namespace TimeTile.API.Files.Endpoints.GetByUrl
             // Find File
             var file = await db.Files
                 .AsNoTracking()
-                .FirstAsync(f => f.StoragePath.Contains($"\\{request.Guid}."), cancellationToken);
+                .FirstAsync(f => f.FileGuid == request.Guid, cancellationToken);
 
             var fileStream = new FileStream(file.StoragePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 

@@ -27,14 +27,6 @@ public class FileService : IFileService
         _fileRepository = repository;
     }
 
-    public string GetFileUrl(string filePath)
-    {
-        var fileName = Path.GetFileNameWithoutExtension(filePath);
-
-        var fileUrl = $"{Uri.EscapeDataString(fileName)}";
-        return fileUrl;
-    }
-
     public async Task<int> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(_storagePath)) Directory.CreateDirectory(_storagePath);
@@ -44,7 +36,9 @@ public class FileService : IFileService
 
         // Creating unique new filename
         var extension = Path.GetExtension(safeFileName);
-        var newFileName = $"{Guid.NewGuid()}{extension}";
+        var fileGuid = Guid.NewGuid();
+
+        var newFileName = $"{fileGuid}{extension}";
 
         // Full path to save the file
         var filePath = Path.Combine(_storagePath, newFileName);
@@ -53,7 +47,14 @@ public class FileService : IFileService
         await using var fileStreamOutput = File.Create(filePath);
         await fileStream.CopyToAsync(fileStreamOutput, cancellationToken);
 
-        var file = await _fileRepository.Add(fileName, extension, fileStreamOutput.Length, filePath, cancellationToken);
+        var file = await _fileRepository.Add(
+            fileName, 
+            extension, 
+            fileStreamOutput.Length, 
+            filePath, 
+            fileGuid, 
+            cancellationToken
+        );
 
         return file.Id;
     }

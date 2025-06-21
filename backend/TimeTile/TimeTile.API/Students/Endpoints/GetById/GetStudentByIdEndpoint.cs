@@ -41,7 +41,7 @@ public class GetStudentByIdEndpoint : IEndpoint
             student.BirthDate,
             student.Login,
             student.GroupId,
-            fileService.GetFileUrl(student.Avatar.StoragePath)
+            student.Avatar.FileGuid.ToString()
         );
 
         var result = Result.Success(response);

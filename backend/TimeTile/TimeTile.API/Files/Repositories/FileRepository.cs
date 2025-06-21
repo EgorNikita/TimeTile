@@ -16,7 +16,12 @@ public class FileRepository : IFileRepository
         _db = db;
     }
 
-    public async Task<File> Add(string fileName, string extension, long fileLength, string filePath,
+    public async Task<File> Add(
+        string fileName, 
+        string extension, 
+        long fileLength, 
+        string filePath,
+        Guid fileGuid,
         CancellationToken cancellationToken)
     {
         var file = new File
@@ -24,7 +29,8 @@ public class FileRepository : IFileRepository
             OriginalName = fileName,
             Extension = GetFileExtension(extension),
             Size = fileLength,
-            StoragePath = filePath
+            StoragePath = filePath,
+            FileGuid = fileGuid
         };
 
         await _db.Files.AddAsync(file, cancellationToken);

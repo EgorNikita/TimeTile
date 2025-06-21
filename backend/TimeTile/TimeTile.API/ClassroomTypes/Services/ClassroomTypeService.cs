@@ -16,7 +16,7 @@ namespace TimeTile.API.ClassroomTypes.Services
         {
             if (classroomType.IconId.HasValue)
             {
-                return _fileService.GetFileUrl(classroomType.Icon!.StoragePath);
+                return classroomType.Icon!.FileGuid.ToString();
             }
 
             return null;

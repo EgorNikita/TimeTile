@@ -73,7 +73,7 @@ public class CreateStudentEndpoint : IEndpoint
             student.BirthDate,
             student.Login,
             student.GroupId,
-            userService.GetAvatarUrl(student)
+            student.Avatar.FileGuid.ToString()
         );
 
         var result = Result.Success(response);

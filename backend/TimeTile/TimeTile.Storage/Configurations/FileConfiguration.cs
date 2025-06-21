@@ -27,6 +27,11 @@ namespace TimeTile.Storage.Configurations
                     "CHK_File_Extension_Valid",
                     $"LOWER(\"extension\") IN ({allExtensions})"
                 );
+
+                t.HasCheckConstraint(
+                    "CHK_File_File_Guid_Valid",
+                    "\"storage_path\" LIKE '%' || \"file_guid\"::text || '.%'"
+                );
             });
 
             builder.HasKey(e => e.Id);
@@ -35,6 +40,10 @@ namespace TimeTile.Storage.Configurations
                 .HasDatabaseName("files_storage_path_deleted_at_key")
                 .AreNullsDistinct(false)
                 .IsUnique();
+
+            builder.HasIndex(e => e.FileGuid)
+                .IsUnique()
+                .HasDatabaseName("files_file_guid_key");
 
             // Define properties with column names
             builder.Property(e => e.Id)
@@ -59,6 +68,9 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.StoragePath)
                 .HasColumnName("storage_path")
                 .HasMaxLength(500);
+
+            builder.Property(e => e.FileGuid)
+                .HasColumnName("file_guid");
         }
     }
 }

@@ -50,7 +50,7 @@ public class GetStudentsEndpoint : IEndpoint
                 s.BirthDate,
                 s.Login,
                 s.GroupId,
-                fileService.GetFileUrl(s.Avatar.StoragePath)
+                s.Avatar.FileGuid.ToString()
             ))
             .ToPagedListAsync(request, cancellationToken);
 

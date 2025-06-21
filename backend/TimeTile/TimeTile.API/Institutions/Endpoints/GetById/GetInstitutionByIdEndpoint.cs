@@ -5,7 +5,7 @@ using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Institutions.Endpoints.GetInstitutionById;
+namespace TimeTile.API.Institutions.Endpoints.GetById;
 
 public class GetInstitutionByIdEndpoint : IEndpoint
 {
@@ -17,24 +17,14 @@ public class GetInstitutionByIdEndpoint : IEndpoint
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<Results<Ok<Result<Response>>, NotFound<Result>>> Handle(
+    private static async Task<Ok<Result<Response>>> Handle(
         [AsParameters] Request request,
-        TimetileDbContext context,
+        TimetileDbContext db,
         CancellationToken cancellationToken)
     {
-        var institution = await context.Institutions
+        var institution = await db.Institutions
             .AsNoTracking()
-            .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
-
-        if (institution is null)
-        {
-            var error = Error.From(
-                $"Institution with id '{request.Id}' does not exist.",
-                "ENTITY_DOES_NOT_EXIST"
-            );
-
-            return TypedResults.NotFound(Result.Failure(error));
-        }
+            .FirstAsync(i => i.Id == request.Id, cancellationToken);
 
         var response = new Response(
             institution.Id,

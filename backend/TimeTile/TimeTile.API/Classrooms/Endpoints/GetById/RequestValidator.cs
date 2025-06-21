@@ -1,14 +1,22 @@
 ﻿using FluentValidation;
+using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
+using TimeTile.Core.Models;
+using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Classrooms.Endpoints.GetById
 {
     public class RequestValidator : AbstractValidator<GetClassroomByIdEndpoint.Request>
     {
-        public RequestValidator()
+        public RequestValidator(TimetileDbContext db, IInstitutionProvider institutionProvider)
         {
             RuleFor(x => x.Id)
-                .GreaterThanOrEqualTo(1)
-                .WithMessage("Id should be greater or equal to 1");
+                .MustBeValidId()
+                .DependentRules(() =>
+                {
+                    RuleFor(x => x.Id)
+                        .MustBeValidInstitutionEntityId<GetClassroomByIdEndpoint.Request, Classroom>(db, institutionProvider.GetInstitutionId());
+                });
         }
     }
 }

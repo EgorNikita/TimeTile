@@ -5,6 +5,7 @@ using TimeTile.API.Authentication;
 using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
@@ -22,37 +23,20 @@ namespace TimeTile.API.Classrooms.Endpoints.GetById
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Results<Ok<Result<Response>>, NotFound<Result>, JsonHttpResult<Result>>> Handle(
+        private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            HttpContext httpContext,
             CancellationToken cancellationToken)
         {
-            // Extracts institutionId
-            var institutionId = httpContext.GetInstitutionId();
-
             // Find Classroom
             var classroom = await db.Classrooms
                 .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
-                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-
-            // Return error in case of invalid id
-            if (classroom is null)
-            {
-                var error = Error.From(
-                    $"Classroom with id '{request.Id}' does not exist.",
-                    "ENTITY_DOES_NOT_EXIST"
-                );
-
-                return TypedResults.NotFound(Result.Failure(error));
-            }
+                .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(
                 classroom.Id,
                 classroom.Title,
                 classroom.Capacity,
-                classroom.InstitutionId,
                 classroom.ClassroomTypeId
             );
 
@@ -69,7 +53,6 @@ namespace TimeTile.API.Classrooms.Endpoints.GetById
             int Id,
             string Title,
             int Capacity,
-            int InstitutionId,
             int ClassroomTypeId
         );
     }

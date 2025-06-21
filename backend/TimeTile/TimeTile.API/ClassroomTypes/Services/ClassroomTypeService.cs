@@ -21,5 +21,16 @@ namespace TimeTile.API.ClassroomTypes.Services
 
             return null;
         }
+
+        public async Task<int> SaveIcon(IFormFile icon, CancellationToken cancellationToken)
+        {
+            await using var iconStream = icon.OpenReadStream();
+
+            return await _fileService.SaveFile(
+                iconStream,
+                icon.FileName,
+                cancellationToken
+            );
+        }
     }
 }

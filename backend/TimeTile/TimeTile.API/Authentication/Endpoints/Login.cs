@@ -35,7 +35,7 @@ public class Login : IEndpoint
 
         var claims = BuildClaims(user);
         var token = jwt.GenerateToken(claims);
-
+        
         return TypedResults.Ok(new Response(token));
     }
 
@@ -70,9 +70,11 @@ public class Login : IEndpoint
 
         var claims = new List<Claim>
         {
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Email, user.Login),
             new(ClaimTypes.Role, effectiveRole),
-            new(CustomClaimTypes.InstitutionId, user.InstitutionId.ToString() ?? string.Empty)
+            new(CustomClaimTypes.InstitutionId, user.InstitutionId.ToString() ?? string.Empty),
+            new(CustomClaimTypes.InstitutionDomain, user.Institution?.Domain ?? string.Empty)
         };
 
         claims.AddRange(user.Role.Permissions

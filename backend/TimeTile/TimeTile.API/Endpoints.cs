@@ -39,8 +39,8 @@ public static class Endpoints
         endpoints.MapEndpoint<CreateStudentEndpoint>()
             .RequireAuthorization(Permissions.CreateStudent);
 
-        endpoints.MapEndpoint<GetStudentByIdEndpoint>()
-            .RequireAuthorization(Permissions.GetStudents);
+        endpoints.MapEndpoint<GetStudentByIdEndpoint>();
+            //.RequireAuthorization(Permissions.GetStudents);
 
         endpoints.MapEndpoint<GetStudentsEndpoint>()
             .RequireAuthorization(Permissions.GetStudents);

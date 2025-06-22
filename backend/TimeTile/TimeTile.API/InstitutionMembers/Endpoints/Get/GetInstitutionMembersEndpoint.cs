@@ -62,8 +62,6 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Get
         {
             var baseQuery = db.InstitutionMembers
                 .AsNoTracking()
-                .Include(m => m.TeacherToSubjects)
-                .Include(m => m.InstitutionMemberToGroups)
                 .Where(m => m.InstitutionId == institutionId);
 
             if (request.SubjectIds is not null && request.SubjectIds.Any())

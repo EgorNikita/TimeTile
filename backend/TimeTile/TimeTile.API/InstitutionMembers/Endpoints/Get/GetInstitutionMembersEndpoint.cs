@@ -9,6 +9,7 @@ using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.InstitutionMembers.Endpoints.Get
@@ -32,9 +33,7 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Get
             var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
-            var institutionMembers = await db.InstitutionMembers
-                .AsNoTracking()
-                .Where(m => m.InstitutionId == institutionId)
+            var institutionMembers = await BuildFilteredQuery(request, institutionId, db)
                 .Include(m => m.Avatar)
                 .ApplySorting(
                     request.SortBy,
@@ -59,7 +58,43 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
+        private static IQueryable<InstitutionMember> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
+        {
+            var baseQuery = db.InstitutionMembers
+                .AsNoTracking()
+                .Include(m => m.TeacherToSubjects)
+                .Include(m => m.InstitutionMemberToGroups)
+                .Where(m => m.InstitutionId == institutionId);
+
+            if (request.SubjectIds is not null && request.SubjectIds.Any())
+                baseQuery = baseQuery.Where(m =>
+                    m.TeacherToSubjects.Any(ts => request.SubjectIds.Contains(ts.SubjectId))
+                );
+
+            if (request.PreferredClassroomIds is not null && request.PreferredClassroomIds.Any())
+                baseQuery = baseQuery.Where(m =>
+                    m.PreferredClassroomId != null && 
+                    request.PreferredClassroomIds.Contains(m.PreferredClassroomId.Value)
+                );
+
+            if (request.RoleIds is not null && request.RoleIds.Any())
+                baseQuery = baseQuery.Where(m =>
+                    request.RoleIds.Contains(m.RoleId)
+                );
+
+            if (request.GroupIds is not null && request.GroupIds.Any())
+                baseQuery = baseQuery.Where(m =>
+                    m.InstitutionMemberToGroups.Any(mg => request.GroupIds.Contains(mg.GroupId))
+                );
+
+            return baseQuery;
+        }
+
         public sealed record Request(
+            int[]? SubjectIds = null,
+            int[]? PreferredClassroomIds = null,
+            int[]? RoleIds = null,
+            int[]? GroupIds = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

@@ -63,6 +63,8 @@ public class GetStudentsEndpoint : IEndpoint
     {
         var query = db.Students
             .AsNoTracking()
+            .Include(s => s.CoursesToStudents)
+            .Include(s => s.LessonsToStudents)
             .Where(s => s.InstitutionId == institutionId);
 
         if (request.BirthDateFrom is not null)
@@ -73,15 +75,19 @@ public class GetStudentsEndpoint : IEndpoint
 
         if (request.GroupIds != null && request.GroupIds.Any())
             query = query.Where(s =>
-                s.GroupId != null && request.GroupIds.Cast<int?>().Contains(s.GroupId));
+                s.GroupId != null && 
+                request.GroupIds.Contains(s.GroupId.Value)
+            );
 
         if (request.CourseIds != null && request.CourseIds.Any())
             query = query.Where(s =>
-                db.CoursesStudents.Any(cs => cs.StudentId == s.Id && request.CourseIds.Contains(cs.CourseId)));
+                s.CoursesToStudents.Any(cs => request.CourseIds.Contains(cs.CourseId))
+            );
 
         if (request.LessonIds != null && request.LessonIds.Any())
             query = query.Where(s =>
-                db.LessonsStudents.Any(ls => ls.StudentId == s.Id && request.LessonIds.Contains(ls.LessonId)));
+                s.LessonsToStudents.Any(ls => request.LessonIds.Contains(ls.LessonId))
+            );
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {

@@ -26,6 +26,8 @@ using TimeTile.API.TimetableUnits.Endpoints.Create;
 using TimeTile.API.TimetableUnits.Endpoints.Get;
 using TimeTile.API.TimetableUnits.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
+using TimeTile.API.Subjects.Endpoints.Get;
+using TimeTile.API.Subjects.Endpoints.GetById;
 
 namespace TimeTile.API;
 
@@ -43,6 +45,7 @@ public static class Endpoints
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
         app.MapFilesEndpoints();
+        app.MapSubjectsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -164,6 +167,17 @@ public static class Endpoints
             .WithTags("Files");
 
         endpoints.MapEndpoint<GetFileByUrlEndpoint>();
+    }
+
+    private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/subjects")
+            .WithTags("Subjects")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetSubjectsEndpoint>();
+
+        endpoints.MapEndpoint<GetSubjectByIdEndpoint>();
     }
 
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

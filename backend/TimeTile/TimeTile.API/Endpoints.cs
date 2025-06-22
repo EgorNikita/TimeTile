@@ -28,6 +28,7 @@ using TimeTile.API.TimetableUnits.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
 using TimeTile.API.Subjects.Endpoints.Get;
 using TimeTile.API.Subjects.Endpoints.GetById;
+using TimeTile.API.Subjects.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -178,6 +179,8 @@ public static class Endpoints
         endpoints.MapEndpoint<GetSubjectsEndpoint>();
 
         endpoints.MapEndpoint<GetSubjectByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateSubjectEndpoint>();
     }
 
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

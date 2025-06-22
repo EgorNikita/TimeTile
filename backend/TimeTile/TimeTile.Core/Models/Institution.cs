@@ -1,6 +1,8 @@
-﻿namespace TimeTile.Core.Models;
+﻿using TimeTile.Core.Models.Interfaces;
 
-public partial class Institution : AuditableEntity
+namespace TimeTile.Core.Models;
+
+public partial class Institution : AuditableEntity, IEntity
 {
     public int Id { get; set; }
 

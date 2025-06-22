@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Models.Interfaces;
 
 namespace TimeTile.Core.Models
 {
-    public class ClassroomType : AuditableEntity
+    public class ClassroomType : AuditableEntity, IInstitutionEntity
     {
         public int Id { get; set; }
 

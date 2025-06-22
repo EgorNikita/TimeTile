@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using TimeTile.Core.Models.Interfaces;
 
 namespace TimeTile.Core.Models;
 
-public partial class Permission : AuditableEntity
+public partial class Permission : AuditableEntity, IEntity
 {
     public int Id { get; set; }
 

@@ -1,23 +1,150 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
+using System.Threading;
+using Bogus.DataSets;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using TimeTile.API.Users.Services.Interfaces;
+using TimeTile.API.Common.Constants;
+using TimeTile.API.Files.Services;
+using TimeTile.Core.Common.Interfaces.Services;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Users.Services;
 
 public class UserService : IUserService
 {
-    private readonly IAvatarService _avatarService;
     private readonly TimetileDbContext _db;
+    private readonly IAvatarService _avatarService;
+    private readonly IFileService _fileService;
+    private readonly IPasswordHasher<User> _hasher;
 
-    public UserService(TimetileDbContext db, IAvatarService avatarService)
+    public UserService(TimetileDbContext db, IAvatarService avatarService, IFileService fileService, IPasswordHasher<User> hasher)
     {
         _db = db;
         _avatarService = avatarService;
+        _fileService = fileService;
+        _hasher = hasher;
     }
 
-    public async Task<string> GenerateUniqueLoginAsync(string firstname, string lastname, int birthYear,
+    public async Task<T> CreateUser<T>(
+        IFormFile? avatar,
+        string firstname, 
+        string lastname,
+        string homeAddress,
+        string phoneNumber,
+        DateOnly birthDate,
+        int institutionId,
+        int roleId,
+        Action<T> configureSpecificProperties,
+        CancellationToken cancellationToken)
+        where T : User, new()
+    {
+        var institution = await _db.Institutions
+            .AsNoTracking()
+            .FirstAsync(i => i.Id == institutionId, cancellationToken);
+
+        firstname = firstname.Trim();
+        lastname = lastname.Trim();
+        var birthYear = (short)birthDate.Year;
+
+        var password = await GenerateDefaultPassword(firstname, lastname, birthYear);
+        var login = await GenerateUniqueLoginAsync(firstname, lastname, birthYear, institution.Domain);
+
+        var user = new T
+        {
+            Firstname = firstname,
+            Lastname = lastname,
+            HomeAddress = homeAddress,
+            PhoneNumber = phoneNumber,
+            BirthDate = birthDate,
+            Login = login,
+            InstitutionId = institutionId,
+            RoleId = roleId
+        };
+
+        user.PasswordHash = _hasher.HashPassword(user, password);
+
+        // Extra fields for children will be initialized here
+        configureSpecificProperties(user);
+
+        await SaveUser(user, avatar, cancellationToken);
+
+        return user;
+    }
+
+    private async Task SaveUser<T>(
+        T user,
+        IFormFile? avatar,
+        CancellationToken cancellationToken)
+        where T : User
+    {
+        using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            var avatarId = await GetAvatarId(
+                avatar,
+                user.Firstname,
+                user.Lastname,
+                user.BirthDate,
+                cancellationToken
+            );
+
+            user.AvatarId = avatarId;
+
+            await _db.Set<T>().AddAsync(user, cancellationToken);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken); 
+        }
+        catch
+        {
+            await _fileService.DeleteFilePhysically(user.AvatarId, cancellationToken);
+
+            await transaction.RollbackAsync(cancellationToken);
+
+            throw;
+        }
+    }
+
+    private async Task<int> GetAvatarId(
+        IFormFile? avatar,
+        string firstname,
+        string lastname,
+        DateOnly birthday,
+        CancellationToken cancellationToken)
+    {
+        await using var avatarStream = avatar != null
+            ? avatar.OpenReadStream()
+            : await GenerateDefaultAvatar(firstname, lastname);
+
+        return await SaveAvatar(
+            avatarStream,
+            firstname,
+            lastname,
+            birthday,
+            cancellationToken
+        );
+    }
+
+    public async Task<int> SaveAvatar(
+            Stream avatarStream,
+            string firstname,
+            string lastname,
+            DateOnly birthday,
+            CancellationToken cancellationToken)
+    {
+        var fileName = $"{firstname}_{lastname}_{birthday}_avatar.png";
+
+        return await _fileService.SaveFile(
+            avatarStream,
+            fileName,
+            cancellationToken
+        );
+    }
+
+    private async Task<string> GenerateUniqueLoginAsync(string firstname, string lastname, int birthYear,
         string institutionDomain)
     {
         var fn = firstname.Length >= 4 ? firstname[..4].ToLowerInvariant() : firstname.ToLowerInvariant();
@@ -59,7 +186,7 @@ public class UserService : IUserService
         return newLogin;
     }
 
-    public Task<string> GenerateDefaultPassword(string firstname, string lastname, short birthYear)
+    private Task<string> GenerateDefaultPassword(string firstname, string lastname, short birthYear)
     {
         var basePart =
             $"{firstname[..1].ToUpper(CultureInfo.InvariantCulture)}{lastname[..1].ToLower(CultureInfo.InvariantCulture)}{birthYear % 100:D2}";

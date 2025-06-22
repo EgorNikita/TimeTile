@@ -7,9 +7,13 @@ public class PagedRequestValidator<T> : AbstractValidator<T>
 {
     public PagedRequestValidator()
     {
-        RuleFor(x => x.Page).GreaterThan(0);
+        RuleFor(x => x.Page)
+            .GreaterThanOrEqualTo(1)
+            .WithMessage("Page should be greater or equal to 1");
+
         RuleFor(x => x.PageSize)
-            .GreaterThan(0)
-            .LessThanOrEqualTo(IPagedRequest.MaxPageSize);
+            .GreaterThanOrEqualTo(1)
+            .LessThanOrEqualTo(IPagedRequest.MaxPageSize)
+            .WithMessage($"PageSize should be between 1 and {IPagedRequest.MaxPageSize}");
     }
 }

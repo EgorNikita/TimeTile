@@ -6,6 +6,8 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class InstitutionFaker : BaseFaker<Institution>
     {
+        // For generating unique values
+        private readonly HashSet<string> _usedEmails = new();
         private readonly HashSet<string> _usedDomains = new();
 
         public InstitutionFaker()
@@ -43,7 +45,17 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             Func<string> generator = () => faker.Internet.Email();
 
-            return GenerateValidValue(generator, RegexPatterns.Pattern.Email);
+            while (true)
+            {
+                string email = GenerateValidValue(generator, RegexPatterns.Pattern.Email);
+
+                if (! _usedEmails.Contains(email))
+                {
+                    _usedEmails.Add(email);
+
+                    return email;
+                }
+            }
         }
 
         private string GenerateValidDomain(Faker faker)
@@ -52,13 +64,13 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             while (true)
             {
-                string result = GenerateValidValue(generator, RegexPatterns.Pattern.Domain);
+                string domain = GenerateValidValue(generator, RegexPatterns.Pattern.Domain);
 
-                if (! _usedDomains.Contains(result))
+                if (! _usedDomains.Contains(domain))
                 {
-                    _usedDomains.Add(result);
+                    _usedDomains.Add(domain);
 
-                    return result;
+                    return domain;
                 }
             }
         }

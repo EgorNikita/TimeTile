@@ -310,6 +310,10 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("text")
                         .HasColumnName("extension");
 
+                    b.Property<Guid>("FileGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("file_guid");
+
                     b.Property<string>("OriginalName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -334,6 +338,10 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FileGuid")
+                        .IsUnique()
+                        .HasDatabaseName("files_file_guid_key");
+
                     b.HasIndex("StoragePath", "DeletedAt")
                         .IsUnique()
                         .HasDatabaseName("files_storage_path_deleted_at_key");
@@ -343,6 +351,8 @@ namespace TimeTile.Storage.Migrations
                     b.ToTable("files", null, t =>
                         {
                             t.HasCheckConstraint("CHK_File_Extension_Valid", "LOWER(\"extension\") IN ('pdf', 'docx', 'xlsx', 'png', 'jpg', 'jpeg', 'txt', 'zip')");
+
+                            t.HasCheckConstraint("CHK_File_File_Guid_Valid", "\"storage_path\" LIKE '%' || \"file_guid\"::text || '.%'");
 
                             t.HasCheckConstraint("CHK_File_Size_Valid", "\"size\" > 0");
                         });
@@ -504,6 +514,12 @@ namespace TimeTile.Storage.Migrations
                         .HasDatabaseName("institutions_domain_deleted_at_constraint");
 
                     NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Domain", "DeletedAt"), false);
+
+                    b.HasIndex("Email", "DeletedAt")
+                        .IsUnique()
+                        .HasDatabaseName("institutions_email_deleted_at_key");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Email", "DeletedAt"), false);
 
                     b.HasIndex("Title", "DeletedAt")
                         .IsUnique()
@@ -1148,11 +1164,9 @@ namespace TimeTile.Storage.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AvatarPath")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("avatar_path");
+                    b.Property<int>("AvatarId")
+                        .HasColumnType("integer")
+                        .HasColumnName("avatar_id");
 
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date")
@@ -1219,6 +1233,9 @@ namespace TimeTile.Storage.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AvatarId")
+                        .IsUnique();
 
                     b.HasIndex("InstitutionId");
 
@@ -1627,6 +1644,13 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.User", b =>
                 {
+                    b.HasOne("TimeTile.Core.Models.File", "Avatar")
+                        .WithOne("User")
+                        .HasForeignKey("TimeTile.Core.Models.User", "AvatarId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("users_avatar_id_fkey");
+
                     b.HasOne("TimeTile.Core.Models.Institution", "Institution")
                         .WithMany("Users")
                         .HasForeignKey("InstitutionId")
@@ -1639,6 +1663,8 @@ namespace TimeTile.Storage.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("users_role_id_fkey");
+
+                    b.Navigation("Avatar");
 
                     b.Navigation("Institution");
 
@@ -1701,6 +1727,8 @@ namespace TimeTile.Storage.Migrations
             modelBuilder.Entity("TimeTile.Core.Models.File", b =>
                 {
                     b.Navigation("ClassroomType");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Grade", b =>

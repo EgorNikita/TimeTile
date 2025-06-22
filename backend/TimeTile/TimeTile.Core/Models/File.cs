@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TimeTile.Core.Enums;
+using TimeTile.Core.Models.Interfaces;
 
 namespace TimeTile.Core.Models
 {
-    public class File : AuditableEntity
+    public class File : AuditableEntity, IEntity
     {
         public int Id { get; set; }
 
@@ -19,6 +20,9 @@ namespace TimeTile.Core.Models
 
         public string StoragePath { get; set; } = null!;
 
+        public Guid FileGuid { get; set; }
+
+        public virtual User? User { get; set; }
         public virtual ClassroomType? ClassroomType { get; set; }
     }
 }

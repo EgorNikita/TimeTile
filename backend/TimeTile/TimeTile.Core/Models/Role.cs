@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using TimeTile.Core.Models.Interfaces;
 
 namespace TimeTile.Core.Models;
 
-public class Role : AuditableEntity
+public class Role : AuditableEntity, IOptionalInstitutionEntity
 {
     public int Id { get; set; }
 

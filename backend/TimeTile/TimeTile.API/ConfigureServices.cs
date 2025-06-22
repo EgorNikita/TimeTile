@@ -8,14 +8,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using TimeTile.API.Authentication.Services;
+using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
+using TimeTile.API.Common.Api.Filters;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Files.Repositories;
-using TimeTile.API.Files.Repositories.Interfaces;
 using TimeTile.API.Files.Services;
-using TimeTile.API.Files.Services.Interfaces;
 using TimeTile.API.Users.Services;
-using TimeTile.API.Users.Services.Interfaces;
 using TimeTile.Core.Common.Constants;
+using TimeTile.Core.Common.Interfaces.Repositories;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 using TimeTile.Storage.Seeders;
@@ -36,14 +38,19 @@ public static class ConfigureServices
         builder.AddRateLimiting();
         builder.AddCors();
 
+        builder.Services.AddHttpContextAccessor();
+
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
 
+        builder.Services.AddScoped<IInstitutionProvider, InstitutionProvider>();
+        builder.Services.AddScoped<RequireInstitutionFilter>();
         builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IAvatarService, AvatarService>();
         builder.Services.AddScoped<IFileRepository, FileRepository>();
+        builder.Services.AddScoped<IClassroomTypeService, ClassroomTypeService>();
 
         Log.Information("Service configuration completed.");
     }

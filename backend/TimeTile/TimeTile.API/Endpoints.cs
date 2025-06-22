@@ -26,6 +26,7 @@ using TimeTile.API.TimetableUnits.Endpoints.Create;
 using TimeTile.API.TimetableUnits.Endpoints.Get;
 using TimeTile.API.TimetableUnits.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
+using TimeTile.API.InstitutionMembers.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -40,6 +41,7 @@ public static class Endpoints
         app.MapTimetableUnitsEndpoints();
         app.MapClassroomsEndpoints();
         app.MapStudentEndpoints();
+        app.MapInstitutionMembersEndpoints();
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
         app.MapFilesEndpoints();
@@ -134,6 +136,15 @@ public static class Endpoints
 
         endpoints.MapEndpoint<GetStudentsEndpoint>()
             .RequireAuthorization(Permissions.Students.Get);
+    }
+
+    private static void MapInstitutionMembersEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/institution-members")
+            .WithTags("InstitutionMembers")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<CreateInstitutionMemberEndpoint>();
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)

@@ -7,6 +7,7 @@ using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Subjects.Endpoints.Get
@@ -30,9 +31,7 @@ namespace TimeTile.API.Subjects.Endpoints.Get
             var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
-            var subjects = await db.Subjects
-                .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
+            var subjects = await BuildFilteredQuery(request, institutionId, db)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -49,7 +48,23 @@ namespace TimeTile.API.Subjects.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
+        private static IQueryable<Subject> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
+        {
+            var baseQuery = db.Subjects
+                .AsNoTracking()
+                .Include(s => s.TeachersToSubject)
+                .Where(s => s.InstitutionId == institutionId);
+
+            if (request.TeacherIds is not null && request.TeacherIds.Any())
+                baseQuery = baseQuery.Where(s => 
+                    s.TeachersToSubject.Any(ts => request.TeacherIds.Contains(ts.TeacherId))
+                );
+
+            return baseQuery;
+        }
+
         public sealed record Request(
+            int[]? TeacherIds = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

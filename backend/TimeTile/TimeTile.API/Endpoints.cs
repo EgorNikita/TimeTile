@@ -27,8 +27,6 @@ using TimeTile.API.TimetableUnits.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
 using TimeTile.API.Roles.Endpoints.Get;
 using TimeTile.API.Roles.Endpoints.GetById;
-using TimeTile.API.Roles.Endpoints.AddPermission;
-using TimeTile.API.Roles.Endpoints.RemovePermission;
 using TimeTile.API.Roles.Endpoints.GetPermissions;
 using TimeTile.API.Roles.Endpoints.UpdatePermissions;
 
@@ -152,10 +150,6 @@ public static class Endpoints
         endpoints.MapEndpoint<GetRolesEndpoint>();
 
         endpoints.MapEndpoint<GetRoleByIdEndpoint>();
-
-        endpoints.MapEndpoint<AddPermissionToRoleEndpoint>();
-
-        endpoints.MapEndpoint<RemovePermissionFromRoleEndpoint>();
 
         endpoints.MapEndpoint<GetRolePermissionsEndpoint>();
 

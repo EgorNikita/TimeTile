@@ -52,7 +52,6 @@ namespace TimeTile.API.Subjects.Endpoints.Get
         {
             var baseQuery = db.Subjects
                 .AsNoTracking()
-                .Include(s => s.TeachersToSubject)
                 .Where(s => s.InstitutionId == institutionId);
 
             if (request.TeacherIds is not null && request.TeacherIds.Any())

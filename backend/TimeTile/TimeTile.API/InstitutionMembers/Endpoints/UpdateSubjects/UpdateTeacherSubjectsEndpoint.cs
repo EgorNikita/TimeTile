@@ -10,7 +10,7 @@ using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects
 {
-    public class UpdateSubjectsEndpoint : IEndpoint
+    public class UpdateTeacherSubjectsEndpoint : IEndpoint
     {
         public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
         {

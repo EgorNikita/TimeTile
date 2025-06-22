@@ -6,7 +6,7 @@ using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects
 {
-    public class RequestParametersValidator : AbstractValidator<UpdateSubjectsEndpoint.RequestParameters>
+    public class RequestParametersValidator : AbstractValidator<UpdateTeacherSubjectsEndpoint.RequestParameters>
     {
         public RequestParametersValidator(TimetileDbContext db, IInstitutionProvider institutionProvider)
         {
@@ -17,7 +17,7 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects
                 .DependentRules(() =>
                 {
                     RuleFor(x => x.TeacherId)
-                        .MustBeValidOptionalInstitutionEntityId<UpdateSubjectsEndpoint.RequestParameters, InstitutionMember>(db, institutionId);
+                        .MustBeValidOptionalInstitutionEntityId<UpdateTeacherSubjectsEndpoint.RequestParameters, InstitutionMember>(db, institutionId);
                 });
         }
     }

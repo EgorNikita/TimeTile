@@ -6,7 +6,7 @@ using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects
 {
-    public class RequestBodyValidator : AbstractValidator<UpdateSubjectsEndpoint.RequestBody>
+    public class RequestBodyValidator : AbstractValidator<UpdateTeacherSubjectsEndpoint.RequestBody>
     {
         public RequestBodyValidator(TimetileDbContext db, IInstitutionProvider institutionProvider)
         {
@@ -19,7 +19,7 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects
                     When(x => x.SubjectsToAdd != null, () =>
                     {
                         RuleFor(x => x.SubjectsToAdd!)
-                            .MustBeValidInstitutionEntityIdsList<UpdateSubjectsEndpoint.RequestBody, Subject>(db, institutionId);
+                            .MustBeValidInstitutionEntityIdsList<UpdateTeacherSubjectsEndpoint.RequestBody, Subject>(db, institutionId);
                     });
                 });
 
@@ -30,7 +30,7 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects
                     When(x => x.SubjectsToRemove != null, () =>
                     {
                         RuleFor(x => x.SubjectsToRemove!)
-                            .MustBeValidInstitutionEntityIdsList<UpdateSubjectsEndpoint.RequestBody, Subject>(db, institutionId);
+                            .MustBeValidInstitutionEntityIdsList<UpdateTeacherSubjectsEndpoint.RequestBody, Subject>(db, institutionId);
                     });
                 });
         }

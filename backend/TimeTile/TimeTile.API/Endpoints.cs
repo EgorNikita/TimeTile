@@ -153,7 +153,7 @@ public static class Endpoints
 
         endpoints.MapEndpoint<GetInstitutionMemberByIdEndpoint>();
 
-        endpoints.MapEndpoint<UpdateSubjectsEndpoint>();
+        endpoints.MapEndpoint<UpdateTeacherSubjectsEndpoint>();
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)

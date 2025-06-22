@@ -11,6 +11,7 @@ using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Classrooms.Endpoints.Get
@@ -34,9 +35,7 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
             // Extracts institutionId
             var institutionId = institutionProvider.GetInstitutionId();
 
-            var classrooms = await db.Classrooms
-                .AsNoTracking()
-                .Where(c => c.InstitutionId == institutionId)
+            var classrooms = await BuildFilteredQuery(request, institutionId, db)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -54,7 +53,22 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
+        private static IQueryable<Classroom> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
+        {
+            var baseQuery = db.Classrooms
+                .AsNoTracking()
+                .Where(c => c.InstitutionId == institutionId);
+
+            if (request.ClassroomTypeIds is not null && request.ClassroomTypeIds.Any())
+                baseQuery = baseQuery.Where(c =>
+                    request.ClassroomTypeIds.Contains(c.ClassroomTypeId)
+                );
+
+            return baseQuery;
+        }
+
         public sealed record Request(
+            int[]? ClassroomTypeIds = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

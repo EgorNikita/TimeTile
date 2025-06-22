@@ -47,6 +47,22 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Create
                 {
                     member.PreferredClassroomId = request.PreferredClassroomId;
                     member.WeekWorkHours = request.WeekWorkHours;
+
+                    // Adding relationships to subjects
+                    if (request.SubjectsIds is not null)
+                    {
+                        member.TeacherToSubjects = request.SubjectsIds
+                            .Select(subjectId => new TeacherToSubject { SubjectId = subjectId })
+                            .ToList();
+                    }
+
+                    // Adding relationships to groups
+                    if (request.GroupsIds is not null)
+                    {
+                        member.InstitutionMemberToGroups = request.GroupsIds
+                            .Select(groupId => new InstitutionMemberToGroup { GroupId = groupId })
+                            .ToList();
+                    }
                 },
                 cancellationToken
             );
@@ -82,6 +98,8 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Create
             public int RoleId { get; init; }
             public int WeekWorkHours { get; init; }
             public int? PreferredClassroomId { get; init; }
+            public List<int>? SubjectsIds { get; init; }
+            public List<int>? GroupsIds { get; init; }
         };
 
         private record Response(

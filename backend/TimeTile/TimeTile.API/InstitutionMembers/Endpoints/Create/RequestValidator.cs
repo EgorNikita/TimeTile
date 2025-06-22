@@ -44,6 +44,26 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Create
                         })
                         .WithMessage("Classroom's ID is invalid.");
                 });
+
+            RuleFor(u => u.SubjectsIds)
+                .MustBeValidOptionalListOfIds()
+                .DependentRules(() =>
+                {
+                    When(x => x.SubjectsIds != null, () => {
+                        RuleFor(x => x.SubjectsIds!)
+                            .MustBeValidInstitutionEntityIdsList<CreateInstitutionMemberEndpoint.Request, Subject>(db, institutionId);
+                    });
+                });
+
+            RuleFor(x => x.GroupsIds)
+                .MustBeValidOptionalListOfIds()
+                .DependentRules(() =>
+                {
+                    When(x => x.GroupsIds != null, () => {
+                        RuleFor(x => x.GroupsIds!)
+                            .MustBeValidInstitutionEntityIdsList<CreateInstitutionMemberEndpoint.Request, Group>(db, institutionId);
+                    });
+                });
         }
     }
 }

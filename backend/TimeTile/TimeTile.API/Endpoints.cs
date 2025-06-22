@@ -30,6 +30,7 @@ using TimeTile.API.InstitutionMembers.Endpoints.Create;
 using TimeTile.API.InstitutionMembers.Endpoints.Get;
 using TimeTile.API.InstitutionMembers.Endpoints.GetById;
 using TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects;
+using TimeTile.API.InstitutionMembers.Endpoints.UpdateGroups;
 
 namespace TimeTile.API;
 
@@ -154,6 +155,8 @@ public static class Endpoints
         endpoints.MapEndpoint<GetInstitutionMemberByIdEndpoint>();
 
         endpoints.MapEndpoint<UpdateTeacherSubjectsEndpoint>();
+
+        endpoints.MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>();
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)

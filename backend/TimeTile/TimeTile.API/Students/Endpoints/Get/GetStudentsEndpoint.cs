@@ -63,8 +63,6 @@ public class GetStudentsEndpoint : IEndpoint
     {
         var query = db.Students
             .AsNoTracking()
-            .Include(s => s.CoursesToStudents)
-            .Include(s => s.LessonsToStudents)
             .Where(s => s.InstitutionId == institutionId);
 
         if (request.BirthDateFrom is not null)

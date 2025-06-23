@@ -28,7 +28,7 @@ namespace TimeTile.API.Subjects.Endpoints.Create
             // Extract InstitutionId
             var institutionId = institutionProvider.GetInstitutionId();
 
-            // Save timetable unit
+            // Save Subject
             var subject = new Subject
             {
                 InstitutionId = institutionId,

@@ -199,9 +199,4 @@ public class UserService : IUserService
     {
         return _avatarService.GenerateDefaultAvatar(firstname, lastname);
     }
-
-    public string GetAvatarUrl(User user)
-    {
-        return _fileService.GetFileUrl(user.Avatar.StoragePath);
-    }
 }

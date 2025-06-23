@@ -31,6 +31,13 @@ using TimeTile.API.InstitutionMembers.Endpoints.Get;
 using TimeTile.API.InstitutionMembers.Endpoints.GetById;
 using TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects;
 using TimeTile.API.InstitutionMembers.Endpoints.UpdateGroups;
+using TimeTile.API.Roles.Endpoints.Get;
+using TimeTile.API.Roles.Endpoints.GetById;
+using TimeTile.API.Roles.Endpoints.GetPermissions;
+using TimeTile.API.Roles.Endpoints.UpdatePermissions;
+using TimeTile.API.Subjects.Endpoints.Get;
+using TimeTile.API.Subjects.Endpoints.GetById;
+using TimeTile.API.Subjects.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -49,6 +56,7 @@ public static class Endpoints
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
         app.MapFilesEndpoints();
+        app.MapSubjectsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -167,6 +175,14 @@ public static class Endpoints
 
         endpoints.MapEndpoint<CreateRoleEndpoint>()
             .RequireAuthorization("CreateRole");
+
+        endpoints.MapEndpoint<GetRolesEndpoint>();
+
+        endpoints.MapEndpoint<GetRoleByIdEndpoint>();
+
+        endpoints.MapEndpoint<GetRolePermissionsEndpoint>();
+
+        endpoints.MapEndpoint<UpdatePermissionsEndpoint>();
     }
 
     private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)
@@ -187,6 +203,19 @@ public static class Endpoints
             .WithTags("Files");
 
         endpoints.MapEndpoint<GetFileByUrlEndpoint>();
+    }
+
+    private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/subjects")
+            .WithTags("Subjects")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetSubjectsEndpoint>();
+
+        endpoints.MapEndpoint<GetSubjectByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateSubjectEndpoint>();
     }
 
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

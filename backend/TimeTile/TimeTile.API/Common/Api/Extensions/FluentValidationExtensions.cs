@@ -117,7 +117,7 @@ namespace TimeTile.API.Common.Api.Extensions
                 var count = await db.Set<TEntity>()
                     .CountAsync(e => ids.Contains(e.Id), cancellationToken);
 
-                return count == ids.Count();
+                return count == ids.Distinct().Count();
             }).WithMessage($"{typeof(TEntity).Name}s Ids are invalid.");
         }
 
@@ -133,7 +133,7 @@ namespace TimeTile.API.Common.Api.Extensions
                     .Where(e => e.InstitutionId == institutionId)
                     .CountAsync(e => ids.Contains(e.Id), cancellationToken);
 
-                return count == ids.Count();
+                return count == ids.Distinct().Count();
             }).WithMessage($"{typeof(TEntity).Name}s Ids are invalid.");
         }
 
@@ -149,7 +149,7 @@ namespace TimeTile.API.Common.Api.Extensions
                     .Where(e => e.InstitutionId != null && e.InstitutionId == institutionId)
                     .CountAsync(e => ids.Contains(e.Id), cancellationToken);
 
-                return count == ids.Count();
+                return count == ids.Distinct().Count();
             }).WithMessage($"{typeof(TEntity).Name}s Ids are invalid.");
         }
 

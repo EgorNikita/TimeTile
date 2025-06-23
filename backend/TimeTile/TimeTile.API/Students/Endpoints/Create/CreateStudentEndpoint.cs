@@ -12,6 +12,7 @@ using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Constants;
 using TimeTile.API.Files.Services;
+using TimeTile.API.Users.Requests;
 using TimeTile.API.Users.Services;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
@@ -81,7 +82,7 @@ public class CreateStudentEndpoint : IEndpoint
         return TypedResults.Created($"/students/{student.Id}", result);
     }
 
-    public record Request
+    public record Request : ICreateUserRequest
     {
         public IFormFile? Avatar { get; init; }
         public string Firstname { get; init; } = null!;

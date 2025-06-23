@@ -159,6 +159,7 @@ public static class Endpoints
             .RequireInstitution();
 
         endpoints.MapEndpoint<GetUserPermissionsEndpoint>();
+    }
 
     private static void MapInstitutionMembersEndpoints(this IEndpointRouteBuilder app)
     {

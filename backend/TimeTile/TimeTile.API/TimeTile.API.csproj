@@ -35,10 +35,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Users\Endpoints\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>

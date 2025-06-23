@@ -54,7 +54,7 @@ namespace TimeTile.API.Roles.Endpoints.UpdatePermissions
 
         private static async Task AddPermissions(
             int roleId, 
-            List<int> permissionsIds, 
+            List<int> permissionIds, 
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
@@ -63,7 +63,7 @@ namespace TimeTile.API.Roles.Endpoints.UpdatePermissions
                 .Select(x => x.PermissionId)
                 .ToListAsync(cancellationToken);
 
-            var permissionsToAdd = permissionsIds
+            var permissionsToAdd = permissionIds
                 .Where(permId => !existingPermissionIds.Contains(permId))
                 .Select(permId => new Core.Models.RoleToPermission
                 {
@@ -81,12 +81,12 @@ namespace TimeTile.API.Roles.Endpoints.UpdatePermissions
 
         private static async Task RemovePermissions(
             int roleId,
-            List<int> permissionsIds,
+            List<int> permissionIds,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
             var permissionsToRemove = await db.RolesPermissions
-                .Where(x => x.RoleId == roleId && permissionsIds.Contains(x.PermissionId))
+                .Where(x => x.RoleId == roleId && permissionIds.Contains(x.PermissionId))
                 .ToListAsync(cancellationToken);
 
             if (permissionsToRemove.Any())

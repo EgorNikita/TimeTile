@@ -63,6 +63,7 @@ public static class Endpoints
         public const string Users = "Users";
         public const string InstitutionMembers = "InstitutionMembers";
         public const string Subjects = "Subjects";
+        public const string Grades = "Grades";
     }
 
     public static class Routes
@@ -80,6 +81,7 @@ public static class Endpoints
         public const string Users = "/users";
         public const string InstitutionMembers = "/institution-members";
         public const string Subjects = "/subjects";
+        public const string Grades = "/grades";
     }
 
     private static class RateLimits
@@ -255,13 +257,10 @@ public static class Endpoints
 
     private static void MapGradesEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/grades")
-            .WithTags("Grades")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.Grades, Tags.Grades);
 
-        endpoints.MapEndpoint<GetGradesEndpoint>();
-
-        endpoints.MapEndpoint<GetGradeByIdEndpoint>();
+        endpoints.MapEndpoint<GetGradesEndpoint>()
+            .MapEndpoint<GetGradeByIdEndpoint>();
     }
 
     private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)
@@ -270,11 +269,9 @@ public static class Endpoints
             .WithTags(Tags.Subjects)
             .RequireRateLimiting(RateLimits.Default);
 
-        endpoints.MapEndpoint<GetSubjectsEndpoint>();
-
-        endpoints.MapEndpoint<GetSubjectByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateSubjectEndpoint>();
+        endpoints.MapEndpoint<GetSubjectsEndpoint>()
+            .MapEndpoint<GetSubjectByIdEndpoint>()
+            .MapEndpoint<CreateSubjectEndpoint>();
     }
     
     #region Helper Extensions

@@ -67,6 +67,7 @@ public static class Endpoints
         public const string InstitutionMembers = "InstitutionMembers";
         public const string Subjects = "Subjects";
         public const string Grades = "Grades";
+        public const string Groups = "Groups";
     }
 
     public static class Routes
@@ -85,6 +86,7 @@ public static class Endpoints
         public const string InstitutionMembers = "/institution-members";
         public const string Subjects = "/subjects";
         public const string Grades = "/grades";
+        public const string Groups = "/groups";
     }
 
     private static class RateLimits
@@ -284,11 +286,9 @@ public static class Endpoints
             .WithTags("Groups")
             .RequireInstitution();
 
-        endpoints.MapEndpoint<GetGroupsEndpoint>();
-
-        endpoints.MapEndpoint<GetGroupByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateGroupEndpoint>();
+        endpoints.MapEndpoint<GetGroupsEndpoint>()
+            .MapEndpoint<GetGroupByIdEndpoint>()
+            .MapEndpoint<CreateGroupEndpoint>();
     }
 
     

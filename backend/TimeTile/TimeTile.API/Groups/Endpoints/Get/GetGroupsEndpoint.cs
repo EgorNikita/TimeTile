@@ -6,6 +6,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -25,6 +26,7 @@ namespace TimeTile.API.Groups.Endpoints.Get
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
+            IGroupService groupService,
             IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
@@ -32,6 +34,7 @@ namespace TimeTile.API.Groups.Endpoints.Get
 
             // Form a final paged list
             var groups = await BuildFilteredQuery(request, institutionId, db)
+                .Include(g => g.Avatar)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -39,7 +42,8 @@ namespace TimeTile.API.Groups.Endpoints.Get
                 .Select(x => new Response
                 (
                     x.Id,
-                    x.Title
+                    x.Title,
+                    groupService.GetAvatarUrl(x)
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
@@ -78,7 +82,8 @@ namespace TimeTile.API.Groups.Endpoints.Get
 
         private sealed record Response(
             int Id,
-            string Title
+            string Title,
+            string? AvatarUrl
         );
     }
 }

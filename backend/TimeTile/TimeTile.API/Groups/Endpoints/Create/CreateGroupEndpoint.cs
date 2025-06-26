@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -17,12 +18,15 @@ namespace TimeTile.API.Groups.Endpoints.Create
             return app
                 .MapPost("/", Handle)
                 .WithSummary("Creates a new Group")
-                .WithRequestValidation<Request>();
+                .WithRequestValidation<Request>()
+                .DisableAntiforgery();
         }
 
         private static async Task<Created<Result<Response>>> Handle(
-            [FromBody] Request request,
+            [FromForm] Request request,
             TimetileDbContext db,
+            IGroupService groupService,
+            IFileService fileService,
             IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
@@ -46,13 +50,20 @@ namespace TimeTile.API.Groups.Endpoints.Create
                     .Select(memberId => new InstitutionMemberToGroup { InstitutionMemberId = memberId })
                     .ToList();
 
-            await db.Groups.AddAsync(group, cancellationToken);
-            await db.SaveChangesAsync(cancellationToken);
+            await SaveGroup(
+                group,
+                request,
+                db,
+                groupService,
+                fileService,
+                cancellationToken
+            );
 
             // Return result
             var response = new Response(
                 group.Id,
-                group.Title
+                group.Title,
+                groupService.GetAvatarUrl(group)
             );
 
             var result = Result.Success(response);
@@ -60,15 +71,53 @@ namespace TimeTile.API.Groups.Endpoints.Create
             return TypedResults.Created($"/subjects/{group.Id}", result);
         }
 
-        public sealed record Request(
-            string Title,
-            List<int>? StudentIds,
-            List<int>? InstitutionMemberIds
-        );
+        private static async Task SaveGroup(
+            Group group,
+            Request request,
+            TimetileDbContext db,
+            IGroupService groupService,
+            IFileService fileService,
+            CancellationToken cancellationToken)
+        {
+            using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                if (request.Avatar is not null)
+                {
+                    group.AvatarId = await groupService.SaveAvatar(request.Avatar, cancellationToken);
+                }
+
+                await db.Groups.AddAsync(group, cancellationToken);
+                await db.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                if (group.AvatarId is not null)
+                {
+                    await fileService.DeleteFilePhysically(group.AvatarId.Value, cancellationToken);
+                }
+
+                await transaction.RollbackAsync(cancellationToken);
+
+                throw;
+            }
+        }
+
+        public sealed record Request
+        {
+            public string Title { get; set; } = null!;
+            public List<int>? StudentIds { get; set; }
+            public List<int>? InstitutionMemberIds { get; set; }
+            public IFormFile? Avatar { get; set; }
+        }
 
         private sealed record Response(
             int Id,
-            string Title
+            string Title,
+            string? AvatarUrl
         );
     }
 }

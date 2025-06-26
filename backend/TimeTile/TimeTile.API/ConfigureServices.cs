@@ -15,6 +15,7 @@ using TimeTile.API.Common.Api.Filters;
 using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
+using TimeTile.API.Groups.Services;
 using TimeTile.API.Users.Services;
 using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Repositories;
@@ -54,6 +55,7 @@ public static class ConfigureServices
         builder.Services.AddScoped<IAvatarService, AvatarService>();
         builder.Services.AddScoped<IFileRepository, FileRepository>();
         builder.Services.AddScoped<IClassroomTypeService, ClassroomTypeService>();
+        builder.Services.AddScoped<IGroupService, GroupService>();
 
         Log.Information("Service configuration completed.");
     }

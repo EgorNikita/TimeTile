@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -20,6 +21,7 @@ namespace TimeTile.API.Groups.Endpoints.GetById
         private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
+            IGroupService groupService,
             CancellationToken cancellationToken)
         {
             // Find Group
@@ -29,7 +31,8 @@ namespace TimeTile.API.Groups.Endpoints.GetById
 
             var response = new Response(
                 group.Id,
-                group.Title
+                group.Title,
+                groupService.GetAvatarUrl(group)
             );
 
             var result = Result.Success(response);
@@ -43,7 +46,8 @@ namespace TimeTile.API.Groups.Endpoints.GetById
 
         private sealed record Response(
             int Id,
-            string Title
+            string Title,
+            string? AvatarUrl
         );
     }
 }

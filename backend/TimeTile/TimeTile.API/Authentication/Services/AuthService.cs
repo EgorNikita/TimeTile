@@ -71,7 +71,7 @@ public class AuthService : IAuthService
         var newRefreshToken = _jwtService.GenerateRefreshToken(user.Id, ipAddress);
         
         token.ReplaceToken = newRefreshToken;
-        _context.RefreshTokens.Add(newRefreshToken);
+        await _context.RefreshTokens.AddAsync(newRefreshToken, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
         
         return new AuthResult(true, newAccessToken, newRefreshToken.Token);

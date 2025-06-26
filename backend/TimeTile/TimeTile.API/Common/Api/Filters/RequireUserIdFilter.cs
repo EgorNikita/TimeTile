@@ -32,7 +32,7 @@ public class RequireUserIdFilter : IEndpointFilter
             );
         }
 
-        // Store institution ID for use in the endpoint
+        // Store user ID for use in the endpoint
         httpContext.Items[HttpContextItemKeys.UserId] = userResult.Data;
 
         return await next(context);

@@ -90,65 +90,6 @@ public static class ConfigureServices
         });
     }
 
-    // private static void AddJwtAuthentication(this WebApplicationBuilder builder)
-    // {
-    //     var jwtSection = builder.Configuration.GetSection("Jwt");
-    //     builder.Services.Configure<JwtOptions>(jwtSection);
-    //
-    //     var jwtOptions = jwtSection.Get<JwtOptions>() ??
-    //                      throw new InvalidOperationException("JWT configuration is missing.");
-    //
-    //     if (string.IsNullOrWhiteSpace(jwtOptions.Key))
-    //         throw new InvalidOperationException("JWT Key is not configured.");
-    //
-    //     builder.Services.AddAuthentication(options =>
-    //     {
-    //         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    //         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    //     }).AddJwtBearer(options =>
-    //     {
-    //         options.TokenValidationParameters = new TokenValidationParameters
-    //         {
-    //             IssuerSigningKey = Jwt.SecurityKey(jwtOptions.Key),
-    //             ValidateIssuer = false,
-    //             ValidateAudience = false,
-    //             ValidateLifetime = true,
-    //             ValidateIssuerSigningKey = true,
-    //             ClockSkew = TimeSpan.Zero
-    //         };
-    //         options.Events = new JwtBearerEvents
-    //         {
-    //             OnChallenge = context =>
-    //             {
-    //                 context.HandleResponse();
-    //                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-    //                 context.Response.ContentType = "application/json";
-    //                 return context.Response.WriteAsync("{\"error\": \"Unauthorized\"}");
-    //             },
-    //             OnForbidden = context =>
-    //             {
-    //                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-    //                 context.Response.ContentType = "application/json";
-    //                 return context.Response.WriteAsync("{\"error\": \"Forbidden\"}");
-    //             }
-    //         };
-    //     });
-    //
-    //     builder.Services.AddTransient<Jwt>();
-    // }
-    //
-    // private static void AddAuthorization(this WebApplicationBuilder builder)
-    // {
-    //     builder.Services.AddAuthorization(options =>
-    //     {
-    //         foreach (var permission in Permissions.All)
-    //             options.AddPolicy(permission,
-    //                 policy => { policy.Requirements.Add(new PermissionRequirement(permission)); });
-    //     });
-    //
-    //     builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-    // }
-
     private static void AddRateLimiting(this WebApplicationBuilder builder)
     {
         builder.Services.AddRateLimiter(options =>

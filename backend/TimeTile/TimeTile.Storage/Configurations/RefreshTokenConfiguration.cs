@@ -14,7 +14,7 @@ internal class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken
         builder.HasKey(e => e.Id);
 
         builder.HasIndex(e => new { e.Token })
-            .HasDatabaseName("refresh_tokens_token_constraint") //Ya je tebe govoril
+            .HasDatabaseName("refresh_tokens_token_constraint")
             .AreNullsDistinct(false)
             .IsUnique();
 

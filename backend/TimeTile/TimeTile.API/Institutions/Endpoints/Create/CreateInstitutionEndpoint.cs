@@ -46,7 +46,7 @@ public class CreateInstitutionEndpoint : IEndpoint
 
         var result = Result.Success(response);
 
-        return TypedResults.Created($"/institutions/{institution.Id}", result);
+        return TypedResults.Created($"{API.Endpoints.Routes.Institutions}/{institution.Id}", result);
     }
 
     public sealed record Request(

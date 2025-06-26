@@ -63,7 +63,7 @@ public static class Endpoints
         public const string Subjects = "Subjects";
     }
 
-    private static class Routes
+    public static class Routes
     {
         public const string Auth = "/auth";
         public const string ClassroomTypes = "/classroom-types";

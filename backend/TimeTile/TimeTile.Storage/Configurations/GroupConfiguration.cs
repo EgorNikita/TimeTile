@@ -35,12 +35,22 @@ namespace TimeTile.Storage.Configurations
                 .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength)
                 .HasColumnName("title");
 
+            builder.Property(e => e.AvatarId)
+                .HasColumnName("avatar_id")
+                .IsRequired(false);
+
             // Relationships
             builder.HasOne(d => d.Institution)
                 .WithMany(p => p.Groups)
                 .HasForeignKey(d => d.InstitutionId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("groups_institution_id_fkey");
+
+            builder.HasOne(d => d.Avatar)
+                .WithOne(p => p.Group)
+                .HasForeignKey<Group>(d => d.AvatarId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("groups_avatar_id_fkey");
         }
     }
 }

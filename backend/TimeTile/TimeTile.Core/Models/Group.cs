@@ -11,9 +11,13 @@ public partial class Group : AuditableEntity, IInstitutionEntity
 
     public int InstitutionId { get; set; }
 
+    public int? AvatarId { get; set; }
+
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
     
     public virtual Institution Institution { get; set; } = null!;
+
+    public virtual File? Avatar { get; set; }
 
     public virtual ICollection<InstitutionMemberToGroup> InstitutionMembersToGroup { get; set; } = new List<InstitutionMemberToGroup>();
 

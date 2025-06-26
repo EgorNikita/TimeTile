@@ -40,6 +40,7 @@ using TimeTile.API.Subjects.Endpoints.Get;
 using TimeTile.API.Subjects.Endpoints.GetById;
 using TimeTile.API.Subjects.Endpoints.Create;
 using TimeTile.API.Grades.Endpoints.Get;
+using TimeTile.API.Grades.Endpoints.GetById;
 
 namespace TimeTile.API;
 
@@ -225,6 +226,8 @@ public static class Endpoints
             .RequireInstitution();
 
         endpoints.MapEndpoint<GetGradesEndpoint>();
+
+        endpoints.MapEndpoint<GetGradeByIdEndpoint>();
     }
 
     private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)

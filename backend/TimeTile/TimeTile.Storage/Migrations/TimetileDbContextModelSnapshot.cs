@@ -377,6 +377,11 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -397,6 +402,8 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("grades", null, t =>
                         {
+                            t.HasCheckConstraint("CHK_Grade_Type_Valid", "LOWER(\"type\") IN ('classwork', 'homework', 'exam')");
+
                             t.HasCheckConstraint("CHK_Grade_Value_Positive", "\"value\" > 0");
 
                             t.HasCheckConstraint("CHK_Grade_Weight_Positive", "\"weight\" > 0");
@@ -832,6 +839,67 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_Permission_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
                         });
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedByIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("created_by_ip");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<int?>("ReplaceTokenId")
+                        .HasColumnType("integer")
+                        .HasColumnName("replace_token_id");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("RevokedByIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("revoked_by_ip");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("token");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReplaceTokenId");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("refresh_tokens_token_constraint");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Token"), false);
+
+                    b.HasIndex("UserId", "RevokedAt")
+                        .HasDatabaseName("refresh_tokens_user_revoked_id");
+
+                    b.ToTable("refresh_tokens", (string)null);
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Role", b =>
@@ -1553,6 +1621,26 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.RefreshToken", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.RefreshToken", "ReplaceToken")
+                        .WithMany()
+                        .HasForeignKey("ReplaceTokenId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("refresh_tokens_replace_token_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("refresh_tokens_user_id_fkey");
+
+                    b.Navigation("ReplaceToken");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Role", b =>
                 {
                     b.HasOne("TimeTile.Core.Models.Institution", "Institution")
@@ -1807,6 +1895,11 @@ namespace TimeTile.Storage.Migrations
             modelBuilder.Entity("TimeTile.Core.Models.TimetableUnit", b =>
                 {
                     b.Navigation("Lessons");
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.User", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.InstitutionMember", b =>

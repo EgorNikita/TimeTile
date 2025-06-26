@@ -32,8 +32,14 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
                 });
 
             RuleFor(x => x.Capacity)
-                .GreaterThanOrEqualTo(1)
-                .WithMessage("Capacity should be greater or equal to 1");
+                .NotEmpty()
+                .WithMessage("Capacity is required")
+                .DependentRules(() => 
+                {
+                    RuleFor(x => x.Capacity)
+                        .GreaterThanOrEqualTo(1)
+                        .WithMessage("Capacity should be greater or equal to 1");
+                });
 
             RuleFor(x => x.ClassroomTypeId)
                 .MustBeValidId()

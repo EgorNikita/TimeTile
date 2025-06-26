@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -58,7 +58,7 @@ public class CreateRoleEndpoint : IEndpoint
 
         var result = Result.Success(response);
 
-        return TypedResults.Created($"/roles/{role.Id}", result);
+        return TypedResults.Created($"{API.Endpoints.Routes.Roles}/{role.Id}", result);
     }
 
     public sealed record Request(

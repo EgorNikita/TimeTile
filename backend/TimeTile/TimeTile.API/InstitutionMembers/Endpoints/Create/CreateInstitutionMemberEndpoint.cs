@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata;
 using TimeTile.API.Common.Api;
@@ -84,7 +84,7 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Create
 
             var result = Result.Success(response);
 
-            return TypedResults.Created($"/institution-members/{institutionMember.Id}", result);
+            return TypedResults.Created($"{API.Endpoints.Routes.InstitutionMembers}/{institutionMember.Id}", result);
         }
 
         public record Request : ICreateUserRequest

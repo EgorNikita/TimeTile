@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -19,7 +20,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly List<(int CourseId, int StudentId)> _possiblePairs = new();
         private int _actualIndex = 0;
 
-        private GradeFaker _gradeFaker = new();
+        private GradeFaker _gradeFaker = new GradeFaker(GradeType.Exam);
 
         public CourseToStudentFaker(List<Course> courses, List<Student> students)
         {

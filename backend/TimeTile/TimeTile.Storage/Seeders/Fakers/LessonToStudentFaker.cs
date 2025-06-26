@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -27,7 +28,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly List<(int LessonId, int StudentId)> _possiblePairs = new();
         private int _actualIndex = 0;
 
-        private readonly GradeFaker _gradeFaker = new();
+        private readonly GradeFaker _classworkGradeFaker = new GradeFaker(GradeType.Classwork);
+        private readonly GradeFaker _homeworkGradeFaker = new GradeFaker(GradeType.Homework);
 
         public LessonToStudentFaker(List<Lesson> lessons, List<Student> students)
         {
@@ -118,7 +120,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             if (faker.Random.Bool(CLASSWORK_GRADE_PRESENCE_POSSIBILITY))
             {
-                return _gradeFaker.Generate(1).First();
+                return _classworkGradeFaker.Generate(1).First();
             }
 
             return null;
@@ -133,7 +135,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             if (faker.Random.Bool(HOMEWORK_GRADE_PRESENCE_POSSIBILITY))
             {
-                return _gradeFaker.Generate(1).First();
+                return _homeworkGradeFaker.Generate(1).First();
             }
 
             return null;

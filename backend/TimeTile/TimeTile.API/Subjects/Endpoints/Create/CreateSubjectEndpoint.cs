@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
@@ -46,7 +46,7 @@ namespace TimeTile.API.Subjects.Endpoints.Create
 
             var result = Result.Success(response);
 
-            return TypedResults.Created($"/subjects/{subject.Id}", result);
+            return TypedResults.Created($"{API.Endpoints.Routes.Subjects}/{subject.Id}", result);
         }
 
         public sealed record Request(

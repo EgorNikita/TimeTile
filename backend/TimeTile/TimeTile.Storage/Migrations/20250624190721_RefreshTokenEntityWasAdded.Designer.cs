@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250624190721_RefreshTokenEntityWasAdded")]
+    partial class RefreshTokenEntityWasAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -377,11 +380,6 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("type");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -402,8 +400,6 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("grades", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Grade_Type_Valid", "LOWER(\"type\") IN ('classwork', 'homework', 'exam')");
-
                             t.HasCheckConstraint("CHK_Grade_Value_Positive", "\"value\" > 0");
 
                             t.HasCheckConstraint("CHK_Grade_Weight_Positive", "\"weight\" > 0");

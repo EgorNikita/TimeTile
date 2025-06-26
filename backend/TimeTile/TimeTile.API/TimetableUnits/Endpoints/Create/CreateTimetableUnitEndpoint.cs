@@ -52,7 +52,7 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Create
 
             var result = Result.Success(response);
 
-            return TypedResults.Created($"/timetable-units/{timetableUnit.Id}", result);
+            return TypedResults.Created($"{API.Endpoints.Routes.TimetableUnits}/{timetableUnit.Id}", result);
         }
 
         public sealed record Request(

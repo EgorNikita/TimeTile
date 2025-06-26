@@ -79,7 +79,7 @@ public class CreateStudentEndpoint : IEndpoint
 
         var result = Result.Success(response);
 
-        return TypedResults.Created($"/students/{student.Id}", result);
+        return TypedResults.Created($"{API.Endpoints.Routes.Students}/{student.Id}", result);
     }
 
     public record Request : ICreateUserRequest

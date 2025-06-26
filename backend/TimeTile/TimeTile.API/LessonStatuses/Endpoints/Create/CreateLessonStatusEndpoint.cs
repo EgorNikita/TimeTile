@@ -49,7 +49,7 @@ namespace TimeTile.API.LessonStatuses.Endpoints.Create
 
             var result = Result.Success(response);
 
-            return TypedResults.Created($"/lesson-statuses/{lessonStatus.Id}", result);
+            return TypedResults.Created($"{API.Endpoints.Routes.LessonStatuses}/{lessonStatus.Id}", result);
         }
 
         public sealed record Request(

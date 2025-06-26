@@ -62,7 +62,7 @@ namespace TimeTile.API.ClassroomTypes.Endpoints.Create
 
             var result = Result.Success(response);
 
-            return TypedResults.Created($"/classroom-types/{classroomType.Id}", result);
+            return TypedResults.Created($"{API.Endpoints.Routes.ClassroomTypes}/{classroomType.Id}", result);
         }
 
         private static async Task SaveClassroomType(

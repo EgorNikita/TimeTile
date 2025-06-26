@@ -84,7 +84,7 @@ namespace TimeTile.API.InstitutionMembers.Endpoints.Create
 
             var result = Result.Success(response);
 
-            return TypedResults.Created($"/institution-members/{institutionMember.Id}", result);
+            return TypedResults.Created($"{API.Endpoints.Routes.InstitutionMembers}/{institutionMember.Id}", result);
         }
 
         public record Request : ICreateUserRequest

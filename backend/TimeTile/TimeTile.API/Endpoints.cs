@@ -39,6 +39,7 @@ using TimeTile.API.Roles.Endpoints.UpdatePermissions;
 using TimeTile.API.Subjects.Endpoints.Get;
 using TimeTile.API.Subjects.Endpoints.GetById;
 using TimeTile.API.Subjects.Endpoints.Create;
+using TimeTile.API.Grades.Endpoints.Get;
 
 namespace TimeTile.API;
 
@@ -58,6 +59,7 @@ public static class Endpoints
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
         app.MapFilesEndpoints();
+        app.MapGradesEndpoints();
         app.MapSubjectsEndpoints();
     }
 
@@ -214,6 +216,15 @@ public static class Endpoints
             .WithTags("Files");
 
         endpoints.MapEndpoint<GetFileByUrlEndpoint>();
+    }
+
+    private static void MapGradesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/grades")
+            .WithTags("Grades")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetGradesEndpoint>();
     }
 
     private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)

@@ -1,29 +1,25 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
-using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Classrooms.Endpoints.Get
+namespace TimeTile.API.Subjects.Endpoints.Get
 {
-    public class GetClassroomsEndpoint : IEndpoint
+    public class GetSubjectsEndpoint : IEndpoint
     {
         public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
         {
             return app
-               .MapGet("/", Handle)
-               .WithSummary("Returns a page of classrooms")
-               .WithRequestValidation<Request>();
+                .MapGet("/", Handle)
+                .WithSummary("Returns a page of subjects")
+                .WithRequestValidation<Request>();
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
@@ -32,54 +28,51 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
             IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
-            // Extracts institutionId
             var institutionId = institutionProvider.GetInstitutionId();
 
-            var classrooms = await BuildFilteredQuery(request, institutionId, db)
+            // Form a final paged list
+            var subjects = await BuildFilteredQuery(request, institutionId, db)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
                 )
-                .Select(c => new Response(
-                    c.Id,
-                    c.Title,
-                    c.Capacity,
-                    c.ClassroomTypeId
+                .Select(x => new Response
+                (
+                    x.Id,
+                    x.Title
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
-            var result = Result.Success(classrooms);
+            var result = Result.Success(subjects);
 
             return TypedResults.Ok(result);
         }
 
-        private static IQueryable<Classroom> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
+        private static IQueryable<Subject> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
         {
-            var baseQuery = db.Classrooms
+            var baseQuery = db.Subjects
                 .AsNoTracking()
-                .Where(c => c.InstitutionId == institutionId);
+                .Where(s => s.InstitutionId == institutionId);
 
-            if (request.ClassroomTypeIds is not null && request.ClassroomTypeIds.Any())
-                baseQuery = baseQuery.Where(c =>
-                    request.ClassroomTypeIds.Contains(c.ClassroomTypeId)
+            if (request.TeacherIds is not null && request.TeacherIds.Any())
+                baseQuery = baseQuery.Where(s => 
+                    s.TeachersToSubject.Any(ts => request.TeacherIds.Contains(ts.TeacherId))
                 );
 
             return baseQuery;
         }
 
         public sealed record Request(
-            int[]? ClassroomTypeIds = null,
+            int[]? TeacherIds = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,
             bool Descending = false
         ) : IPagedRequest, ISortRequest;
 
-        public sealed record Response(
+        private sealed record Response(
             int Id,
-            string Title,
-            int Capacity,
-            int ClassroomTypeId
+            string Title
         );
     }
 }

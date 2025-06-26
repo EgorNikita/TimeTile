@@ -28,6 +28,19 @@ using TimeTile.API.TimetableUnits.Endpoints.Create;
 using TimeTile.API.TimetableUnits.Endpoints.Get;
 using TimeTile.API.TimetableUnits.Endpoints.GetById;
 using TimeTile.Core.Common.Constants;
+using TimeTile.API.Users.Endpoints.GetPermissions;
+using TimeTile.API.InstitutionMembers.Endpoints.Create;
+using TimeTile.API.InstitutionMembers.Endpoints.Get;
+using TimeTile.API.InstitutionMembers.Endpoints.GetById;
+using TimeTile.API.InstitutionMembers.Endpoints.UpdateSubjects;
+using TimeTile.API.InstitutionMembers.Endpoints.UpdateGroups;
+using TimeTile.API.Roles.Endpoints.Get;
+using TimeTile.API.Roles.Endpoints.GetById;
+using TimeTile.API.Roles.Endpoints.GetPermissions;
+using TimeTile.API.Roles.Endpoints.UpdatePermissions;
+using TimeTile.API.Subjects.Endpoints.Get;
+using TimeTile.API.Subjects.Endpoints.GetById;
+using TimeTile.API.Subjects.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -42,9 +55,12 @@ public static class Endpoints
         app.MapTimetableUnitsEndpoints();
         app.MapClassroomsEndpoints();
         app.MapStudentEndpoints();
+        app.MapUsersEndpoints();
+        app.MapInstitutionMembersEndpoints();
         app.MapRolesEndpoints();
         app.MapInstitutionEndpoints();
         app.MapFilesEndpoints();
+        app.MapSubjectsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -142,6 +158,32 @@ public static class Endpoints
             .RequireAuthorization(Permissions.Students.Get);
     }
 
+    private static void MapUsersEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/users")
+            .WithTags("Users")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetUserPermissionsEndpoint>();
+    }
+
+    private static void MapInstitutionMembersEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/institution-members")
+            .WithTags("InstitutionMembers")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<CreateInstitutionMemberEndpoint>();
+
+        endpoints.MapEndpoint<GetInstitutionMembersEndpoint>();
+
+        endpoints.MapEndpoint<GetInstitutionMemberByIdEndpoint>();
+
+        endpoints.MapEndpoint<UpdateTeacherSubjectsEndpoint>();
+
+        endpoints.MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>();
+    }
+
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
     {
         var endpoints = app.MapGroup("/roles")
@@ -150,6 +192,14 @@ public static class Endpoints
 
         endpoints.MapEndpoint<CreateRoleEndpoint>()
             .RequireAuthorization("CreateRole");
+
+        endpoints.MapEndpoint<GetRolesEndpoint>();
+
+        endpoints.MapEndpoint<GetRoleByIdEndpoint>();
+
+        endpoints.MapEndpoint<GetRolePermissionsEndpoint>();
+
+        endpoints.MapEndpoint<UpdatePermissionsEndpoint>();
     }
 
     private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)
@@ -170,6 +220,19 @@ public static class Endpoints
             .WithTags("Files");
 
         endpoints.MapEndpoint<GetFileByUrlEndpoint>();
+    }
+
+    private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/subjects")
+            .WithTags("Subjects")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetSubjectsEndpoint>();
+
+        endpoints.MapEndpoint<GetSubjectByIdEndpoint>();
+
+        endpoints.MapEndpoint<CreateSubjectEndpoint>();
     }
 
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

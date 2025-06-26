@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using TimeTile.API.Authentication;
 using TimeTile.API.Authentication.Services;
 using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
@@ -36,13 +37,16 @@ public static class ConfigureServices
         builder.AddJwtAuthentication();
         builder.AddAuthorization();
         builder.AddRateLimiting();
+        builder.AddCors();
 
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
 
         builder.Services.AddScoped<IInstitutionProvider, InstitutionProvider>();
+        builder.Services.AddScoped<IUserProvider, UserProvider>();
         builder.Services.AddScoped<RequireInstitutionFilter>();
+        builder.Services.AddScoped<RequireUserIdFilter>();
         builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
@@ -54,6 +58,20 @@ public static class ConfigureServices
         Log.Information("Service configuration completed.");
     }
 
+    private static void AddCors(this WebApplicationBuilder builder)
+    {
+        Log.Information("Configuring CORS...");
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            });
+        });
+    }
+    
     private static void AddSwagger(this WebApplicationBuilder builder)
     {
         Log.Information("Configuring Swagger...");
@@ -70,65 +88,6 @@ public static class ConfigureServices
         {
             configuration.ReadFrom.Configuration(context.Configuration);
         });
-    }
-
-    private static void AddJwtAuthentication(this WebApplicationBuilder builder)
-    {
-        var jwtSection = builder.Configuration.GetSection("Jwt");
-        builder.Services.Configure<JwtOptions>(jwtSection);
-
-        var jwtOptions = jwtSection.Get<JwtOptions>() ??
-                         throw new InvalidOperationException("JWT configuration is missing.");
-
-        if (string.IsNullOrWhiteSpace(jwtOptions.Key))
-            throw new InvalidOperationException("JWT Key is not configured.");
-
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                IssuerSigningKey = Jwt.SecurityKey(jwtOptions.Key),
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ClockSkew = TimeSpan.Zero
-            };
-            options.Events = new JwtBearerEvents
-            {
-                OnChallenge = context =>
-                {
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    context.Response.ContentType = "application/json";
-                    return context.Response.WriteAsync("{\"error\": \"Unauthorized\"}");
-                },
-                OnForbidden = context =>
-                {
-                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                    context.Response.ContentType = "application/json";
-                    return context.Response.WriteAsync("{\"error\": \"Forbidden\"}");
-                }
-            };
-        });
-
-        builder.Services.AddTransient<Jwt>();
-    }
-
-    private static void AddAuthorization(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddAuthorization(options =>
-        {
-            foreach (var permission in Permissions.All)
-                options.AddPolicy(permission,
-                    policy => { policy.Requirements.Add(new PermissionRequirement(permission)); });
-        });
-
-        builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
     }
 
     private static void AddRateLimiting(this WebApplicationBuilder builder)

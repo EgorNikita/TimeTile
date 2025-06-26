@@ -78,12 +78,25 @@ namespace TimeTile.API.Common.Api.Extensions
         }
 
         public static IRuleBuilderOptions<T, int> MustBeValidId<T>(
-            this IRuleBuilder<T, int> ruleBuilder) 
+            this IRuleBuilder<T, int> ruleBuilder)
             where T : class
         {
             return ruleBuilder
-                .GreaterThanOrEqualTo(1)
+                .NotEmpty()
+                .WithMessage("Id is required.").
+                GreaterThanOrEqualTo(1)
                 .WithMessage("Id must be greater or equal to 1");
+        }
+        
+        public static IRuleBuilderOptions<T, string> MustBeValidRefreshToken<T>(
+            this IRuleBuilder<T, string> ruleBuilder)
+            where T : class
+        {
+            return ruleBuilder
+                .NotEmpty()
+                .WithMessage("RefreshToken is required.")
+                .MustBeValidString()
+                .WithMessage("RefreshToken contains invalid characters.");
         }
 
         public static IRuleBuilderOptions<T, string> ApplyRegexPattern<T>(

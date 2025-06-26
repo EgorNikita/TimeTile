@@ -1,4 +1,7 @@
-using TimeTile.API.Authentication.Endpoints;
+using TimeTile.API.Authentication.Endpoints.Login;
+using TimeTile.API.Authentication.Endpoints.Logout;
+using TimeTile.API.Authentication.Endpoints.LogoutAll;
+using TimeTile.API.Authentication.Endpoints.RefreshToken;
 using TimeTile.API.Classrooms.Endpoints.Create;
 using TimeTile.API.Classrooms.Endpoints.Get;
 using TimeTile.API.Classrooms.Endpoints.GetById;
@@ -6,7 +9,6 @@ using TimeTile.API.ClassroomTypes.Endpoints.Create;
 using TimeTile.API.ClassroomTypes.Endpoints.Get;
 using TimeTile.API.ClassroomTypes.Endpoints.GetById;
 using TimeTile.API.Common.Api;
-using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Filters;
 using TimeTile.API.Files.Endpoints.GetByUrl;
 using TimeTile.API.Institutions.Endpoints.Create;
@@ -63,12 +65,26 @@ public static class Endpoints
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/auth")
-            .WithTags("Authentication")
-            .RequireRateLimiting("login");
+        const string authTag = "Authentication";
+        const string authBasePath = "/auth";
+        const string authRateLimit = "auth";
 
-        endpoints.MapPublicGroup()
-            .MapEndpoint<Login>();
+        var publicEndpoints = app.MapGroup(authBasePath)
+            .WithTags(authTag)
+            .RequireRateLimiting(authRateLimit);
+
+        publicEndpoints.MapPublicGroup()
+            .MapEndpoint<Login>()
+            .MapEndpoint<RefreshToken>();
+        
+        var protectedEndpoints = app.MapGroup(authBasePath)
+            .WithTags(authTag)
+            .RequireUserId()
+            .RequireRateLimiting(authRateLimit);
+
+        protectedEndpoints
+            .MapEndpoint<Logout>()
+            .MapEndpoint<LogoutAll>();
     }
 
     private static void MapClassroomTypesEndpoints(this IEndpointRouteBuilder app)
@@ -77,11 +93,9 @@ public static class Endpoints
             .WithTags("ClassroomTypes")
             .RequireInstitution();
 
-        endpoints.MapEndpoint<GetClassroomTypesEndpoint>();
-
-        endpoints.MapEndpoint<GetClassroomTypeByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateClassroomTypeEndpoint>();
+        endpoints.MapEndpoint<GetClassroomTypesEndpoint>()
+            .MapEndpoint<GetClassroomTypeByIdEndpoint>()
+            .MapEndpoint<CreateClassroomTypeEndpoint>();
     }
 
     private static void MapLessonStatusesEndpoints(this IEndpointRouteBuilder app)
@@ -90,11 +104,9 @@ public static class Endpoints
             .WithTags("LessonStatuses")
             .RequireInstitution();
 
-        endpoints.MapEndpoint<GetLessonStatusesEndpoint>();
-
-        endpoints.MapEndpoint<GetLessonStatusByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateLessonStatusEndpoint>();
+        endpoints.MapEndpoint<GetLessonStatusesEndpoint>()
+            .MapEndpoint<GetLessonStatusByIdEndpoint>()
+            .MapEndpoint<CreateLessonStatusEndpoint>();
     }
 
     private static void MapTermsEndpoints(this IEndpointRouteBuilder app)
@@ -103,11 +115,9 @@ public static class Endpoints
             .WithTags("Terms")
             .RequireInstitution();
 
-        endpoints.MapEndpoint<GetTermsEndpoint>();
-
-        endpoints.MapEndpoint<GetTermByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateTermEndpoint>();
+        endpoints.MapEndpoint<GetTermsEndpoint>()
+            .MapEndpoint<GetTermByIdEndpoint>()
+            .MapEndpoint<CreateTermEndpoint>();
     }
 
     private static void MapTimetableUnitsEndpoints(this IEndpointRouteBuilder app)
@@ -116,11 +126,9 @@ public static class Endpoints
             .WithTags("TimetableUnits")
             .RequireInstitution();
 
-        endpoints.MapEndpoint<GetTimetableUnitsEndpoint>();
-
-        endpoints.MapEndpoint<GetTimetableUnitByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateTimetableUnitEndpoint>();
+        endpoints.MapEndpoint<GetTimetableUnitsEndpoint>()
+            .MapEndpoint<GetTimetableUnitByIdEndpoint>()
+            .MapEndpoint<CreateTimetableUnitEndpoint>();
     }
 
     private static void MapClassroomsEndpoints(this IEndpointRouteBuilder app)
@@ -129,11 +137,9 @@ public static class Endpoints
             .WithTags("Classrooms")
             .RequireInstitution();
 
-        endpoints.MapEndpoint<GetClassroomsEndpoint>();
-
-        endpoints.MapEndpoint<GetClassroomByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateClassroomEndpoint>();
+        endpoints.MapEndpoint<GetClassroomsEndpoint>()
+            .MapEndpoint<GetClassroomByIdEndpoint>()
+            .MapEndpoint<CreateClassroomEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)
@@ -201,8 +207,8 @@ public static class Endpoints
         var endpoints = app.MapGroup("/institutions")
             .WithTags("Institutions");
 
-        endpoints.MapEndpoint<GetInstitutionsEndpoint>();
-        endpoints.MapEndpoint<GetInstitutionByIdEndpoint>();
+        endpoints.MapEndpoint<GetInstitutionsEndpoint>()
+            .MapEndpoint<GetInstitutionByIdEndpoint>();
 
         endpoints.MapEndpoint<CreateInstitutionEndpoint>()
             .RequireAuthorization(Permissions.Institutions.Create);
@@ -235,11 +241,16 @@ public static class Endpoints
             .AllowAnonymous();
     }
 
-    public static RouteGroupBuilder RequireInstitution(this RouteGroupBuilder group)
+    private static RouteGroupBuilder RequireInstitution(this RouteGroupBuilder group)
     {
         return group.AddEndpointFilter<RequireInstitutionFilter>();
     }
 
+    private static RouteGroupBuilder RequireUserId(this RouteGroupBuilder group)
+    {
+        return group.AddEndpointFilter<RequireUserIdFilter>();
+    }
+    
     private static IEndpointConventionBuilder MapEndpoint<TEndpoint>(this IEndpointRouteBuilder app)
         where TEndpoint : IEndpoint
     {
@@ -247,9 +258,21 @@ public static class Endpoints
         if (mapMethod == null)
             throw new InvalidOperationException(
                 $"Type {typeof(TEndpoint).Name} must have a static Map method with IEndpointRouteBuilder parameter.");
-
+    
         var result = mapMethod.Invoke(null, new object[] { app });
         return result as IEndpointConventionBuilder ??
                throw new InvalidOperationException("Map method must return IEndpointConventionBuilder");
+    }
+
+    private static RouteGroupBuilder MapEndpoint<TEndpoint>(this RouteGroupBuilder group)
+        where TEndpoint : IEndpoint
+    {
+        var mapMethod = typeof(TEndpoint).GetMethod("Map", new[] { typeof(IEndpointRouteBuilder) });
+        if (mapMethod == null)
+            throw new InvalidOperationException(
+                $"Type {typeof(TEndpoint).Name} must have a static Map method with IEndpointRouteBuilder parameter.");
+
+        mapMethod.Invoke(null, new object[] { group });
+        return group;
     }
 }

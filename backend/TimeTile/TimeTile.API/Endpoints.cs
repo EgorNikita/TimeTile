@@ -39,6 +39,7 @@ using TimeTile.API.Roles.Endpoints.UpdatePermissions;
 using TimeTile.API.Subjects.Endpoints.Get;
 using TimeTile.API.Subjects.Endpoints.GetById;
 using TimeTile.API.Subjects.Endpoints.Create;
+using TimeTile.API.Groups.Endpoints.Get;
 
 namespace TimeTile.API;
 
@@ -59,6 +60,7 @@ public static class Endpoints
         app.MapInstitutionEndpoints();
         app.MapFilesEndpoints();
         app.MapSubjectsEndpoints();
+        app.MapGroupsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -227,6 +229,15 @@ public static class Endpoints
         endpoints.MapEndpoint<GetSubjectByIdEndpoint>();
 
         endpoints.MapEndpoint<CreateSubjectEndpoint>();
+    }
+
+    private static void MapGroupsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/groups")
+            .WithTags("Groups")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetGroupsEndpoint>();
     }
 
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)

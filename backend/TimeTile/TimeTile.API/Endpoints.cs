@@ -43,6 +43,9 @@ using TimeTile.API.Subjects.Endpoints.GetById;
 using TimeTile.API.Subjects.Endpoints.Create;
 using TimeTile.API.Grades.Endpoints.Get;
 using TimeTile.API.Grades.Endpoints.GetById;
+using TimeTile.API.Groups.Endpoints.Get;
+using TimeTile.API.Groups.Endpoints.GetById;
+using TimeTile.API.Groups.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -64,6 +67,7 @@ public static class Endpoints
         public const string InstitutionMembers = "InstitutionMembers";
         public const string Subjects = "Subjects";
         public const string Grades = "Grades";
+        public const string Groups = "Groups";
     }
 
     public static class Routes
@@ -82,6 +86,7 @@ public static class Endpoints
         public const string InstitutionMembers = "/institution-members";
         public const string Subjects = "/subjects";
         public const string Grades = "/grades";
+        public const string Groups = "/groups";
     }
 
     private static class RateLimits
@@ -106,6 +111,7 @@ public static class Endpoints
         app.MapFilesEndpoints();
         app.MapGradesEndpoints();
         app.MapSubjectsEndpoints();
+        app.MapGroupsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -273,6 +279,18 @@ public static class Endpoints
             .MapEndpoint<GetSubjectByIdEndpoint>()
             .MapEndpoint<CreateSubjectEndpoint>();
     }
+
+    private static void MapGroupsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup("/groups")
+            .WithTags("Groups")
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetGroupsEndpoint>()
+            .MapEndpoint<GetGroupByIdEndpoint>()
+            .MapEndpoint<CreateGroupEndpoint>();
+    }
+
     
     #region Helper Extensions
     

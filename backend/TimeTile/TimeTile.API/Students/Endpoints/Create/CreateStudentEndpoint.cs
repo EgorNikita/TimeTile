@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Threading;
 using Bogus.DataSets;
 using Microsoft.AspNetCore.Http.HttpResults;

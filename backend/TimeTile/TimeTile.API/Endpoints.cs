@@ -46,6 +46,46 @@ namespace TimeTile.API;
 
 public static class Endpoints
 {
+    private static class Tags
+    {
+        public const string Authentication = "Authentication";
+        public const string ClassroomTypes = "ClassroomTypes";
+        public const string LessonStatuses = "LessonStatuses";
+        public const string Terms = "Terms";
+        public const string TimetableUnits = "TimetableUnits";
+        public const string Classrooms = "Classrooms";
+        public const string Students = "Students";
+        public const string Roles = "Roles";
+        public const string Institutions = "Institutions";
+        public const string Files = "Files";
+        public const string Users = "Users";
+        public const string InstitutionMembers = "InstitutionMembers";
+        public const string Subjects = "Subjects";
+    }
+
+    public static class Routes
+    {
+        public const string Auth = "/auth";
+        public const string ClassroomTypes = "/classroom-types";
+        public const string LessonStatuses = "/lesson-statuses";
+        public const string Terms = "/terms";
+        public const string TimetableUnits = "/timetable-units";
+        public const string Classrooms = "/classrooms";
+        public const string Students = "/students";
+        public const string Roles = "/roles";
+        public const string Institutions = "/institutions";
+        public const string Files = "/files";
+        public const string Users = "/users";
+        public const string InstitutionMembers = "/institution-members";
+        public const string Subjects = "/subjects";
+    }
+
+    private static class RateLimits
+    {
+        public const string Auth = "auth";
+        public const string Default = "default";
+    }
+    
     public static void MapEndpoints(this WebApplication app)
     {
         app.MapAuthenticationEndpoints();
@@ -65,22 +105,18 @@ public static class Endpoints
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
     {
-        const string authTag = "Authentication";
-        const string authBasePath = "/auth";
-        const string authRateLimit = "auth";
-
-        var publicEndpoints = app.MapGroup(authBasePath)
-            .WithTags(authTag)
-            .RequireRateLimiting(authRateLimit);
+        var publicEndpoints = app.MapGroup(Routes.Auth)
+            .WithTags(Tags.Authentication)
+            .RequireRateLimiting(RateLimits.Auth);
 
         publicEndpoints.MapPublicGroup()
             .MapEndpoint<Login>()
             .MapEndpoint<RefreshToken>();
         
-        var protectedEndpoints = app.MapGroup(authBasePath)
-            .WithTags(authTag)
+        var protectedEndpoints = app.MapGroup(Routes.Auth)
+            .WithTags(Tags.Authentication)
             .RequireUserId()
-            .RequireRateLimiting(authRateLimit);
+            .RequireRateLimiting(RateLimits.Auth);
 
         protectedEndpoints
             .MapEndpoint<Logout>()
@@ -89,144 +125,136 @@ public static class Endpoints
 
     private static void MapClassroomTypesEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/classroom-types")
-            .WithTags("ClassroomTypes")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.ClassroomTypes, Tags.ClassroomTypes);
 
-        endpoints.MapEndpoint<GetClassroomTypesEndpoint>()
+        endpoints
+            .MapEndpoint<GetClassroomTypesEndpoint>()
             .MapEndpoint<GetClassroomTypeByIdEndpoint>()
             .MapEndpoint<CreateClassroomTypeEndpoint>();
     }
 
     private static void MapLessonStatusesEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/lesson-statuses")
-            .WithTags("LessonStatuses")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.LessonStatuses, Tags.LessonStatuses);
 
-        endpoints.MapEndpoint<GetLessonStatusesEndpoint>()
+        endpoints
+            .MapEndpoint<GetLessonStatusesEndpoint>()
             .MapEndpoint<GetLessonStatusByIdEndpoint>()
             .MapEndpoint<CreateLessonStatusEndpoint>();
     }
 
     private static void MapTermsEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/terms")
-            .WithTags("Terms")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.Terms, Tags.Terms);
 
-        endpoints.MapEndpoint<GetTermsEndpoint>()
+        endpoints
+            .MapEndpoint<GetTermsEndpoint>()
             .MapEndpoint<GetTermByIdEndpoint>()
             .MapEndpoint<CreateTermEndpoint>();
     }
 
     private static void MapTimetableUnitsEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/timetable-units")
-            .WithTags("TimetableUnits")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.TimetableUnits, Tags.TimetableUnits);
 
-        endpoints.MapEndpoint<GetTimetableUnitsEndpoint>()
+        endpoints
+            .MapEndpoint<GetTimetableUnitsEndpoint>()
             .MapEndpoint<GetTimetableUnitByIdEndpoint>()
             .MapEndpoint<CreateTimetableUnitEndpoint>();
     }
 
     private static void MapClassroomsEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/classrooms")
-            .WithTags("Classrooms")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.Classrooms, Tags.Classrooms);
 
-        endpoints.MapEndpoint<GetClassroomsEndpoint>()
+        endpoints
+            .MapEndpoint<GetClassroomsEndpoint>()
             .MapEndpoint<GetClassroomByIdEndpoint>()
             .MapEndpoint<CreateClassroomEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/students")
-            .WithTags("Students")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.Students, Tags.Students);
 
-        endpoints.MapEndpoint<CreateStudentEndpoint>()
+        endpoints
+            .MapEndpoint<CreateStudentEndpoint>()
             .RequireAuthorization(Permissions.Students.Create);
 
-        endpoints.MapEndpoint<GetStudentByIdEndpoint>()
+        endpoints
+            .MapEndpoint<GetStudentByIdEndpoint>()
             .RequireAuthorization(Permissions.Students.Get);
 
-        endpoints.MapEndpoint<GetStudentsEndpoint>()
+        endpoints
+            .MapEndpoint<GetStudentsEndpoint>()
             .RequireAuthorization(Permissions.Students.Get);
     }
 
+    private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Roles, Tags.Roles);
+
+        endpoints
+            .MapEndpoint<CreateRoleEndpoint>()
+            .RequireAuthorization(Permissions.Roles.Create);
+        
+        endpoints.MapEndpoint<GetRolesEndpoint>()
+            .MapEndpoint<GetRoleByIdEndpoint>()
+            .MapEndpoint<GetRolePermissionsEndpoint>()
+            .MapEndpoint<UpdatePermissionsEndpoint>();
+    }
+    
+    private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup(Routes.Institutions)
+            .WithTags(Tags.Institutions)
+            .RequireRateLimiting(RateLimits.Default);
+        
+        endpoints
+            .MapEndpoint<GetInstitutionsEndpoint>()
+            .MapEndpoint<GetInstitutionByIdEndpoint>();
+        
+        endpoints
+            .MapEndpoint<CreateInstitutionEndpoint>()
+            .RequireAuthorization(Permissions.Institutions.Create);
+    }
+    
+    private static void MapFilesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup(Routes.Files)
+            .WithTags(Tags.Files)
+            .RequireRateLimiting(RateLimits.Default);
+
+        endpoints.MapEndpoint<GetFileByUrlEndpoint>();
+    }
+    
     private static void MapUsersEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/users")
-            .WithTags("Users")
-            .RequireInstitution();
+        var endpoints = app.MapGroup(Routes.Users)
+            .WithTags(Tags.Users)
+            .RequireRateLimiting(RateLimits.Default);
 
         endpoints.MapEndpoint<GetUserPermissionsEndpoint>();
     }
 
     private static void MapInstitutionMembersEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/institution-members")
-            .WithTags("InstitutionMembers")
-            .RequireInstitution();
+        var endpoints = app.MapGroup(Routes.InstitutionMembers)
+            .WithTags(Tags.InstitutionMembers)
+            .RequireRateLimiting(RateLimits.Default);
 
-        endpoints.MapEndpoint<CreateInstitutionMemberEndpoint>();
-
-        endpoints.MapEndpoint<GetInstitutionMembersEndpoint>();
-
-        endpoints.MapEndpoint<GetInstitutionMemberByIdEndpoint>();
-
-        endpoints.MapEndpoint<UpdateTeacherSubjectsEndpoint>();
-
-        endpoints.MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>();
+        endpoints.MapEndpoint<CreateInstitutionMemberEndpoint>()
+            .MapEndpoint<GetInstitutionMembersEndpoint>()
+            .MapEndpoint<GetInstitutionMemberByIdEndpoint>()
+            .MapEndpoint<UpdateTeacherSubjectsEndpoint>()
+            .MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>();
     }
-
-    private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
-    {
-        var endpoints = app.MapGroup("/roles")
-            .WithTags("Roles")
-            .RequireInstitution();
-
-        endpoints.MapEndpoint<CreateRoleEndpoint>()
-            .RequireAuthorization("CreateRole");
-
-        endpoints.MapEndpoint<GetRolesEndpoint>();
-
-        endpoints.MapEndpoint<GetRoleByIdEndpoint>();
-
-        endpoints.MapEndpoint<GetRolePermissionsEndpoint>();
-
-        endpoints.MapEndpoint<UpdatePermissionsEndpoint>();
-    }
-
-    private static void MapInstitutionEndpoints(this IEndpointRouteBuilder app)
-    {
-        var endpoints = app.MapGroup("/institutions")
-            .WithTags("Institutions");
-
-        endpoints.MapEndpoint<GetInstitutionsEndpoint>()
-            .MapEndpoint<GetInstitutionByIdEndpoint>();
-
-        endpoints.MapEndpoint<CreateInstitutionEndpoint>()
-            .RequireAuthorization(Permissions.Institutions.Create);
-    }
-
-    private static void MapFilesEndpoints(this IEndpointRouteBuilder app)
-    {
-        var endpoints = app.MapGroup("/files")
-            .WithTags("Files");
-
-        endpoints.MapEndpoint<GetFileByUrlEndpoint>();
-    }
-
+    
     private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/subjects")
-            .WithTags("Subjects")
-            .RequireInstitution();
+        var endpoints = app.MapGroup(Routes.Subjects)
+            .WithTags(Tags.Subjects)
+            .RequireRateLimiting(RateLimits.Default);
 
         endpoints.MapEndpoint<GetSubjectsEndpoint>();
 
@@ -234,7 +262,17 @@ public static class Endpoints
 
         endpoints.MapEndpoint<CreateSubjectEndpoint>();
     }
-
+    
+    #region Helper Extensions
+    
+    private static RouteGroupBuilder CreateInstitutionGroup(this IEndpointRouteBuilder app, string route, string tag)
+    {
+        return app.MapGroup(route)
+            .WithTags(tag)
+            .RequireInstitution()
+            .RequireRateLimiting(RateLimits.Default);
+    }
+    
     private static RouteGroupBuilder MapPublicGroup(this IEndpointRouteBuilder app, string? prefix = null)
     {
         return app.MapGroup(prefix ?? string.Empty)
@@ -251,19 +289,6 @@ public static class Endpoints
         return group.AddEndpointFilter<RequireUserIdFilter>();
     }
     
-    private static IEndpointConventionBuilder MapEndpoint<TEndpoint>(this IEndpointRouteBuilder app)
-        where TEndpoint : IEndpoint
-    {
-        var mapMethod = typeof(TEndpoint).GetMethod("Map", new[] { typeof(IEndpointRouteBuilder) });
-        if (mapMethod == null)
-            throw new InvalidOperationException(
-                $"Type {typeof(TEndpoint).Name} must have a static Map method with IEndpointRouteBuilder parameter.");
-    
-        var result = mapMethod.Invoke(null, new object[] { app });
-        return result as IEndpointConventionBuilder ??
-               throw new InvalidOperationException("Map method must return IEndpointConventionBuilder");
-    }
-
     private static RouteGroupBuilder MapEndpoint<TEndpoint>(this RouteGroupBuilder group)
         where TEndpoint : IEndpoint
     {
@@ -275,4 +300,6 @@ public static class Endpoints
         mapMethod.Invoke(null, new object[] { group });
         return group;
     }
+    
+    #endregion
 }

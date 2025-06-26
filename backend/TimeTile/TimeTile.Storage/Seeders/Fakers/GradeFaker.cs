@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -20,7 +21,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const int DEFAULT_WEIGHT = 1;
 
 
-        public GradeFaker()
+        public GradeFaker(GradeType gradeType)
         {
             _faker
                 .RuleFor(g => g.Value, f => (short)f.Random.Int(MIN_VALUE, MAX_VALUE))
@@ -32,7 +33,8 @@ namespace TimeTile.Storage.Seeders.Fakers
                     }
 
                     return f.Random.Float(MIN_WEIGHT, MAX_WEIGHT);
-                });
+                })
+                .RuleFor(g => g.Type, gradeType);
         }
     }
 }

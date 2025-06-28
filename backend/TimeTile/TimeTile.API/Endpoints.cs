@@ -48,6 +48,7 @@ using TimeTile.API.Groups.Endpoints.GetById;
 using TimeTile.API.Groups.Endpoints.Create;
 using TimeTile.API.Courses.Endpoints.Get;
 using TimeTile.API.Courses.Endpoints.GetById;
+using TimeTile.API.Courses.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -303,7 +304,8 @@ public static class Endpoints
             .RequireInstitution();
 
         endpoints.MapEndpoint<GetCoursesEndpoint>()
-            .MapEndpoint<GetCourseByIdEndpoint>();
+            .MapEndpoint<GetCourseByIdEndpoint>()
+            .MapEndpoint<CreateCourseEndpoint>();
     }
 
 

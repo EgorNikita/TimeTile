@@ -8,6 +8,7 @@ using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
+using static TimeTile.API.Endpoints;
 
 namespace TimeTile.API.Groups.Endpoints.Create
 {
@@ -68,7 +69,7 @@ namespace TimeTile.API.Groups.Endpoints.Create
 
             var result = Result.Success(response);
 
-            return TypedResults.Created($"/subjects/{group.Id}", result);
+            return TypedResults.Created($"{Routes.Groups}/{group.Id}", result);
         }
 
         private static async Task SaveGroup(

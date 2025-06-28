@@ -46,6 +46,7 @@ using TimeTile.API.Grades.Endpoints.GetById;
 using TimeTile.API.Groups.Endpoints.Get;
 using TimeTile.API.Groups.Endpoints.GetById;
 using TimeTile.API.Groups.Endpoints.Create;
+using TimeTile.API.Courses.Endpoints.Get;
 
 namespace TimeTile.API;
 
@@ -68,6 +69,7 @@ public static class Endpoints
         public const string Subjects = "Subjects";
         public const string Grades = "Grades";
         public const string Groups = "Groups";
+        public const string Courses = "Courses";
     }
 
     public static class Routes
@@ -87,6 +89,7 @@ public static class Endpoints
         public const string Subjects = "/subjects";
         public const string Grades = "/grades";
         public const string Groups = "/groups";
+        public const string Courses = "/courses";
     }
 
     private static class RateLimits
@@ -112,6 +115,7 @@ public static class Endpoints
         app.MapGradesEndpoints();
         app.MapSubjectsEndpoints();
         app.MapGroupsEndpoints();
+        app.MapCoursesEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -282,8 +286,8 @@ public static class Endpoints
 
     private static void MapGroupsEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/groups")
-            .WithTags("Groups")
+        var endpoints = app.MapGroup(Routes.Groups)
+            .WithTags(Tags.Groups)
             .RequireInstitution();
 
         endpoints.MapEndpoint<GetGroupsEndpoint>()
@@ -291,9 +295,18 @@ public static class Endpoints
             .MapEndpoint<CreateGroupEndpoint>();
     }
 
-    
+    private static void MapCoursesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.MapGroup(Routes.Courses)
+            .WithTags(Tags.Courses)
+            .RequireInstitution();
+
+        endpoints.MapEndpoint<GetCoursesEndpoint>();
+    }
+
+
     #region Helper Extensions
-    
+
     private static RouteGroupBuilder CreateInstitutionGroup(this IEndpointRouteBuilder app, string route, string tag)
     {
         return app.MapGroup(route)

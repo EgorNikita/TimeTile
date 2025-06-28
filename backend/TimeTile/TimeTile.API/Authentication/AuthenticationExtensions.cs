@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using TimeTile.API.Authentication.Authorization;
 using TimeTile.API.Authentication.Services;
 using TimeTile.API.Common.Api;
 using TimeTile.Core.Common.Constants;

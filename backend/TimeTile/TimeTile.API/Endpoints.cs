@@ -189,16 +189,16 @@ public static class Endpoints
         var endpoints = app.CreateInstitutionGroup(Routes.Students, Tags.Students);
 
         endpoints
-            .MapEndpoint<CreateStudentEndpoint>()
-            .RequireAuthorization(Permissions.Students.Create);
+            .MapEndpoint<CreateStudentEndpoint>();
+            //.RequireAuthorization(Permissions.Students.Create);
 
         endpoints
-            .MapEndpoint<GetStudentByIdEndpoint>()
-            .RequireAuthorization(Permissions.Students.Get);
+            .MapEndpoint<GetStudentByIdEndpoint>();
+            //.RequireAuthorization(Permissions.Students.Get);
 
-        endpoints
-            .MapEndpoint<GetStudentsEndpoint>()
-            .RequireAuthorization(Permissions.Students.Get);
+            endpoints
+                .MapEndpoint<GetStudentsEndpoint>();
+            //.RequireAuthorization(Permissions.Students.Get);
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
@@ -224,10 +224,10 @@ public static class Endpoints
         endpoints
             .MapEndpoint<GetInstitutionsEndpoint>()
             .MapEndpoint<GetInstitutionByIdEndpoint>();
-        
+
         endpoints
-            .MapEndpoint<CreateInstitutionEndpoint>()
-            .RequireAuthorization(Permissions.Institutions.Create);
+            .MapEndpoint<CreateInstitutionEndpoint>();
+        //.RequireAuthorization(Permissions.Institutions.Create);
     }
     
     private static void MapFilesEndpoints(this IEndpointRouteBuilder app)

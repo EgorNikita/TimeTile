@@ -13,6 +13,7 @@ using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Filters;
 using TimeTile.API.Common.Api.Http;
+using TimeTile.API.Common.Api.Json;
 using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
 using TimeTile.API.Groups.Services;
@@ -39,6 +40,11 @@ public static class ConfigureServices
         builder.AddAuthorization();
         builder.AddRateLimiting();
         builder.AddCors();
+
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new PatchPropertyConverterFactory());
+        });
 
         builder.Services.AddHttpContextAccessor();
 

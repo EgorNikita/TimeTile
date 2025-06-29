@@ -83,8 +83,8 @@ namespace TimeTile.API.Common.Api.Extensions
         {
             return ruleBuilder
                 .NotEmpty()
-                .WithMessage("Id is required.").
-                GreaterThanOrEqualTo(1)
+                .WithMessage("Id is required.")
+                .GreaterThanOrEqualTo(1)
                 .WithMessage("Id must be greater or equal to 1");
         }
         

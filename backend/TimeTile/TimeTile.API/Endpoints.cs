@@ -47,6 +47,7 @@ using TimeTile.API.Groups.Endpoints.Get;
 using TimeTile.API.Groups.Endpoints.GetById;
 using TimeTile.API.Groups.Endpoints.Create;
 using TimeTile.API.Lessons.Endpoints.Get;
+using TimeTile.API.Lessons.Endpoints.GetById;
 
 namespace TimeTile.API;
 
@@ -300,7 +301,8 @@ public static class Endpoints
         var endpoints = app.CreateInstitutionGroup(Routes.Lessons, Tags.Lessons);
 
         endpoints
-            .MapEndpoint<GetLessonsEndpoint>();
+            .MapEndpoint<GetLessonsEndpoint>()
+            .MapEndpoint<GetLessonByIdEndpoint>();
     }
 
 

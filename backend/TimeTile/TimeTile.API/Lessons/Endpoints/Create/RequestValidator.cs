@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Models;
@@ -53,6 +54,35 @@ namespace TimeTile.API.Lessons.Endpoints.Create
 
             RuleFor(x => x.HomeworkDescription)
                 .MustBeValidDescription();
+
+            // Unique constraint
+            RuleFor(x => x)
+               .MustAsync(async (request, cancellationToken) =>
+               {
+                   var date = request.Date.ToUniversalTime();
+
+                   return !await db.Lessons
+                       .AsNoTracking()
+                       .AnyAsync(l =>
+                           l.CourseId == request.CourseId &&
+                           l.TimetableUnitId == request.TimetableUnitId &&
+                           l.Date == date,
+                           cancellationToken
+                       );
+               })
+               .WithMessage("Lesson with such data already exists")
+               // Call to the database only in case of successfull validation before
+               .When(request =>
+               {
+                   var validator = new InlineValidator<CreateLessonEndpoint.Request>();
+
+                   validator.RuleFor(x => x.CourseId).MustBeValidId();
+                   validator.RuleFor(x => x.TimetableUnitId).MustBeValidId();
+                   validator.RuleFor(x => x.Date).Must(date => date >= DateTimeOffset.UtcNow);
+
+                   var result = validator.Validate(request);
+                   return result.IsValid;
+               });
         }
     }
 }

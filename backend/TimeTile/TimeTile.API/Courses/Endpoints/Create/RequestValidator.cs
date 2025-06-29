@@ -44,6 +44,17 @@ namespace TimeTile.API.Courses.Endpoints.Create
                 });
 
             // Optional
+            RuleFor(x => x.GroupIds)
+                .MustBeValidOptionalListOfIds()
+                .DependentRules(() =>
+                {
+                    When(x => x.GroupIds != null, () =>
+                    {
+                        RuleFor(x => x.GroupIds!)
+                            .MustBeValidInstitutionEntityIdsList<CreateCourseEndpoint.Request, Group>(db, institutionId);
+                    });
+                });
+
             RuleFor(x => x.StudentIds)
                 .MustBeValidOptionalListOfIds()
                 .DependentRules(() =>

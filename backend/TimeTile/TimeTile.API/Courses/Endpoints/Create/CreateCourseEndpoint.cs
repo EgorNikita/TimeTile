@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
@@ -41,11 +42,7 @@ namespace TimeTile.API.Courses.Endpoints.Create
                 TermId = request.TermId
             };
 
-            if (request.StudentIds is not null && request.StudentIds.Any())
-                course.CoursesToStudents = await db.Students
-                    .Where(s => request.StudentIds.Contains(s.Id))
-                    .Select(s => new CourseToStudent { StudentId = s.Id })
-                    .ToListAsync(cancellationToken);
+            await AssignStudentsToCourse(request, course, db, cancellationToken);
 
             await db.Courses.AddAsync(course, cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
@@ -65,12 +62,37 @@ namespace TimeTile.API.Courses.Endpoints.Create
             return TypedResults.Created($"{Routes.Courses}/{course.Id}", result);
         }
 
+        private static async Task AssignStudentsToCourse(Request request, Course course, TimetileDbContext db, CancellationToken cancellationToken)
+        {
+            List<Student> students = new();
+
+            if (request.GroupIds is not null && request.GroupIds.Any())
+                students.AddRange(await db.Students
+                    .Where(s =>
+                        s.GroupId != null &&
+                        request.GroupIds.Contains(s.GroupId.Value)
+                )
+                    .ToListAsync(cancellationToken));
+
+            if (request.StudentIds is not null && request.StudentIds.Any())
+                students.AddRange(await db.Students
+                    .Where(s => request.StudentIds.Contains(s.Id))
+                    .ToListAsync(cancellationToken));
+
+            if (students.Any())
+                course.CoursesToStudents = students
+                    .DistinctBy(s => s.Id)
+                    .Select(s => new CourseToStudent { StudentId = s.Id })
+                    .ToList();
+        }
+
         public sealed record Request(
             string Title,
             int SubjectId,
             int TeacherId,
             bool IsAdvanced,
             int TermId,
+            List<int>? GroupIds,
             List<int>? StudentIds
         );
 

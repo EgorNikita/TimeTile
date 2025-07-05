@@ -24,6 +24,7 @@ namespace TimeTile.Core.Models
 
         public virtual User? User { get; set; }
         public virtual Group? Group { get; set; }
+        public virtual Course Course { get; set; }
         public virtual ClassroomType? ClassroomType { get; set; }
     }
 }

@@ -3,4 +3,5 @@
 public interface IAvatarService
 {
     Task<Stream> GenerateDefaultAvatar(string firstname, string lastname, int size = 100);
+    Task<Stream> GenerateDefaultIcon(string title, int size = 100);
 }

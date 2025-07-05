@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -19,12 +20,14 @@ namespace TimeTile.API.Courses.Endpoints.GetById
 
         private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
+            ICourseService courseService,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            // Find Group
+            // Find Course
             var course = await db.Courses
                 .AsNoTracking()
+                .Include(x => x.Icon)
                 .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(
@@ -33,7 +36,8 @@ namespace TimeTile.API.Courses.Endpoints.GetById
                 course.SubjectId,
                 course.TeacherId,
                 course.IsAdvanced,
-                course.TermId
+                course.TermId,
+                courseService.GetIconUrl(course)
             );
 
             var result = Result.Success(response);
@@ -51,7 +55,8 @@ namespace TimeTile.API.Courses.Endpoints.GetById
             int SubjectId,
             int TeacherId,
             bool IsAdvanced,
-            int TermId
+            int TermId,
+            string IconUrl
         );
     }
 }

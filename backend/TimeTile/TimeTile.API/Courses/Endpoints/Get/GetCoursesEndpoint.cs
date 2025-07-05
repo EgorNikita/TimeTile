@@ -6,6 +6,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -24,6 +25,7 @@ namespace TimeTile.API.Courses.Endpoints.Get
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            ICourseService courseService,
             TimetileDbContext db,
             IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
@@ -32,6 +34,7 @@ namespace TimeTile.API.Courses.Endpoints.Get
 
             // Form a final paged list
             var courses = await BuildFilteredQuery(request, institutionId, db)
+                .Include(c => c.Icon)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -43,7 +46,8 @@ namespace TimeTile.API.Courses.Endpoints.Get
                     x.SubjectId,
                     x.TeacherId,
                     x.IsAdvanced,
-                    x.TermId
+                    x.TermId,
+                    courseService.GetIconUrl(x)
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
@@ -107,7 +111,8 @@ namespace TimeTile.API.Courses.Endpoints.Get
             int SubjectId,
             int TeacherId,
             bool IsAdvanced,
-            int TermId
+            int TermId,
+            string IconUrl
         );
     }
 }

@@ -5,6 +5,7 @@ using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -22,11 +23,14 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            ICourseService courseService,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
             var relations = await db.CoursesStudents
                 .AsNoTracking()
+                .Include(cs => cs.Course)
+                    .ThenInclude(c => c.Icon)
                 .Where(cs => cs.StudentId == request.Id)
                 .ApplySorting(
                     request.SortBy,
@@ -40,7 +44,8 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
                         cs.Course.SubjectId,
                         cs.Course.TeacherId,
                         cs.Course.IsAdvanced,
-                        cs.Course.TermId
+                        cs.Course.TermId,
+                        courseService.GetIconUrl(cs.Course)
                     ),
                     cs.ExamGradeId,
                     cs.HasExam,
@@ -77,7 +82,8 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
             int SubjectId,
             int TeacherId,
             bool IsAdvanced,
-            int TermId
+            int TermId,
+            string IconUrl
         );
     }
 }

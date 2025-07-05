@@ -4,6 +4,6 @@
     {
         Value,
         Weight,
-        Type
+        Type,
     }
 }

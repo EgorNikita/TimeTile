@@ -41,12 +41,14 @@ namespace TimeTile.Storage.Seeders
         private readonly TimetileDbContext _context;
         private readonly IUserService _userService;
         private readonly IFileService _fileService;
+        private readonly ICourseService _courseService;
 
-        public DataSeeder(TimetileDbContext context, IUserService userService, IFileService fileService)
+        public DataSeeder(TimetileDbContext context, IUserService userService, IFileService fileService, ICourseService courseService)
         {
             _context = context;
             _userService = userService;
             _fileService = fileService;
+            _courseService = courseService;
         }
 
         public async Task Seed(CancellationToken cancellationToken = default)
@@ -54,6 +56,11 @@ namespace TimeTile.Storage.Seeders
             // if database is not empty
             if (await _context.Institutions.AnyAsync(cancellationToken))
                 return;
+
+            if (!Directory.Exists(CURRENT_DIRECTORY))
+            {
+                Directory.CreateDirectory(CURRENT_DIRECTORY);
+            }
 
             await ClearAllTxtFiles(cancellationToken);
 
@@ -117,7 +124,7 @@ namespace TimeTile.Storage.Seeders
             var teachersToSubjects = new TeacherToSubjectFaker(institutionMembers, subjects).Generate(TEACHERS_TO_SUBJECTS_COUNT);
             await _context.TeachersSubjects.AddRangeAsync(teachersToSubjects, cancellationToken);
 
-            var courses = new CourseFaker(subjects, institutionMembers, institutions, terms).Generate(COURSES_COUNT);
+            var courses = new CourseFaker(subjects, institutionMembers, institutions, terms, _courseService, _fileService).Generate(COURSES_COUNT);
             await _context.Courses.AddRangeAsync(courses, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);

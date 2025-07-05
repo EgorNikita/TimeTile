@@ -20,7 +20,7 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
         {
             return app
                 .MapPatch("/{CourseId:int}/students/{StudentId:int}", Handle)
-                .WithSummary("Gets information about Course to Student association")
+                .WithSummary("Partial update of repationship between Course and Student")
                 .WithRequestValidation<RequestParameters>()
                 .WithRequestValidation<RequestBody>();
         }
@@ -29,7 +29,6 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
             [AsParameters] RequestParameters parameters,
             [FromBody] RequestBody body,
             TimetileDbContext db,
-            IOptions<JsonOptions> jsonOptions,
             CancellationToken cancellationToken)
         {
             var courseStudent = await db.CoursesStudents
@@ -41,7 +40,7 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
                     cs.CourseId == parameters.CourseId, cancellationToken
                 );
 
-            await UpdateEntity(courseStudent, body, db, jsonOptions, cancellationToken);
+            await UpdateEntity(courseStudent, body, db, cancellationToken);
 
             await db.SaveChangesAsync(cancellationToken);
 
@@ -73,35 +72,34 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
             CourseToStudent courseStudent,
             RequestBody request,
             TimetileDbContext db,
-            IOptions<JsonOptions> jsonOptions,
             CancellationToken cancellationToken)
         {
             // If user included Grade to request's body
-            if (request.Grade.ValueKind != JsonValueKind.Undefined)
+            if (request.Grade.WasProvided)
             {
-                var gradeInfo = request.GradeInfo;
-
-                if (gradeInfo is null)
+                if (courseStudent.ExamGrade is not null)
                 {
-                    if (courseStudent.ExamGrade is not null)
-                    {
-                        db.Grades.Remove(courseStudent.ExamGrade);
-                    }
+                    db.Grades.Remove(courseStudent.ExamGrade);
+                }
 
+                var grade = request.Grade.Value;
+
+                if (grade is null)
+                {
                     courseStudent.ExamGrade = null;
                 }
                 else
                 {
-                    var grade = new Grade
+                    var gradeToAdd = new Grade
                     {
-                        Value = gradeInfo.Value,
-                        Weight = gradeInfo.Weight,
+                        Value = grade.Value,
+                        Weight = grade.Weight,
                         Type = GradeType.Exam
                     };
 
-                    await db.Grades.AddAsync(grade, cancellationToken);
+                    await db.Grades.AddAsync(gradeToAdd, cancellationToken);
 
-                    courseStudent.ExamGrade = grade;
+                    courseStudent.ExamGrade = gradeToAdd;
                 }
             }
 
@@ -120,16 +118,12 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
             int StudentId
         );
 
-        public sealed record RequestBody
-        {
-            public bool? HasExam { get; set; }
-            public short? PositionX { get; set; }
-            public short? PositionY { get; set; }
-            public JsonElement Grade { get; set; }
-            public GradeInfo? GradeInfo => Grade.ValueKind != JsonValueKind.Undefined
-                ? Grade.Deserialize<GradeInfo>(JsonConfiguration.DefaultOptions)
-                : null;
-        };
+        public sealed record RequestBody(
+            bool? HasExam,
+            short? PositionX,
+            short? PositionY,
+            PatchOptionalProperty<GradeInfo?> Grade
+        );
 
         public sealed record GradeInfo(
             short Value,

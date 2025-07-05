@@ -46,6 +46,11 @@ using TimeTile.API.Grades.Endpoints.GetById;
 using TimeTile.API.Groups.Endpoints.Get;
 using TimeTile.API.Groups.Endpoints.GetById;
 using TimeTile.API.Groups.Endpoints.Create;
+using TimeTile.API.Lessons.Endpoints.Get;
+using TimeTile.API.Lessons.Endpoints.GetById;
+using TimeTile.API.Lessons.Endpoints.Create;
+using TimeTile.API.Lessons.Endpoints.Update;
+using TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent;
 using TimeTile.API.Courses.Endpoints.Get;
 using TimeTile.API.Courses.Endpoints.GetById;
 using TimeTile.API.Courses.Endpoints.Create;
@@ -72,6 +77,7 @@ public static class Endpoints
         public const string Subjects = "Subjects";
         public const string Grades = "Grades";
         public const string Groups = "Groups";
+        public const string Lessons = "Lessons";
         public const string Courses = "Courses";
     }
 
@@ -92,6 +98,7 @@ public static class Endpoints
         public const string Subjects = "/subjects";
         public const string Grades = "/grades";
         public const string Groups = "/groups";
+        public const string Lessons = "/lessons";
         public const string Courses = "/courses";
     }
 
@@ -118,6 +125,7 @@ public static class Endpoints
         app.MapGradesEndpoints();
         app.MapSubjectsEndpoints();
         app.MapGroupsEndpoints();
+        app.MapLessonsEndpoints();
         app.MapCoursesEndpoints();
     }
 
@@ -289,6 +297,17 @@ public static class Endpoints
             .MapEndpoint<GetGroupByIdEndpoint>()
             .MapEndpoint<CreateGroupEndpoint>();
     }
+
+    private static void MapLessonsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Lessons, Tags.Lessons);
+
+        endpoints
+            .MapEndpoint<GetLessonsEndpoint>()
+            .MapEndpoint<GetLessonByIdEndpoint>()
+            .MapEndpoint<CreateLessonEndpoint>()
+            .MapEndpoint<UpdateLessonEndpoint>()
+            .MapEndpoint<UpdateLessonToStudentEndpoint>();
 
     private static void MapCoursesEndpoints(this IEndpointRouteBuilder app)
     {

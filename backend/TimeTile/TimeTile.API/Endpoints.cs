@@ -55,6 +55,9 @@ using TimeTile.API.Courses.Endpoints.Get;
 using TimeTile.API.Courses.Endpoints.GetById;
 using TimeTile.API.Courses.Endpoints.Create;
 using TimeTile.API.Courses.Endpoints.UpdateStudents;
+using TimeTile.API.Courses.Endpoints.GetStudents;
+using TimeTile.API.Students.Endpoints.GetCourses;
+using TimeTile.API.Courses.Endpoints.UpdateCourseToStudent;
 
 namespace TimeTile.API;
 
@@ -211,9 +214,12 @@ public static class Endpoints
             .MapEndpoint<GetStudentByIdEndpoint>();
             //.RequireAuthorization(Permissions.Students.Get);
 
-            endpoints
-                .MapEndpoint<GetStudentsEndpoint>();
+        endpoints
+            .MapEndpoint<GetStudentsEndpoint>();
             //.RequireAuthorization(Permissions.Students.Get);
+
+        endpoints
+            .MapEndpoint<GetStudentCoursesEndpoint>();
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
@@ -317,7 +323,9 @@ public static class Endpoints
         endpoints.MapEndpoint<GetCoursesEndpoint>()
             .MapEndpoint<GetCourseByIdEndpoint>()
             .MapEndpoint<CreateCourseEndpoint>()
-            .MapEndpoint<UpdateCourseStudentsEndpoint>();
+            .MapEndpoint<UpdateCourseStudentsEndpoint>()
+            .MapEndpoint<GetCourseStudentsEndpoint>()
+            .MapEndpoint<UpdateCourseToStudentEndpoint>();
     }
 
 

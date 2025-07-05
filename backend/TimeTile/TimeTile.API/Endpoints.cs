@@ -314,6 +314,7 @@ public static class Endpoints
             .MapEndpoint<CreateLessonEndpoint>()
             .MapEndpoint<UpdateLessonEndpoint>()
             .MapEndpoint<UpdateLessonToStudentEndpoint>();
+    }
 
     private static void MapCoursesEndpoints(this IEndpointRouteBuilder app)
     {

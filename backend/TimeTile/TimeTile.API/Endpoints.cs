@@ -51,6 +51,10 @@ using TimeTile.API.Lessons.Endpoints.GetById;
 using TimeTile.API.Lessons.Endpoints.Create;
 using TimeTile.API.Lessons.Endpoints.Update;
 using TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent;
+using TimeTile.API.Courses.Endpoints.Get;
+using TimeTile.API.Courses.Endpoints.GetById;
+using TimeTile.API.Courses.Endpoints.Create;
+using TimeTile.API.Courses.Endpoints.UpdateStudents;
 
 namespace TimeTile.API;
 
@@ -74,6 +78,7 @@ public static class Endpoints
         public const string Grades = "Grades";
         public const string Groups = "Groups";
         public const string Lessons = "Lessons";
+        public const string Courses = "Courses";
     }
 
     public static class Routes
@@ -94,6 +99,7 @@ public static class Endpoints
         public const string Grades = "/grades";
         public const string Groups = "/groups";
         public const string Lessons = "/lessons";
+        public const string Courses = "/courses";
     }
 
     private static class RateLimits
@@ -120,6 +126,7 @@ public static class Endpoints
         app.MapSubjectsEndpoints();
         app.MapGroupsEndpoints();
         app.MapLessonsEndpoints();
+        app.MapCoursesEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -249,18 +256,14 @@ public static class Endpoints
     
     private static void MapUsersEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup(Routes.Users)
-            .WithTags(Tags.Users)
-            .RequireRateLimiting(RateLimits.Default);
+        var endpoints = app.CreateInstitutionGroup(Routes.Users, Tags.Users);
 
         endpoints.MapEndpoint<GetUserPermissionsEndpoint>();
     }
 
     private static void MapInstitutionMembersEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup(Routes.InstitutionMembers)
-            .WithTags(Tags.InstitutionMembers)
-            .RequireRateLimiting(RateLimits.Default);
+        var endpoints = app.CreateInstitutionGroup(Routes.InstitutionMembers, Tags.InstitutionMembers);
 
         endpoints.MapEndpoint<CreateInstitutionMemberEndpoint>()
             .MapEndpoint<GetInstitutionMembersEndpoint>()
@@ -279,9 +282,7 @@ public static class Endpoints
 
     private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup(Routes.Subjects)
-            .WithTags(Tags.Subjects)
-            .RequireRateLimiting(RateLimits.Default);
+        var endpoints = app.CreateInstitutionGroup(Routes.Subjects, Tags.Subjects);
 
         endpoints.MapEndpoint<GetSubjectsEndpoint>()
             .MapEndpoint<GetSubjectByIdEndpoint>()
@@ -290,9 +291,7 @@ public static class Endpoints
 
     private static void MapGroupsEndpoints(this IEndpointRouteBuilder app)
     {
-        var endpoints = app.MapGroup("/groups")
-            .WithTags("Groups")
-            .RequireInstitution();
+        var endpoints = app.CreateInstitutionGroup(Routes.Groups, Tags.Groups);
 
         endpoints.MapEndpoint<GetGroupsEndpoint>()
             .MapEndpoint<GetGroupByIdEndpoint>()
@@ -309,6 +308,15 @@ public static class Endpoints
             .MapEndpoint<CreateLessonEndpoint>()
             .MapEndpoint<UpdateLessonEndpoint>()
             .MapEndpoint<UpdateLessonToStudentEndpoint>();
+
+    private static void MapCoursesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Courses, Tags.Courses);
+
+        endpoints.MapEndpoint<GetCoursesEndpoint>()
+            .MapEndpoint<GetCourseByIdEndpoint>()
+            .MapEndpoint<CreateCourseEndpoint>()
+            .MapEndpoint<UpdateCourseStudentsEndpoint>();
     }
 
 

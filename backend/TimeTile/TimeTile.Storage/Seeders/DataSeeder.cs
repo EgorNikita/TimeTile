@@ -14,11 +14,8 @@ namespace TimeTile.Storage.Seeders
     {
         private const string CURRENT_ASSEMBLY = "TimeTile.Storage";
         private const string CURRENT_FOLDER = "Seeders";
-        public static readonly string CURRENT_DIRECTORY = Path.Combine(
-            Directory.GetParent(AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.Parent!.FullName,
-            CURRENT_ASSEMBLY,
-            CURRENT_FOLDER
-        );
+        public static readonly string CURRENT_DIRECTORY = Path.Combine(AppContext.BaseDirectory, CURRENT_FOLDER);
+
 
         // Influence Generation's volume
         private const int INSTITUTIONS_COUNT = 2;
@@ -141,6 +138,11 @@ namespace TimeTile.Storage.Seeders
 
         private static async Task ClearAllTxtFiles(CancellationToken cancellationToken)
         {
+            if (!Directory.Exists(CURRENT_DIRECTORY))
+            {
+                return;
+            }
+            
             var filesPaths = Directory.GetFiles(CURRENT_DIRECTORY, "*.txt");
 
             foreach (var path in filesPaths)

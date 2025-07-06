@@ -30,7 +30,9 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<Course> Courses { get; set; } = null!; 
 
-    public DbSet<CourseToStudent> CoursesStudents { get; set; } = null!; 
+    public DbSet<CourseToStudent> CoursesStudents { get; set; } = null!;
+
+    public DbSet<CourseToUser> CoursesUsers { get; set; } = null!;
 
     public DbSet<File> Files { get; set; } = null!;
 

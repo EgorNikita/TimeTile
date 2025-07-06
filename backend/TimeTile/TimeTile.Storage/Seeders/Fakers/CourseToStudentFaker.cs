@@ -20,6 +20,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly List<(int CourseId, int StudentId)> _possiblePairs = new();
         private int _actualIndex = 0;
 
+        private static readonly Dictionary<int, int> _studentsOrderNumbers = new();
+
         private GradeFaker _gradeFaker = new GradeFaker(GradeType.Exam);
 
         public CourseToStudentFaker(List<Course> courses, List<Student> students)
@@ -35,6 +37,21 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                     entity.CourseId = element.Item1;
                     entity.StudentId = element.Item2;
+
+                    var studentId = entity.StudentId;
+
+                    if (!_studentsOrderNumbers.ContainsKey(studentId))
+                    {
+                        _studentsOrderNumbers.Add(studentId, 1);
+                    }
+
+                    var orderNumber = _studentsOrderNumbers.GetValueOrDefault(studentId);
+
+                    var course = courses.First(c => c.Id == entity.CourseId);
+
+                    course.CoursesToUsers.Add(new CourseToUser { UserId = studentId, OrderNumber = orderNumber });
+
+                    _studentsOrderNumbers[studentId] = orderNumber + 1;
 
                     _actualIndex++;
                 })

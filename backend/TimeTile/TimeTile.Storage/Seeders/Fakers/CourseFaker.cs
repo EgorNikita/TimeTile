@@ -18,6 +18,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly Dictionary<int, List<InstitutionMember>> _subjectTeachers = new();
         private readonly Dictionary<int, List<Term>> _institutionTerms = new();
 
+        private static readonly Dictionary<int, int> _teachersOrderNumbers = new();
+
         private readonly ICourseService _courseService;
         private readonly IFileService _fileService;
 
@@ -69,6 +71,19 @@ namespace TimeTile.Storage.Seeders.Fakers
                         _subjectTeachers,
                         t => t.Subjects.Any(s => s.Id == course.Subject.Id)
                     );
+
+                    var teacherId = course.Teacher.Id;
+
+                    if (!_teachersOrderNumbers.ContainsKey(teacherId))
+                    {
+                        _teachersOrderNumbers.Add(teacherId, 1);
+                    }
+
+                    var orderNumber = _teachersOrderNumbers.GetValueOrDefault(teacherId);
+
+                    course.CoursesToUsers.Add(new CourseToUser { UserId = teacherId, OrderNumber = orderNumber });
+
+                    _teachersOrderNumbers[teacherId] = orderNumber + 1;
 
                     course.Term = PickAssociatedEntity(
                         faker,

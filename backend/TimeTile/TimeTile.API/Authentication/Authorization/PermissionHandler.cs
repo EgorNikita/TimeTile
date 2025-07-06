@@ -35,10 +35,9 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         {
             Log.Information($"Permission {requirement.Permission} granted for user: {userId}");
             context.Succeed(requirement);
+            return;
         }
-        else
-        {
-            Log.Information($"Permission {requirement.Permission} denied for user: {userId}");
-        }
+
+        PermissionFallbackHandler.Handle(userId, context, requirement);
     }
 }

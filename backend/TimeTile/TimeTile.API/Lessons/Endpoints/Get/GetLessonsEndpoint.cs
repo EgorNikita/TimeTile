@@ -120,7 +120,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
             int? PageSize = 10,
             string? SortBy = null,
             bool Descending = false
-        ) : IPagedRequest, ISortRequest;
+        ) : IPagedRequest, ISortRequest, IFilterByStudentsRequest;
 
         private sealed record Response(
             int Id,

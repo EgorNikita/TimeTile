@@ -74,7 +74,7 @@ namespace TimeTile.API.Groups.Endpoints.Get
             int? PageSize = 10,
             string? SortBy = null,
             bool Descending = false
-        ) : IPagedRequest, ISortRequest;
+        ) : IPagedRequest, ISortRequest, IFilterByInstitutionMembersRequest;
 
         private sealed record Response(
             int Id,

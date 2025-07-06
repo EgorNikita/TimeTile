@@ -6,6 +6,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
@@ -20,7 +21,8 @@ namespace TimeTile.API.Grades.Endpoints.Get
             return app
                 .MapGet("/", Handle)
                 .WithSummary("Returns a page of grades")
-                .WithRequestValidation<Request>();
+                .WithRequestValidation<Request>()
+                .RequireAuthorization(Permissions.Grades.Get);
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
@@ -34,12 +36,34 @@ namespace TimeTile.API.Grades.Endpoints.Get
                     request.SortBy,
                     request.Descending
                 )
-                .Select(x => new Response
-                (
+                .Select(x => new
+                {
                     x.Id,
                     x.Value,
                     x.Weight,
-                    x.Type.ToString()
+                    Type = x.Type.ToString(),
+                    Date = x.UpdatedAt,
+                    SubjectId =
+                        x.CourseToStudent != null
+                            ? x.CourseToStudent.Course.SubjectId
+                            : x.LessonToStudentClasswork != null
+                                ? x.LessonToStudentClasswork.Lesson.Course.SubjectId
+                                : x.LessonToStudentHomework!.Lesson.Course.SubjectId,
+                    CourseId =
+                        x.CourseToStudent != null
+                            ? x.CourseToStudent.CourseId
+                            : x.LessonToStudentClasswork != null
+                                ? x.LessonToStudentClasswork.Lesson.CourseId
+                                : x.LessonToStudentHomework!.Lesson.CourseId
+                })
+                .Select(x => new Response(
+                    x.Id,
+                    x.Value,
+                    x.Weight,
+                    x.Type,
+                    x.Date,
+                    x.SubjectId,
+                    x.CourseId
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
@@ -106,7 +130,10 @@ namespace TimeTile.API.Grades.Endpoints.Get
             int Id,
             short Value,
             float Weight,
-            string Type
+            string Type,
+            DateTimeOffset Date,
+            int SubjectId,
+            int CourseId
         );
     }
 }

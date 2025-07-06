@@ -58,6 +58,8 @@ using TimeTile.API.Courses.Endpoints.UpdateStudents;
 using TimeTile.API.Courses.Endpoints.GetStudents;
 using TimeTile.API.Students.Endpoints.GetCourses;
 using TimeTile.API.Courses.Endpoints.UpdateCourseToStudent;
+using TimeTile.API.Groups.Endpoints.UpdateStudents;
+using TimeTile.API.Groups.Endpoints.UpdateInstitutionMembers;
 
 namespace TimeTile.API;
 
@@ -301,7 +303,9 @@ public static class Endpoints
 
         endpoints.MapEndpoint<GetGroupsEndpoint>()
             .MapEndpoint<GetGroupByIdEndpoint>()
-            .MapEndpoint<CreateGroupEndpoint>();
+            .MapEndpoint<CreateGroupEndpoint>()
+            .MapEndpoint<UpdateGroupStudentsEndpoint>()
+            .MapEndpoint<UpdateGroupInstitutionMembersEndpoint>();
     }
 
     private static void MapLessonsEndpoints(this IEndpointRouteBuilder app)

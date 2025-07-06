@@ -5,6 +5,7 @@ using System.Threading;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -19,12 +20,15 @@ namespace TimeTile.API.Courses.Endpoints.Create
             return app
                 .MapPost("/", Handle)
                 .WithSummary("Creates a new Course")
-                .WithRequestValidation<Request>();
+                .WithRequestValidation<Request>()
+                .DisableAntiforgery();
         }
 
         private static async Task<Created<Result<Response>>> Handle(
-            [FromBody] Request request,
+            [FromForm] Request request,
             TimetileDbContext db,
+            ICourseService courseService,
+            IFileService fileService,
             IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
@@ -44,8 +48,14 @@ namespace TimeTile.API.Courses.Endpoints.Create
 
             await AssignStudentsToCourse(request, course, db, cancellationToken);
 
-            await db.Courses.AddAsync(course, cancellationToken);
-            await db.SaveChangesAsync(cancellationToken);
+            await SaveCourse(
+                course,
+                request,
+                db,
+                courseService,
+                fileService,
+                cancellationToken
+            );
 
             // Return result
             var response = new Response(
@@ -54,7 +64,8 @@ namespace TimeTile.API.Courses.Endpoints.Create
                 course.SubjectId,
                 course.TeacherId,
                 course.IsAdvanced,
-                course.TermId
+                course.TermId,
+                courseService.GetIconUrl(course)
             );
 
             var result = Result.Success(response);
@@ -86,15 +97,49 @@ namespace TimeTile.API.Courses.Endpoints.Create
                     .ToList();
         }
 
-        public sealed record Request(
-            string Title,
-            int SubjectId,
-            int TeacherId,
-            bool IsAdvanced,
-            int TermId,
-            List<int>? GroupIds,
-            List<int>? StudentIds
-        );
+        private static async Task SaveCourse(
+            Course course,
+            Request request,
+            TimetileDbContext db,
+            ICourseService courseService,
+            IFileService fileService,
+            CancellationToken cancellationToken)
+        {
+            using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                course.IconId = await courseService.SaveIcon(request.Icon, request.Title, cancellationToken);
+
+                await db.Courses.AddAsync(course, cancellationToken);
+                await db.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                if (course.Icon is not null)
+                {
+                    await fileService.DeleteFilePhysically(course.IconId, cancellationToken);
+                }
+
+                await transaction.RollbackAsync(cancellationToken);
+
+                throw;
+            }
+        }
+
+        public sealed record Request
+        {
+            public string Title { get; set; } = null!;
+            public int SubjectId { get; set; }
+            public int TeacherId { get; set; }
+            public bool IsAdvanced { get; set; }
+            public int TermId { get; set; }
+            public List<int>? GroupIds { get; set; }
+            public List<int>? StudentIds { get; set; }
+            public IFormFile? Icon { get; set; }
+        }
 
         private sealed record Response(
             int Id,
@@ -102,7 +147,8 @@ namespace TimeTile.API.Courses.Endpoints.Create
             int SubjectId,
             int TeacherId,
             bool IsAdvanced,
-            int TermId
+            int TermId,
+            string IconUrl
         );
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250705170217_CourseCanHaveAvatar")]
+    partial class CourseCanHaveAvatar
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -426,6 +429,10 @@ namespace TimeTile.Storage.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AvatarId")
+                        .HasColumnType("integer")
+                        .HasColumnName("avatar_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -453,6 +460,9 @@ namespace TimeTile.Storage.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AvatarId")
+                        .IsUnique();
 
                     b.HasIndex("InstitutionId", "Title", "DeletedAt")
                         .IsUnique()
@@ -1518,12 +1528,20 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.Group", b =>
                 {
+                    b.HasOne("TimeTile.Core.Models.File", "Avatar")
+                        .WithOne("Group")
+                        .HasForeignKey("TimeTile.Core.Models.Group", "AvatarId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("groups_avatar_id_fkey");
+
                     b.HasOne("TimeTile.Core.Models.Institution", "Institution")
                         .WithMany("Groups")
                         .HasForeignKey("InstitutionId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("groups_institution_id_fkey");
+
+                    b.Navigation("Avatar");
 
                     b.Navigation("Institution");
                 });
@@ -1832,7 +1850,10 @@ namespace TimeTile.Storage.Migrations
                 {
                     b.Navigation("ClassroomType");
 
-                    b.Navigation("Course");
+                    b.Navigation("Course")
+                        .IsRequired();
+
+                    b.Navigation("Group");
 
                     b.Navigation("User");
                 });

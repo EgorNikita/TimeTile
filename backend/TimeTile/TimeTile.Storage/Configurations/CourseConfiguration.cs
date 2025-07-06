@@ -48,6 +48,9 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.TermId)
                 .HasColumnName("term_id");
 
+            builder.Property(e => e.IconId)
+                .HasColumnName("icon_id");
+
             // Relationships
             builder.HasOne(d => d.Subject)
                 .WithMany(p => p.Courses)
@@ -72,6 +75,12 @@ namespace TimeTile.Storage.Configurations
                 .HasForeignKey(d => d.TermId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("courses_term_id_fkey");
+
+            builder.HasOne(d => d.Icon)
+                .WithOne(p => p.Course)
+                .HasForeignKey<Course>(d => d.IconId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("courses_icon_id_fkey");
         }
     }
 }

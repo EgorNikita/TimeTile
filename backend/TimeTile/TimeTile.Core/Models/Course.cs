@@ -19,6 +19,8 @@ public partial class Course : AuditableEntity, IInstitutionEntity
     
     public int TermId { get; set; }
 
+    public int IconId { get; set; }
+
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 
     public virtual Institution Institution { get; set; } = null!;
@@ -28,6 +30,8 @@ public partial class Course : AuditableEntity, IInstitutionEntity
     public virtual Subject Subject { get; set; } = null!;
 
     public virtual InstitutionMember Teacher { get; set; } = null!;
+
+    public virtual File Icon { get; set; } = null!;
 
     // CoursesToStudents
     public virtual ICollection<CourseToStudent> CoursesToStudents { get; set; } = new List<CourseToStudent>();

@@ -354,11 +354,21 @@ public static class Endpoints
         return group.AddEndpointFilter<RequireInstitutionFilter>();
     }
 
+    public static RouteHandlerBuilder RequireInstitution(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter<RequireInstitutionFilter>();
+    }
+
     private static RouteGroupBuilder RequireUserId(this RouteGroupBuilder group)
     {
         return group.AddEndpointFilter<RequireUserIdFilter>();
     }
-    
+
+    public static RouteHandlerBuilder RequireUserId(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter<RequireUserIdFilter>();
+    }
+
     private static RouteGroupBuilder MapEndpoint<TEndpoint>(this RouteGroupBuilder group)
         where TEndpoint : IEndpoint
     {

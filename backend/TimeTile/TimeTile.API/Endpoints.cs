@@ -61,6 +61,7 @@ using TimeTile.API.Courses.Endpoints.UpdateCourseToStudent;
 using TimeTile.API.Groups.Endpoints.UpdateStudents;
 using TimeTile.API.Groups.Endpoints.UpdateInstitutionMembers;
 using TimeTile.API.Subjects.Endpoints.GetBulk;
+using TimeTile.API.Courses.Endpoints.UpdateUserOrder;
 
 namespace TimeTile.API;
 
@@ -331,7 +332,8 @@ public static class Endpoints
             .MapEndpoint<CreateCourseEndpoint>()
             .MapEndpoint<UpdateCourseStudentsEndpoint>()
             .MapEndpoint<GetCourseStudentsEndpoint>()
-            .MapEndpoint<UpdateCourseToStudentEndpoint>();
+            .MapEndpoint<UpdateCourseToStudentEndpoint>()
+            .MapEndpoint<UpdateCourseUserOrderEndpoint>();
     }
 
 
@@ -356,11 +358,21 @@ public static class Endpoints
         return group.AddEndpointFilter<RequireInstitutionFilter>();
     }
 
+    public static RouteHandlerBuilder RequireInstitution(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter<RequireInstitutionFilter>();
+    }
+
     private static RouteGroupBuilder RequireUserId(this RouteGroupBuilder group)
     {
         return group.AddEndpointFilter<RequireUserIdFilter>();
     }
-    
+
+    public static RouteHandlerBuilder RequireUserId(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter<RequireUserIdFilter>();
+    }
+
     private static RouteGroupBuilder MapEndpoint<TEndpoint>(this RouteGroupBuilder group)
         where TEndpoint : IEndpoint
     {

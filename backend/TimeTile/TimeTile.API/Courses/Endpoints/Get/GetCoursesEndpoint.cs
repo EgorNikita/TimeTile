@@ -20,7 +20,8 @@ namespace TimeTile.API.Courses.Endpoints.Get
             return app
                 .MapGet("/", Handle)
                 .WithSummary("Returns a page of courses")
-                .WithRequestValidation<Request>();
+                .WithRequestValidation<Request>()
+                .RequireUserId();
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
@@ -28,17 +29,19 @@ namespace TimeTile.API.Courses.Endpoints.Get
             ICourseService courseService,
             TimetileDbContext db,
             IInstitutionProvider institutionProvider,
+            IUserProvider userProvider,
             CancellationToken cancellationToken)
         {
             var institutionId = institutionProvider.GetInstitutionId();
+            var userId = userProvider.GetUserId();
+
+            var baseQuery = BuildFilteredQuery(request, institutionId, db);
+
+            baseQuery = ApplySorting(baseQuery, userId, request.SortBy, request.Descending);
 
             // Form a final paged list
-            var courses = await BuildFilteredQuery(request, institutionId, db)
+            var courses = await baseQuery
                 .Include(c => c.Icon)
-                .ApplySorting(
-                    request.SortBy,
-                    request.Descending
-                )
                 .Select(x => new Response
                 (
                     x.Id,
@@ -47,6 +50,7 @@ namespace TimeTile.API.Courses.Endpoints.Get
                     x.TeacherId,
                     x.IsAdvanced,
                     x.TermId,
+                    x.CoursesToUsers.Where(cu => cu.UserId == userId).Select(cu => (int?)cu.OrderNumber).FirstOrDefault(),
                     courseService.GetIconUrl(x)
                 ))
                 .ToPagedListAsync(request, cancellationToken);
@@ -93,6 +97,31 @@ namespace TimeTile.API.Courses.Endpoints.Get
             return baseQuery;
         }
 
+        private static IQueryable<Course> ApplySorting(IQueryable<Course> query, int userId, string? sortBy, bool descending)
+        {
+            if (sortBy != null)
+            {
+                return query.ApplySorting(
+                    sortBy,
+                    descending
+                );
+            }
+            else
+            {
+                return descending
+                    ? query.OrderByDescending(c =>
+                        c.CoursesToUsers
+                            .Where(cu => cu.UserId == userId)
+                            .Select(cu => (int?)cu.OrderNumber)
+                            .FirstOrDefault())
+                    : query.OrderBy(c =>
+                        c.CoursesToUsers
+                            .Where(cu => cu.UserId == userId)
+                            .Select(cu => (int?)cu.OrderNumber)
+                            .FirstOrDefault());
+            }
+        }
+
         public sealed record Request(
             int[]? SubjectIds = null,
             int[]? TeacherIds = null,
@@ -112,6 +141,7 @@ namespace TimeTile.API.Courses.Endpoints.Get
             int TeacherId,
             bool IsAdvanced,
             int TermId,
+            int? OrderNumber,
             string IconUrl
         );
     }

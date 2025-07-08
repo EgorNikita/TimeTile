@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
@@ -7,6 +8,7 @@ using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Students.Endpoints.GetCourses
@@ -27,15 +29,15 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            var relations = await db.CoursesStudents
+            var baseQuery = db.CoursesStudents
                 .AsNoTracking()
+                .Where(cs => cs.StudentId == request.Id);
+
+            baseQuery = ApplySorting(baseQuery, request.Id, request.SortBy, request.Descending);
+
+            var relations = await baseQuery
                 .Include(cs => cs.Course)
                     .ThenInclude(c => c.Icon)
-                .Where(cs => cs.StudentId == request.Id)
-                .ApplySorting(
-                    request.SortBy,
-                    request.Descending
-                )
                 .Select(cs => new Response(
                     cs.CourseId,
                     new CourseInfo(
@@ -45,6 +47,10 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
                         cs.Course.TeacherId,
                         cs.Course.IsAdvanced,
                         cs.Course.TermId,
+                        cs.Course.CoursesToUsers
+                            .Where(cu => cu.UserId == request.Id)
+                            .Select(cu => cu.OrderNumber)
+                            .First(),
                         courseService.GetIconUrl(cs.Course)
                     ),
                     cs.ExamGradeId,
@@ -57,6 +63,31 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
             var result = Result.Success(relations);
 
             return TypedResults.Ok(result);
+        }
+
+        private static IQueryable<CourseToStudent> ApplySorting(IQueryable<CourseToStudent> query, int userId, string? sortBy, bool descending)
+        {
+            if (sortBy != null)
+            {
+                return query.ApplySorting(
+                    sortBy,
+                    descending
+                );
+            }
+            else
+            {
+                return descending
+                    ? query.OrderByDescending(cs =>
+                        cs.Course.CoursesToUsers
+                            .Where(cu => cu.UserId == userId)
+                            .Select(cu => cu.OrderNumber)
+                            .First())
+                    : query.OrderBy(cs =>
+                        cs.Course.CoursesToUsers
+                            .Where(cu => cu.UserId == userId)
+                            .Select(cu => cu.OrderNumber)
+                            .First());
+            }
         }
 
         public sealed record Request(
@@ -83,6 +114,7 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
             int TeacherId,
             bool IsAdvanced,
             int TermId,
+            int OrderNumber,
             string IconUrl
         );
     }

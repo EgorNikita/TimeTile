@@ -7,6 +7,7 @@ using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Students.Endpoints.GetCourses
@@ -27,11 +28,9 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            var relations = await db.CoursesStudents
-                .AsNoTracking()
+            var relations = await BuildFilteredQuery(request, request.Id, db)
                 .Include(cs => cs.Course)
                     .ThenInclude(c => c.Icon)
-                .Where(cs => cs.StudentId == request.Id)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -59,8 +58,23 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
             return TypedResults.Ok(result);
         }
 
+        private static IQueryable<CourseToStudent> BuildFilteredQuery(Request request, int studentId, TimetileDbContext db)
+        {
+            var baseQuery = db.CoursesStudents
+                .AsNoTracking()
+                .Where(c => c.StudentId == studentId);
+
+            if (request.TermIds is not null && request.TermIds.Any())
+                baseQuery = baseQuery.Where(cs =>
+                    request.TermIds.Contains(cs.Course.TermId)
+                );
+
+            return baseQuery;
+        }
+
         public sealed record Request(
             int Id,
+            int[]? TermIds,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

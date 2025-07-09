@@ -8,6 +8,7 @@ using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Terms.Endpoints.Get
@@ -31,9 +32,7 @@ namespace TimeTile.API.Terms.Endpoints.Get
             var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
-            var terms = await db.Terms
-                .AsNoTracking()
-                .Where(x => x.InstitutionId == institutionId)
+            var terms = await BuildFilteredQuery(request, institutionId, db)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -52,7 +51,23 @@ namespace TimeTile.API.Terms.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
+        private static IQueryable<Term> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
+        {
+            var baseQuery = db.Terms
+                .AsNoTracking()
+                .Where(x => x.InstitutionId == institutionId);
+
+            if (request.StudentIds is not null && request.StudentIds.Any())
+                baseQuery = baseQuery.Where(t =>
+                    t.Courses.SelectMany(c => c.CoursesToStudents)
+                        .Any(cs => request.StudentIds.Contains(cs.StudentId))
+                );
+
+            return baseQuery;
+        }
+
         public sealed record Request(
+            int[]? StudentIds,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

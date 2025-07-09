@@ -61,6 +61,7 @@ using TimeTile.API.Courses.Endpoints.UpdateCourseToStudent;
 using TimeTile.API.Groups.Endpoints.UpdateStudents;
 using TimeTile.API.Groups.Endpoints.UpdateInstitutionMembers;
 using TimeTile.API.Subjects.Endpoints.GetBulk;
+using TimeTile.API.Assignments.Endpoints.Get;
 
 namespace TimeTile.API;
 
@@ -69,6 +70,7 @@ public static class Endpoints
     private static class Tags
     {
         public const string Authentication = "Authentication";
+        public const string Assignments = "Assignments";
         public const string ClassroomTypes = "ClassroomTypes";
         public const string LessonStatuses = "LessonStatuses";
         public const string Terms = "Terms";
@@ -90,6 +92,7 @@ public static class Endpoints
     public static class Routes
     {
         public const string Auth = "/auth";
+        public const string Assignments = "/assignments";
         public const string ClassroomTypes = "/classroom-types";
         public const string LessonStatuses = "/lesson-statuses";
         public const string Terms = "/terms";
@@ -133,6 +136,7 @@ public static class Endpoints
         app.MapGroupsEndpoints();
         app.MapLessonsEndpoints();
         app.MapCoursesEndpoints();
+        app.MapAssignmentsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -332,6 +336,13 @@ public static class Endpoints
             .MapEndpoint<UpdateCourseStudentsEndpoint>()
             .MapEndpoint<GetCourseStudentsEndpoint>()
             .MapEndpoint<UpdateCourseToStudentEndpoint>();
+    }
+
+    private static void MapAssignmentsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Assignments, Tags.Assignments);
+
+        endpoints.MapEndpoint<GetAssignmentsEndpoint>();
     }
 
 

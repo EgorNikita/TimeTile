@@ -17,5 +17,6 @@ namespace TimeTile.Core.Models
         public bool UploadAfterDeadline { get; set; }
 
         public virtual Lesson Lesson { get; set; } = null!;
+        public virtual ICollection<Submission> Submissions { get; set; } = new List<Submission>();
     }
 }

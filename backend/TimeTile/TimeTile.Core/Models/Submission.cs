@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TimeTile.Core.Enums;
+using TimeTile.Core.Models.Interfaces;
+
+namespace TimeTile.Core.Models
+{
+    public class Submission : AuditableEntity, IEntity
+    {
+        public int Id { get; set; }
+        public int AssignmentId { get; set; }
+        public int StudentId { get; set; }
+        public int? GradeId { get; set; }
+        public SubmissionStatus Status { get; set; } = SubmissionStatus.NotSubmitted;
+        public string StudentNote { get; set; } = null!;
+        public string Feedback { get; set; } = null!;
+
+        public virtual Assignment Assignment { get; set; } = null!;
+        public virtual Student Student { get; set; } = null!;
+        public virtual Grade? Grade { get; set; }
+    }
+}

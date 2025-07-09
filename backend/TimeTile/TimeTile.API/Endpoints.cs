@@ -64,6 +64,7 @@ using TimeTile.API.Subjects.Endpoints.GetBulk;
 using TimeTile.API.Assignments.Endpoints.Get;
 using TimeTile.API.Assignments.Endpoints.GetById;
 using TimeTile.API.Assignments.Endpoints.GetFiles;
+using TimeTile.API.Assignments.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -347,6 +348,7 @@ public static class Endpoints
         endpoints.MapEndpoint<GetAssignmentsEndpoint>()
             .MapEndpoint<GetAssignmentByIdEndpoint>()
             .MapEndpoint<GetAssignmentFilesEndpoint>()
+            .MapEndpoint<CreateAssignmentEndpoint>();
     }
 
 

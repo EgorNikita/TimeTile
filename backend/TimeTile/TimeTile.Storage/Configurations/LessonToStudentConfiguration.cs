@@ -49,26 +49,16 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnType("time with time zone")
                 .IsRequired(false);
 
-            builder.Property(e => e.ClassworkGradeId)
-                .HasColumnName("classwork_grade_id")
-                .IsRequired(false);
-
-            builder.Property(e => e.HomeworkGradeId)
-                .HasColumnName("homework_grade_id")
+            builder.Property(e => e.GradeId)
+                .HasColumnName("grade_id")
                 .IsRequired(false);
 
             // Define relationships
-            builder.HasOne(d => d.ClassworkGrade)
-                .WithOne(p => p.LessonToStudentClasswork)
-                .HasForeignKey<LessonToStudent>(d => d.ClassworkGradeId)
+            builder.HasOne(d => d.Grade)
+                .WithOne(p => p.LessonToStudent)
+                .HasForeignKey<LessonToStudent>(d => d.GradeId)
                 .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("lessons_students_classwork_grade_id_fkey");
-
-            builder.HasOne(d => d.HomeworkGrade)
-                .WithOne(p => p.LessonToStudentHomework)
-                .HasForeignKey<LessonToStudent>(d => d.HomeworkGradeId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("lessons_students_homework_grade_id_fkey");
+                .HasConstraintName("lessons_students_grade_id_fkey");
 
             builder.HasOne(d => d.Lesson)
                 .WithMany(p => p.LessonsToStudents)

@@ -27,18 +27,18 @@ namespace TimeTile.API.Grades.Endpoints.GetById
                         .MustAsync(async (id, cancellationToken) =>
                         {
                             var grade = await db.Grades
-                                .Include(g => g.LessonToStudentClasswork)
-                                    .ThenInclude(cw => cw.Student)
-                                .Include(g => g.LessonToStudentHomework)
-                                    .ThenInclude(hw => hw.Student)
+                                .Include(g => g.LessonToStudent)
+                                    .ThenInclude(ls => ls.Student)
+                                .Include(g => g.Submission)
+                                    .ThenInclude(s => s.Student)
                                 .Include(g => g.CourseToStudent)
                                     .ThenInclude(cs => cs.Course)
                                 .FirstAsync(g => g.Id == id, cancellationToken);
 
                             return grade.Type switch
                             {
-                                GradeType.Classwork => grade.LessonToStudentClasswork!.Student.InstitutionId == institutionId,
-                                GradeType.Homework => grade.LessonToStudentHomework!.Student.InstitutionId == institutionId,
+                                GradeType.Classwork => grade.LessonToStudent!.Student.InstitutionId == institutionId,
+                                GradeType.Homework => grade.Submission!.Student.InstitutionId == institutionId,
                                 GradeType.Exam => grade.CourseToStudent!.Course.InstitutionId == institutionId,
                                 _ => false,
                             };

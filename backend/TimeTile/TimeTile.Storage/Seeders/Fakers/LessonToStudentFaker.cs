@@ -21,9 +21,6 @@ namespace TimeTile.Storage.Seeders.Fakers
         // ClassworkGrade constraints
         private const float CLASSWORK_GRADE_PRESENCE_POSSIBILITY = 0.8f;
 
-        // HomeworkGrade constraints
-        private const float HOMEWORK_GRADE_PRESENCE_POSSIBILITY = 0.5f;
-
         // Pre generate all possible combinations
         private readonly List<(int LessonId, int StudentId)> _possiblePairs = new();
         private int _actualIndex = 0;
@@ -58,8 +55,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 })
                 .RuleFor(lts => lts.CameAt, GenerateValidCameAt)
                 .RuleFor(lts => lts.LeftAt, GenerateValidLeftAt)
-                .RuleFor(lts => lts.ClassworkGrade, GenerateValidClassworkGrade)
-                .RuleFor(lts => lts.HomeworkGrade, GenerateValidHomeworkGrade);
+                .RuleFor(lts => lts.Grade, GenerateValidClassworkGrade);
         }
 
         private DateTimeOffset? GenerateValidCameAt(Faker faker, LessonToStudent lessonToStudent)
@@ -121,21 +117,6 @@ namespace TimeTile.Storage.Seeders.Fakers
             if (faker.Random.Bool(CLASSWORK_GRADE_PRESENCE_POSSIBILITY))
             {
                 return _classworkGradeFaker.Generate(1).First();
-            }
-
-            return null;
-        }
-
-        private Grade? GenerateValidHomeworkGrade(Faker faker, LessonToStudent lessonToStudent)
-        {
-            if (IsLessondEndFromFuture(lessonToStudent))
-            {
-                return null;
-            }
-
-            if (faker.Random.Bool(HOMEWORK_GRADE_PRESENCE_POSSIBILITY))
-            {
-                return _homeworkGradeFaker.Generate(1).First();
             }
 
             return null;

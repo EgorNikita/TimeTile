@@ -14,13 +14,9 @@ public partial class LessonToStudent : AuditableEntity, IEntity
 
     public DateTimeOffset? LeftAt { get; set; }
 
-    public int? ClassworkGradeId { get; set; }
-
-    public int? HomeworkGradeId { get; set; }
+    public int? GradeId { get; set; }
     
-    public virtual Grade? ClassworkGrade { get; set; }
-
-    public virtual Grade? HomeworkGrade { get; set; }
+    public virtual Grade? Grade { get; set; }
 
     public virtual Lesson Lesson { get; set; } = null!;
 

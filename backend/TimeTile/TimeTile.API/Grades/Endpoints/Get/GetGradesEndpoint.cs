@@ -43,18 +43,11 @@ namespace TimeTile.API.Grades.Endpoints.Get
                     x.Weight,
                     Type = x.Type.ToString(),
                     Date = x.UpdatedAt,
-                    SubjectId =
-                        x.CourseToStudent != null
-                            ? x.CourseToStudent.Course.SubjectId
-                            : x.LessonToStudentClasswork != null
-                                ? x.LessonToStudentClasswork.Lesson.Course.SubjectId
-                                : x.LessonToStudentHomework!.Lesson.Course.SubjectId,
-                    CourseId =
-                        x.CourseToStudent != null
-                            ? x.CourseToStudent.CourseId
-                            : x.LessonToStudentClasswork != null
-                                ? x.LessonToStudentClasswork.Lesson.CourseId
-                                : x.LessonToStudentHomework!.Lesson.CourseId
+                    Course = x.CourseToStudent != null
+                            ? x.CourseToStudent.Course
+                            : x.LessonToStudent != null
+                                ? x.LessonToStudent.Lesson.Course
+                                : x.Submission!.Assignment.Lesson.Course
                 })
                 .Select(x => new Response(
                     x.Id,
@@ -62,8 +55,8 @@ namespace TimeTile.API.Grades.Endpoints.Get
                     x.Weight,
                     x.Type,
                     x.Date,
-                    x.SubjectId,
-                    x.CourseId
+                    x.Course.SubjectId,
+                    x.Course.Id
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
@@ -90,14 +83,14 @@ namespace TimeTile.API.Grades.Endpoints.Get
 
             if (request.LessonIds is not null && request.LessonIds.Any())
                 baseQuery = baseQuery.Where(g =>
-                    (g.LessonToStudentClasswork != null && request.LessonIds.Contains(g.LessonToStudentClasswork.LessonId))
-                    || (g.LessonToStudentHomework != null && request.LessonIds.Contains(g.LessonToStudentHomework.LessonId))
+                    (g.LessonToStudent != null && request.LessonIds.Contains(g.LessonToStudent.LessonId))
+                    || (g.Submission != null && request.LessonIds.Contains(g.Submission.Assignment.Lesson.Id))
                 );
 
             if (request.StudentIds is not null && request.StudentIds.Any())
                 baseQuery = baseQuery.Where(g =>
-                    (g.LessonToStudentClasswork != null && request.StudentIds.Contains(g.LessonToStudentClasswork.StudentId))
-                    || (g.LessonToStudentHomework != null && request.StudentIds.Contains(g.LessonToStudentHomework.StudentId))
+                    (g.LessonToStudent != null && request.StudentIds.Contains(g.LessonToStudent.StudentId))
+                    || (g.Submission != null && request.StudentIds.Contains(g.Submission.StudentId))
                     || (g.CourseToStudent != null && request.StudentIds.Contains(g.CourseToStudent.StudentId))
                 );
 
@@ -105,11 +98,11 @@ namespace TimeTile.API.Grades.Endpoints.Get
             // grades for lessons within those courses
             if (request.CourseIds is not null && request.CourseIds.Any())
                 baseQuery = baseQuery.Where(g =>
-                    (g.CourseToStudent != null && request.CourseIds.Contains(g.CourseToStudent.CourseId))
+                    (g.CourseToStudent != null && request.CourseIds.Contains(g.CourseToStudent.CourseId))       // direct grades
                     || (db.Lessons
-                        .Where(l => request.CourseIds.Contains(l.CourseId))
-                        .Any(l => l.LessonsToStudents
-                            .Any(ls => ls.HomeworkGradeId == g.Id || ls.ClassworkGradeId == g.Id)))
+                        .Where(l => request.CourseIds.Contains(l.CourseId))     // Filtration by lesson associated with course
+                        .Any(l => l.LessonsToStudents.Any(ls => ls.GradeId == g.Id) ||      // Grade for Classwork
+                            (l.Assignment != null && l.Assignment.Submissions.Any(s => s.GradeId == g.Id))))        // Grade for Submission(Homework)
                 );
 
             return baseQuery;

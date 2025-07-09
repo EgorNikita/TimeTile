@@ -14,24 +14,13 @@ namespace TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent
                     request.CameAt.Value < request.LeftAt.Value)
                 .WithMessage("CameAt should be less than LeftAt");
 
-            When(x => x.ClassworkGrade.HasValue, () =>
+            When(x => x.Grade.HasValue, () =>
             {
-                RuleFor(x => x.ClassworkGrade.Value!.Weight)
+                RuleFor(x => x.Grade.Value!.Weight)
                     .GreaterThan(0)
                     .WithMessage("Weight should be greater than zero");
 
-                RuleFor(x => (int)x.ClassworkGrade.Value!.Value)
-                    .GreaterThan(0)
-                    .WithMessage("Value of grade should be greater than zero");
-            });
-
-            When(x => x.HomeworkGrade.HasValue, () =>
-            {
-                RuleFor(x => x.HomeworkGrade.Value!.Weight)
-                    .GreaterThan(0)
-                    .WithMessage("Weight should be greater than zero");
-
-                RuleFor(x => (int)x.HomeworkGrade.Value!.Value)
+                RuleFor(x => (int)x.Grade.Value!.Value)
                     .GreaterThan(0)
                     .WithMessage("Value of grade should be greater than zero");
             });

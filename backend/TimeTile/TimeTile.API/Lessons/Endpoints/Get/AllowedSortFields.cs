@@ -7,6 +7,7 @@
         ClassroomId,
         LessonStatusId,
         Date,
-        Description
+        Description,
+        AssignmentId
     }
 }

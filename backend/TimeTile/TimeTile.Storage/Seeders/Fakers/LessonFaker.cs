@@ -12,6 +12,11 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class LessonFaker : BaseFaker<Lesson>
     {
+        // Assignment constraints
+        private const float ASSIGNMENT_PRESENCE_POSSIBILITY = 0.6f;
+        private const int DEADLINE_DAYS = 7;
+        private const float UPLOAD_AFTER_DEADLINE_POSSIBILITY = 0.8f;
+
         // Cashing for optimization
         private readonly Dictionary<int, List<LessonStatus>> _institutionLessonStatuses = new();
 
@@ -81,6 +86,15 @@ namespace TimeTile.Storage.Seeders.Fakers
                         lesson.TimetableUnitId = combination.timetableUnitId;
                         lesson.Date = combination.date;
 
+                        if (faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
+                        {
+                            lesson.Assignment = GenerateValidAssignment(
+                                faker,
+                                combination.date,
+                                timetableUnits.First(u => u.Id == combination.timetableUnitId)
+                            );
+                        }
+
                         return;
                     }
 
@@ -134,6 +148,24 @@ namespace TimeTile.Storage.Seeders.Fakers
             int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
 
             return TruncateToMaxLength(description, maxLength);
+        }
+
+        private Assignment GenerateValidAssignment(Faker faker, DateTimeOffset date, TimetableUnit timetableUnit)
+        {
+            string title = faker.Lorem.Sentence(3, 5);
+            string description = faker.Lorem.Sentences(3);
+            DateTimeOffset publishedAt = new DateTimeOffset(date.UtcDateTime.Date + timetableUnit.EndTime.UtcDateTime.TimeOfDay);
+            DateTimeOffset deadline = publishedAt.AddDays(DEADLINE_DAYS);
+            bool uploadAfterDeadline = faker.Random.Bool(UPLOAD_AFTER_DEADLINE_POSSIBILITY);
+
+            return new Assignment
+            {
+                Title = title,
+                Description = description,
+                PublishedAt = publishedAt,
+                Deadline = deadline,
+                UploadAfterDeadline = uploadAfterDeadline,
+            };
         }
     }
 }

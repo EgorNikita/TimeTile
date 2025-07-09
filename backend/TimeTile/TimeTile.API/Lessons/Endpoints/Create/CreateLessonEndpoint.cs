@@ -52,7 +52,8 @@ namespace TimeTile.API.Lessons.Endpoints.Create
                 lesson.ClassroomId,
                 lesson.LessonStatusId,
                 lesson.Date,
-                lesson.Description
+                lesson.Description,
+                lesson.AssignmentId
             );
 
             var result = Result.Success(response);
@@ -76,7 +77,8 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             int ClassroomId,
             int LessonStatusId,
             DateTimeOffset Date,
-            string Description
+            string Description,
+            int? AssignmentId
         );
     }
 }

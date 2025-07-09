@@ -63,6 +63,7 @@ using TimeTile.API.Groups.Endpoints.UpdateInstitutionMembers;
 using TimeTile.API.Subjects.Endpoints.GetBulk;
 using TimeTile.API.Assignments.Endpoints.Get;
 using TimeTile.API.Assignments.Endpoints.GetById;
+using TimeTile.API.Assignments.Endpoints.GetFiles;
 
 namespace TimeTile.API;
 
@@ -344,7 +345,8 @@ public static class Endpoints
         var endpoints = app.CreateInstitutionGroup(Routes.Assignments, Tags.Assignments);
 
         endpoints.MapEndpoint<GetAssignmentsEndpoint>()
-            .MapEndpoint<GetAssignmentByIdEndpoint>();
+            .MapEndpoint<GetAssignmentByIdEndpoint>()
+            .MapEndpoint<GetAssignmentFilesEndpoint>()
     }
 
 

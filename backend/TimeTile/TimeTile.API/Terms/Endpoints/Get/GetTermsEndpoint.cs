@@ -57,6 +57,12 @@ namespace TimeTile.API.Terms.Endpoints.Get
                 .AsNoTracking()
                 .Where(x => x.InstitutionId == institutionId);
 
+            if (request.StartDateFrom is not null)
+                baseQuery = baseQuery.Where(t => t.StartDate >= request.StartDateFrom.Value.ToUniversalTime());
+
+            if (request.StartDateUntil is not null)
+                baseQuery = baseQuery.Where(t => t.StartDate <= request.StartDateUntil.Value.ToUniversalTime());
+
             if (request.StudentIds is not null && request.StudentIds.Any())
                 baseQuery = baseQuery.Where(t =>
                     t.Courses.SelectMany(c => c.CoursesToStudents)
@@ -67,6 +73,8 @@ namespace TimeTile.API.Terms.Endpoints.Get
         }
 
         public sealed record Request(
+            DateTimeOffset? StartDateFrom,
+            DateTimeOffset? StartDateUntil,
             int[]? StudentIds,
             int? Page = 1,
             int? PageSize = 10,

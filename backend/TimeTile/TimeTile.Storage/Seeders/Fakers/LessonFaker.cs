@@ -86,8 +86,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                     throw new ArgumentException("It is impossible to find combination for all dependencies: classroom, course, timetableUnit and date");
                 })
-                .RuleFor(l => l.Description, GenerateValidDescription)
-                .RuleFor(l => l.HomeworkDescription, GenerateValidHomeworkDescription);
+                .RuleFor(l => l.Description, GenerateValidDescription);
         }
 
         private Result<(int CourseId, int ClassroomId, int TimetableUnitId, DateTimeOffset Date)> FindPossibleCombinationOfDependencies(IEnumerable<Course> suitableCourses, IEnumerable<TimetableUnit> suitableTimetableUnits, IEnumerable<Classroom> classrooms)
@@ -131,15 +130,6 @@ namespace TimeTile.Storage.Seeders.Fakers
         private string GenerateValidDescription(Faker faker)
         {
             string description = $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
-
-            int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
-
-            return TruncateToMaxLength(description, maxLength);
-        }
-
-        private string GenerateValidHomeworkDescription(Faker faker)
-        {
-            string description = faker.Lorem.Paragraphs(1, 2);
 
             int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
 

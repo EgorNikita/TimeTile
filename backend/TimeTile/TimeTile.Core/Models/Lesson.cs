@@ -19,7 +19,7 @@ public partial class Lesson : AuditableEntity, IEntity
 
     public string Description { get; set; } = null!;
 
-    public string HomeworkDescription { get; set; } = null!;
+    public int? AssignmentId { get; set; }
     
     public virtual Classroom Classroom { get; set; } = null!;
 
@@ -33,4 +33,6 @@ public partial class Lesson : AuditableEntity, IEntity
     public virtual IEnumerable<Student> Students => LessonsToStudents.Select(x => x.Student);
 
     public virtual TimetableUnit TimetableUnit { get; set; } = null!;
+
+    public virtual Assignment? Assignment { get; set; }
 }

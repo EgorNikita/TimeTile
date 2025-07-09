@@ -67,12 +67,6 @@ namespace TimeTile.API.Lessons.Endpoints.Update
                 RuleFor(x => x.Description!)
                     .MustBeValidDescription();
             });
-
-            When(x => x.HomeworkDescription != null, () =>
-            {
-                RuleFor(x => x.HomeworkDescription!)
-                    .MustBeValidDescription();
-            });
         }
     }
 }

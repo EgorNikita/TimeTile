@@ -7,7 +7,6 @@
         ClassroomId,
         LessonStatusId,
         Date,
-        Description,
-        HomeworkDescription
+        Description
     }
 }

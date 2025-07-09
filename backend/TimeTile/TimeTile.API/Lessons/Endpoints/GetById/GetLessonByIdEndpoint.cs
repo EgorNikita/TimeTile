@@ -34,8 +34,7 @@ namespace TimeTile.API.Lessons.Endpoints.GetById
                 lesson.ClassroomId,
                 lesson.LessonStatusId,
                 lesson.Date,
-                lesson.Description,
-                lesson.HomeworkDescription
+                lesson.Description
             );
 
             var result = Result.Success(response);
@@ -54,8 +53,7 @@ namespace TimeTile.API.Lessons.Endpoints.GetById
             int ClassroomId,
             int LessonStatusId,
             DateTimeOffset Date,
-            string Description,
-            string HomeworkDescription
+            string Description
         );
     }
 }

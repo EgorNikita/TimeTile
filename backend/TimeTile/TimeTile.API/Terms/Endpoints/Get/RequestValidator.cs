@@ -1,4 +1,5 @@
-﻿using TimeTile.API.Common.Api.Extensions;
+﻿using FluentValidation;
+using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Students.Endpoints.GetCourses;
@@ -15,6 +16,10 @@ namespace TimeTile.API.Terms.Endpoints.Get
             
             RuleFor(x => x.SortBy)
                 .MustBeValidSortField<GetTermsEndpoint.Request, AllowedSortFields>();
+
+            RuleFor(x => x)
+                .Must(x => !x.StartDateFrom.HasValue || !x.StartDateUntil.HasValue || x.StartDateFrom <= x.StartDateUntil)
+                .WithMessage("StartDateFrom must be less than or equal to StartDateUntil");
 
             // StudentIds
             RuleFor(x => x.StudentIds)

@@ -62,6 +62,7 @@ using TimeTile.API.Groups.Endpoints.UpdateStudents;
 using TimeTile.API.Groups.Endpoints.UpdateInstitutionMembers;
 using TimeTile.API.Subjects.Endpoints.GetBulk;
 using TimeTile.API.Assignments.Endpoints.Get;
+using TimeTile.API.Assignments.Endpoints.GetById;
 
 namespace TimeTile.API;
 
@@ -342,7 +343,8 @@ public static class Endpoints
     {
         var endpoints = app.CreateInstitutionGroup(Routes.Assignments, Tags.Assignments);
 
-        endpoints.MapEndpoint<GetAssignmentsEndpoint>();
+        endpoints.MapEndpoint<GetAssignmentsEndpoint>()
+            .MapEndpoint<GetAssignmentByIdEndpoint>();
     }
 
 

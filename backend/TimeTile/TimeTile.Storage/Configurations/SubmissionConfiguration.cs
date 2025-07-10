@@ -36,11 +36,6 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.AssignmentId, e.StudentId, e.Status, e.DeletedAt })
-                .HasDatabaseName("submissions_assignment_student_status_deleted_at_key")
-                .AreNullsDistinct(false)
-                .IsUnique();
-
             // Property Configurations
             builder.Property(e => e.Id)
                 .ValueGeneratedOnAdd()

@@ -26,5 +26,6 @@ namespace TimeTile.Core.Models
         public virtual Course? Course { get; set; }
         public virtual ClassroomType? ClassroomType { get; set; }
         public virtual AssignmentToFile? AssignmentToFile { get; set; }
+        public virtual SubmissionToFile? SubmissionToFile { get; set; }
     }
 }

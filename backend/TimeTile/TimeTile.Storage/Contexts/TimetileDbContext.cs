@@ -62,6 +62,8 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<Submission> Submissions { get; set; } = null!;
 
+    public DbSet<SubmissionToFile> SubmissionsFiles { get; set; } = null!;
+
     public DbSet<InstitutionMember> InstitutionMembers { get; set; } = null!;
 
     public DbSet<InstitutionMemberToGroup> InstitutionMembersGroups { get; set; } = null!;

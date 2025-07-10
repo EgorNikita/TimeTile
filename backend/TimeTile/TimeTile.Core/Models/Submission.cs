@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,5 +22,11 @@ namespace TimeTile.Core.Models
         public virtual Assignment Assignment { get; set; } = null!;
         public virtual Student Student { get; set; } = null!;
         public virtual Grade? Grade { get; set; }
+
+        //SubmissionToFiles
+        public virtual ICollection<SubmissionToFile> SubmissionToFiles { get; set; } = new List<SubmissionToFile>();
+
+        [NotMapped]
+        public virtual IEnumerable<File> Files => SubmissionToFiles.Select(x => x.File);
     }
 }

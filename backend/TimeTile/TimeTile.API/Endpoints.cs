@@ -69,6 +69,7 @@ using TimeTile.API.Assignments.Endpoints.Update;
 using TimeTile.API.Submissions.Endpoints.Get;
 using TimeTile.API.Submissions.Endpoints.GetById;
 using TimeTile.API.Submissions.Endpoints.GetFiles;
+using TimeTile.API.Submissions.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -365,7 +366,8 @@ public static class Endpoints
 
         endpoints.MapEndpoint<GetSubmissionsEndpoint>()
             .MapEndpoint<GetSubmissionByIdEndpoint>()
-            .MapEndpoint<GetSubmissionFilesEndpoint>();
+            .MapEndpoint<GetSubmissionFilesEndpoint>()
+            .MapEndpoint<CreateSubmissionEndpoint>();
     }
 
 
@@ -394,7 +396,12 @@ public static class Endpoints
     {
         return group.AddEndpointFilter<RequireUserIdFilter>();
     }
-    
+
+    public static RouteHandlerBuilder RequireUserId(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter<RequireUserIdFilter>();
+    }
+
     private static RouteGroupBuilder MapEndpoint<TEndpoint>(this RouteGroupBuilder group)
         where TEndpoint : IEndpoint
     {

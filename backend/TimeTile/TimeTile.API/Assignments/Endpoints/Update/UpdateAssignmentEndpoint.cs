@@ -28,7 +28,6 @@ namespace TimeTile.API.Assignments.Endpoints.Update
         private static async Task<Results<Ok<Result<Response>>, BadRequest<Result>>> Handle(
             [AsParameters] RequestParameters parameters,
             [FromForm] RequestBody body,
-            IAssignmentService assignmentService,
             IFileService fileService,
             TimetileDbContext db,
             CancellationToken cancellationToken)
@@ -39,7 +38,7 @@ namespace TimeTile.API.Assignments.Endpoints.Update
             // Update AssignmentsToFiles
             if (body.FilesToAdd is not null)
             {
-                await AddFiles(assignment.Id, body.FilesToAdd, assignmentService, db, cancellationToken);
+                await AddFiles(assignment.Id, body.FilesToAdd, fileService, db, cancellationToken);
             }
             if (body.FilesToRemove is not null)
             {
@@ -81,11 +80,11 @@ namespace TimeTile.API.Assignments.Endpoints.Update
         private static async Task AddFiles(
            int id,
            IFormFileCollection files,
-           IAssignmentService assignmentService,
+           IFileService fileService,
            TimetileDbContext db,
            CancellationToken cancellationToken)
         {
-            var savedFileIds = await assignmentService.SaveFiles(files, cancellationToken);
+            var savedFileIds = await fileService.SaveFiles(files, cancellationToken);
 
             await db.AssignmentsFiles.AddRangeAsync(
                 savedFileIds.Select(fileId => 

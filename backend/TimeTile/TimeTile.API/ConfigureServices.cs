@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using TimeTile.API.Assignments.Services;
 using TimeTile.API.Authentication;
 using TimeTile.API.Authentication.Services;
 using TimeTile.API.ClassroomTypes.Services;
@@ -63,7 +62,6 @@ public static class ConfigureServices
         builder.Services.AddScoped<IFileRepository, FileRepository>();
         builder.Services.AddScoped<IClassroomTypeService, ClassroomTypeService>();
         builder.Services.AddScoped<ICourseService, CourseService>();
-        builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 
         Log.Information("Service configuration completed.");
     }

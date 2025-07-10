@@ -27,6 +27,19 @@ public class FileService : IFileService
         _fileRepository = repository;
     }
 
+    public async Task<List<int>> SaveFiles(IFormFileCollection files, CancellationToken cancellationToken)
+    {
+        List<int> savedFileIds = [];
+
+        foreach (var file in files)
+        {
+            var savedFileId = await SaveFile(file.OpenReadStream(), file.FileName, cancellationToken);
+            savedFileIds.Add(savedFileId);
+        }
+
+        return savedFileIds;
+    }
+
     public async Task<int> SaveFile(Stream fileStream, string fileName, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(_storagePath)) Directory.CreateDirectory(_storagePath);

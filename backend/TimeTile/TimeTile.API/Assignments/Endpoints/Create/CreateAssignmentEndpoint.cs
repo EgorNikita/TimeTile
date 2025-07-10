@@ -28,7 +28,6 @@ namespace TimeTile.API.Assignments.Endpoints.Create
         private static async Task<Created<Result<Response>>> Handle(
             [FromForm] Request request,
             TimetileDbContext db,
-            IAssignmentService assignmentService,
             IFileService fileService,
             CancellationToken cancellationToken)
         {
@@ -50,7 +49,6 @@ namespace TimeTile.API.Assignments.Endpoints.Create
                     assignment,
                     request,
                     db,
-                    assignmentService,
                     fileService,
                     cancellationToken
                 );
@@ -81,7 +79,6 @@ namespace TimeTile.API.Assignments.Endpoints.Create
             Assignment assignment,
             Request request,
             TimetileDbContext db,
-            IAssignmentService assignmentService,
             IFileService fileService,
             CancellationToken cancellationToken)
         {
@@ -89,7 +86,7 @@ namespace TimeTile.API.Assignments.Endpoints.Create
 
             try
             {
-                var savedFileIds = await assignmentService.SaveFiles(request.Files!, cancellationToken);
+                var savedFileIds = await fileService.SaveFiles(request.Files!, cancellationToken);
 
                 assignment.AssignmentToFiles = savedFileIds.Select(id => new AssignmentToFile { FileId = id }).ToList();
 

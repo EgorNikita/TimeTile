@@ -66,6 +66,7 @@ using TimeTile.API.Assignments.Endpoints.GetById;
 using TimeTile.API.Assignments.Endpoints.GetFiles;
 using TimeTile.API.Assignments.Endpoints.Create;
 using TimeTile.API.Assignments.Endpoints.Update;
+using TimeTile.API.Submissions.Endpoints.Get;
 
 namespace TimeTile.API;
 
@@ -81,6 +82,7 @@ public static class Endpoints
         public const string TimetableUnits = "TimetableUnits";
         public const string Classrooms = "Classrooms";
         public const string Students = "Students";
+        public const string Submissions = "Submissions";
         public const string Roles = "Roles";
         public const string Institutions = "Institutions";
         public const string Files = "Files";
@@ -103,6 +105,7 @@ public static class Endpoints
         public const string TimetableUnits = "/timetable-units";
         public const string Classrooms = "/classrooms";
         public const string Students = "/students";
+        public const string Submissions = "/submissions";
         public const string Roles = "/roles";
         public const string Institutions = "/institutions";
         public const string Files = "/files";
@@ -141,6 +144,7 @@ public static class Endpoints
         app.MapLessonsEndpoints();
         app.MapCoursesEndpoints();
         app.MapAssignmentsEndpoints();
+        app.MapSubmissionsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -351,6 +355,13 @@ public static class Endpoints
             .MapEndpoint<GetAssignmentFilesEndpoint>()
             .MapEndpoint<CreateAssignmentEndpoint>()
             .MapEndpoint<UpdateAssignmentEndpoint>();
+    }
+
+    private static void MapSubmissionsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Submissions, Tags.Submissions);
+
+        endpoints.MapEndpoint<GetSubmissionsEndpoint>();
     }
 
 

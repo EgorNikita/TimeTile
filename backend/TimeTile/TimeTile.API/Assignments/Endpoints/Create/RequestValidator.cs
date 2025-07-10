@@ -20,7 +20,12 @@ namespace TimeTile.API.Assignments.Endpoints.Create
                 .MustBeValidDescription();
 
             RuleFor(x => x.Deadline)
-                .Must(deadline => deadline > DateTimeOffset.UtcNow);
+                .Must(deadline => deadline > DateTimeOffset.UtcNow)
+                .WithMessage("Deadlien should be in the future.");
+
+            RuleFor(x => x)
+                .Must(request => request.Deadline > request.PublishedAt)
+                .WithMessage("PublishedAt should be less than Deadline.");
 
             RuleFor(x => x.LessonId)
                 .MustBeValidId()

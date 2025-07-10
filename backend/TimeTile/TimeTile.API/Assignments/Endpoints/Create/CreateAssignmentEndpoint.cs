@@ -28,6 +28,7 @@ namespace TimeTile.API.Assignments.Endpoints.Create
         private static async Task<Created<Result<Response>>> Handle(
             [FromForm] Request request,
             TimetileDbContext db,
+            IAssignmentService assignmentService,
             IFileService fileService,
             CancellationToken cancellationToken)
         {
@@ -49,6 +50,7 @@ namespace TimeTile.API.Assignments.Endpoints.Create
                     assignment,
                     request,
                     db,
+                    assignmentService,
                     fileService,
                     cancellationToken
                 );
@@ -79,20 +81,15 @@ namespace TimeTile.API.Assignments.Endpoints.Create
             Assignment assignment,
             Request request,
             TimetileDbContext db,
+            IAssignmentService assignmentService,
             IFileService fileService,
             CancellationToken cancellationToken)
         {
             using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
-            List<int> savedFileIds = [];
-
             try
             {
-                foreach (var file in request.Files)
-                {
-                    var savedFileId = await fileService.SaveFile(file.OpenReadStream(), file.FileName, cancellationToken);
-                    savedFileIds.Add(savedFileId);
-                }
+                var savedFileIds = await assignmentService.SaveFiles(request.Files!, cancellationToken);
 
                 assignment.AssignmentToFiles = savedFileIds.Select(id => new AssignmentToFile { FileId = id }).ToList();
 
@@ -103,7 +100,7 @@ namespace TimeTile.API.Assignments.Endpoints.Create
             }
             catch
             {
-                foreach (var fileId in savedFileIds)
+                foreach (var fileId in assignment.AssignmentToFiles.Select(af => af.FileId))
                 {
                     await fileService.DeleteFilePhysically(fileId, cancellationToken);
                 }

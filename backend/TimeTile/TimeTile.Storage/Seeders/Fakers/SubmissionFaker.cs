@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Bogus;
+using Bogus.DataSets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,65 +12,107 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class SubmissionFaker : BaseFaker<Submission>
     {
+        // StudentNote constraints
+        private const float STUDENT_NOTE_PRESENCE_POSSIBILITY = 0.3f;
+
+        // Feedback constraints
+        private const float FEEDBACK_PRESENCE_POSSIBILITY = 0.75f;
+
         // Pre generate all possible combinations
-        private readonly List<(int LessonId, int StudentId)> _possiblePairs = new();
+        private readonly List<Submission> _submissions = new();
         private int _actualIndex = 0;
 
         private readonly GradeFaker _gradeFaker = new GradeFaker(GradeType.Homework);
+        private new readonly Faker _faker = new();
 
         public SubmissionFaker(List<Lesson> lessons)
         {
-            var validLessons = lessons.Where(l => l.AssignmentId != null);
+            var submissions = lessons
+                .Where(l => l.AssignmentId != null)
+                .Select(l => l.Assignment)
+                .SelectMany(a => a.Submissions);
 
-            foreach (var lesson in validLessons)
-            {
-                foreach (var lessonToStudent in lesson.LessonsToStudents)
-                {
-                    _possiblePairs.Add((lesson.Id, lessonToStudent.StudentId));
-                }
-            }
-
-            _possiblePairs = _possiblePairs.OrderBy(_ => Guid.NewGuid()).ToList();
-
-            _faker
-                .Rules((faker, submission) =>
-                {
-                    (int, int) element = _possiblePairs.ElementAt(_actualIndex);
-
-                    submission.Assignment = validLessons.First(l => l.Id == element.Item1).Assignment!;
-                    submission.StudentId = element.Item2;
-
-                    _actualIndex++;
-                })
-                .RuleFor(x => x.StudentNote, f => f.Lorem.Sentences(2))
-                .RuleFor(x => x.Feedback, f => f.Lorem.Paragraphs(1))
-                .RuleFor(x => x.Status, f => f.PickRandom<SubmissionStatus>())
-                .RuleFor(x => x.Grade, (faker, submission) =>
-                {
-                    if (submission.Status == SubmissionStatus.Accepted)
-                    {
-                        return _gradeFaker.Generate(1).First();
-                    }
-
-                    if (submission.Status == SubmissionStatus.Rejected)
-                    {
-                        _possiblePairs.Add((submission.Assignment.Lesson.Id, submission.StudentId));
-                    }
-
-                    return null;
-                });
+            _submissions = submissions.OrderBy(_ => Guid.NewGuid()).ToList();
         }
 
         public override List<Submission> Generate(int count)
         {
-            int rest = _possiblePairs.Count - _actualIndex;
+            var newSubmissions = new List<Submission>();
 
-            if (count > rest)
+            int rest = _submissions.Count - _actualIndex;
+
+            var iterationsCount = Math.Min(rest, count);
+
+            for (int i = 0; i < iterationsCount; i++)
             {
-                return base.Generate(rest);
+                var submission = _submissions[_actualIndex++];
+
+                submission.Status = _faker.PickRandom<SubmissionStatus>();
+
+                if (submission.Status == SubmissionStatus.Rejected)
+                {
+                    var newSubmission = new Submission
+                    {
+                        AssignmentId = submission.AssignmentId,
+                        StudentId = submission.StudentId,
+                        Status = SubmissionStatus.NotSubmitted
+                    };
+
+                    if (iterationsCount < count)
+                    {
+                        iterationsCount++;
+                    }
+
+                    _submissions.Add(newSubmission);
+                    newSubmissions.Add(newSubmission);
+                }
+
+                submission.StudentNote = GenerateValidStudentNote(submission);
+                submission.Feedback = GenerateValidFeedback(submission);
+                submission.Grade = GenerateValidGrade(submission);
             }
 
-            return base.Generate(count);
+            return newSubmissions;
+        }
+
+        private string? GenerateValidStudentNote(Submission submission)
+        {
+            if (submission.Status == SubmissionStatus.NotSubmitted)
+            {
+                return null;
+            }
+
+            if (_faker.Random.Bool(STUDENT_NOTE_PRESENCE_POSSIBILITY))
+            {
+                return _faker.Lorem.Sentences(2);
+            }
+
+            return null;
+        }
+
+        private string? GenerateValidFeedback(Submission submission)
+        {
+            if (submission.Status != SubmissionStatus.Accepted && submission.Status != SubmissionStatus.Rejected)
+            {
+                return null;
+            }
+
+            if (_faker.Random.Bool(FEEDBACK_PRESENCE_POSSIBILITY))
+            {
+                return _faker.Lorem.Paragraphs(1);
+            }
+
+            return null;
+        }
+
+        private Grade? GenerateValidGrade(Submission submission)
+        {
+            if (submission.Status == SubmissionStatus.Accepted)
+            {
+                return _gradeFaker.Generate(1).First();
+            }
+
+            return null;
         }
     }
 }

@@ -71,6 +71,7 @@ using TimeTile.API.Submissions.Endpoints.GetById;
 using TimeTile.API.Submissions.Endpoints.GetFiles;
 using TimeTile.API.Submissions.Endpoints.Create;
 using TimeTile.API.Students.Endpoints.GetLessons;
+using TimeTile.API.Lessons.Endpoints.GetStudents;
 
 namespace TimeTile.API;
 
@@ -336,7 +337,8 @@ public static class Endpoints
             .MapEndpoint<GetLessonByIdEndpoint>()
             .MapEndpoint<CreateLessonEndpoint>()
             .MapEndpoint<UpdateLessonEndpoint>()
-            .MapEndpoint<UpdateLessonToStudentEndpoint>();
+            .MapEndpoint<UpdateLessonToStudentEndpoint>()
+            .MapEndpoint<GetLessonStudentsEndpoint>();
     }
 
     private static void MapCoursesEndpoints(this IEndpointRouteBuilder app)

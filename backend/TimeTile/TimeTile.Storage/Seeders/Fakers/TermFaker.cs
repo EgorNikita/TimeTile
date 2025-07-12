@@ -22,7 +22,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const int MIN_QUARTER_DURATION_DAYS = 30;
 
         private const int MIN_YEAR = 2024;
-        private const int MAX_YEAR = 2025;
+        private const int MAX_YEAR = 2026;
 
         public TermFaker(List<Institution> institutions)
         {

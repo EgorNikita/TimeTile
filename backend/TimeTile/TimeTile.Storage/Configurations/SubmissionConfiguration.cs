@@ -60,10 +60,12 @@ namespace TimeTile.Storage.Configurations
                 .HasConversion<string>();
 
             builder.Property(e => e.StudentNote)
-                .HasColumnName("student_note");
+                .HasColumnName("student_note")
+                .IsRequired(false);
 
             builder.Property(e => e.Feedback)
-                .HasColumnName("feedback");
+                .HasColumnName("feedback")
+                .IsRequired(false);
 
             // Relationships
             builder.HasOne(d => d.Assignment)

@@ -70,6 +70,7 @@ using TimeTile.API.Submissions.Endpoints.Get;
 using TimeTile.API.Submissions.Endpoints.GetById;
 using TimeTile.API.Submissions.Endpoints.GetFiles;
 using TimeTile.API.Submissions.Endpoints.Create;
+using TimeTile.API.Students.Endpoints.GetLessons;
 
 namespace TimeTile.API;
 
@@ -237,7 +238,8 @@ public static class Endpoints
             //.RequireAuthorization(Permissions.Students.Get);
 
         endpoints
-            .MapEndpoint<GetStudentCoursesEndpoint>();
+            .MapEndpoint<GetStudentCoursesEndpoint>()
+            .MapEndpoint<GetStudentLessonsEndpoint>();
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)

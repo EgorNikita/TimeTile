@@ -28,6 +28,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             var relations = await db.LessonsStudents
                 .AsNoTracking()
                 .Include(ls => ls.Lesson)
+                    .ThenInclude(l => l.Course)
                 .Where(cs => cs.StudentId == request.Id)
                 .ApplySorting(
                     request.SortBy,
@@ -39,6 +40,8 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                         ls.Lesson.Id,
                         ls.Lesson.TimetableUnitId,
                         ls.Lesson.CourseId,
+                        ls.Lesson.Course.SubjectId,
+                        ls.Lesson.Course.TeacherId,
                         ls.Lesson.ClassroomId,
                         ls.Lesson.LessonStatusId,
                         ls.Lesson.Date,
@@ -76,6 +79,8 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             int Id,
             int TimetableUnitId,
             int CourseId,
+            int SubjectId,
+            int TeacherId,
             int ClassroomId,
             int LessonStatusId,
             DateTimeOffset Date,

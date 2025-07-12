@@ -14,59 +14,49 @@ namespace TimeTile.API.Submissions.Endpoints.Create
             var institutionId = institutionProvider.GetInstitutionId();
             var userId = userProvider.GetUserId();
 
-            RuleFor(x => x)
-                .MustAsync(async (request, cancellationToken) =>
-                {
-                    return await db.Students
-                        .AnyAsync(s => s.Id == userId, cancellationToken);
-                })
-                .WithMessage("You are no student...")
+            RuleFor(x => x.AssignmentId)
+                .MustBeValidId()
                 .DependentRules(() =>
                 {
                     RuleFor(x => x.AssignmentId)
-                        .MustBeValidId()
+                        .MustBeValidEntityId<CreateSubmissionEndpoint.Request, Assignment>(db)
                         .DependentRules(() =>
                         {
                             RuleFor(x => x.AssignmentId)
-                                .MustBeValidEntityId<CreateSubmissionEndpoint.Request, Assignment>(db)
+                                .MustAsync(async (id, cancellationToken) =>
+                                {
+                                    return await db.Assignments
+                                        .AsNoTracking()
+                                        .AnyAsync(a => a.Id == id && a.Lesson.Course.InstitutionId == institutionId, cancellationToken);
+                                })
+                                .WithMessage("There is no Assignment with this id in your current institution")
                                 .DependentRules(() =>
                                 {
-                                    RuleFor(x => x.AssignmentId)
-                                        .MustAsync(async (id, cancellationToken) =>
+                                    RuleFor(x => x)
+                                        .MustAsync(async (request, cancellationToken) =>
                                         {
-                                            return await db.Assignments
-                                                .AsNoTracking()
-                                                .AnyAsync(a => a.Id == id && a.Lesson.Course.InstitutionId == institutionId, cancellationToken);
+                                            return await db.Lessons
+                                                .AnyAsync(l =>
+                                                    l.AssignmentId != null &&
+                                                    l.AssignmentId == request.AssignmentId &&
+                                                    l.Course.CoursesToStudents.Any(cs => cs.StudentId == userId), cancellationToken
+                                                );
                                         })
-                                        .WithMessage("There is no Assignment with this id in your current institution")
+                                        .WithMessage("There is no association between you and the passed Assignment")
                                         .DependentRules(() =>
                                         {
                                             RuleFor(x => x)
                                                 .MustAsync(async (request, cancellationToken) =>
                                                 {
-                                                    return await db.Lessons
-                                                        .AnyAsync(l =>
-                                                            l.AssignmentId != null &&
-                                                            l.AssignmentId == request.AssignmentId &&
-                                                            l.Course.CoursesToStudents.Any(cs => cs.StudentId == userId), cancellationToken
+                                                    return !await db.Submissions
+                                                        .AnyAsync(s =>
+                                                            s.AssignmentId == request.AssignmentId &&
+                                                            s.StudentId == userId &&
+                                                            s.Status != Core.Enums.SubmissionStatus.Rejected, cancellationToken
                                                         );
                                                 })
-                                                .WithMessage("There is no association between you and the passed Assignment")
-                                                .DependentRules(() =>
-                                                {
-                                                    RuleFor(x => x)
-                                                        .MustAsync(async (request, cancellationToken) =>
-                                                        {
-                                                            return !await db.Submissions
-                                                                .AnyAsync(s =>
-                                                                    s.AssignmentId == request.AssignmentId &&
-                                                                    s.StudentId == userId &&
-                                                                    s.Status != Core.Enums.SubmissionStatus.Rejected, cancellationToken
-                                                                );
-                                                        })
-                                                        .WithMessage("There is already one Submission with such data.");
-                                                }); ;
-                                        });
+                                                .WithMessage("There is already one Submission with such data.");
+                                        }); ;
                                 });
                         });
                 });
@@ -74,7 +64,12 @@ namespace TimeTile.API.Submissions.Endpoints.Create
             RuleFor(x => x)
                 .Must(x => (x.GradeValue != null && x.GradeWeight != null) || x.GradeValue == x.GradeWeight)
                 .WithMessage("Grade is not passed properly.");
-            
+
+            RuleFor(x => x)
+                .Must(x => (x.GradeValue == null && x.GradeWeight == null) || x.Status == Core.Enums.SubmissionStatus.Accepted)
+                .WithMessage("Grade can be passed only if Submission status is Accepted.");
+
+
             When(x => x.GradeValue != null, () =>
             {
                 RuleFor(x => (int)x.GradeValue!.Value)

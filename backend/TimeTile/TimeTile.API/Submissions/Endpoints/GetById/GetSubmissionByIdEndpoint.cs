@@ -53,8 +53,8 @@ namespace TimeTile.API.Submissions.Endpoints.GetById
             int StudentId,
             int? GradeId,
             string Status,
-            string StudentNote,
-            string Feedback,
+            string? StudentNote,
+            string? Feedback,
             bool HasAttachments
         );
     }

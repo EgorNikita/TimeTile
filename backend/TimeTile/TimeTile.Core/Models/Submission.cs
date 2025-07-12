@@ -16,8 +16,8 @@ namespace TimeTile.Core.Models
         public int StudentId { get; set; }
         public int? GradeId { get; set; }
         public SubmissionStatus Status { get; set; } = SubmissionStatus.NotSubmitted;
-        public string StudentNote { get; set; } = null!;
-        public string Feedback { get; set; } = null!;
+        public string? StudentNote { get; set; }
+        public string? Feedback { get; set; }
 
         public virtual Assignment Assignment { get; set; } = null!;
         public virtual Student Student { get; set; } = null!;

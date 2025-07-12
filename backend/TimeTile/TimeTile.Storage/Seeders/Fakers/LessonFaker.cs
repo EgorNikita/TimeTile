@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Bogus.DataSets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
@@ -28,6 +30,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
         private readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
 
+        // Extra fakers
+        private readonly LessonToStudentFaker _lessonToStudentFaker = new();
 
         public LessonFaker(List<Institution> institutions, List<Classroom> classrooms, List<Course> courses, List<LessonStatus> lessonStatuses, List<TimetableUnit> timetableUnits)
         {
@@ -83,16 +87,14 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                         lesson.CourseId = combination.courseId;
                         lesson.ClassroomId = combination.classroomId;
-                        lesson.TimetableUnitId = combination.timetableUnitId;
+                        lesson.TimetableUnit = timetableUnits.First(u => u.Id == combination.timetableUnitId);
                         lesson.Date = combination.date;
+                        
+                        AddAssociationsWithStudents(lesson, suitableCourses, combination.courseId);
 
                         if (faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
                         {
-                            lesson.Assignment = GenerateValidAssignment(
-                                faker,
-                                combination.date,
-                                timetableUnits.First(u => u.Id == combination.timetableUnitId)
-                            );
+                            AddAssignment(faker, lesson, combination.date);
                         }
 
                         return;
@@ -139,6 +141,51 @@ namespace TimeTile.Storage.Seeders.Fakers
             var error = Error.From("Unable to find combination.");
 
             return Result.Failure<(int, int, int, DateTimeOffset)>(error);
+        }
+
+        private void AddAssociationsWithStudents(Lesson lesson, IEnumerable<Course> courses, int courseId)
+        {
+            var course = courses.First(c => c.Id == courseId);
+
+            lesson.LessonsToStudents = course.CoursesToStudents.Select(cs =>
+            {
+                var lessonToStudent = new LessonToStudent
+                {
+                    Lesson = lesson,
+                    StudentId = cs.StudentId
+                };
+
+                // If lesson date is in the future, we do not fill CameAt, LeftAt and Grade
+                if (lesson.Date > DateTimeOffset.UtcNow)
+                {
+                    return lessonToStudent;
+                }
+
+                lessonToStudent.CameAt = _lessonToStudentFaker.GenerateValidCameAt(lesson);
+                lessonToStudent.LeftAt = _lessonToStudentFaker.GenerateValidLeftAt(lessonToStudent);
+                lessonToStudent.Grade = _lessonToStudentFaker.GenerateValidGrade(lessonToStudent);
+
+                return lessonToStudent;
+            })
+            .ToList();
+        }
+
+        private void AddAssignment(Faker faker, Lesson lesson, DateTimeOffset date)
+        {
+            lesson.Assignment = GenerateValidAssignment(
+                faker,
+                date,
+                lesson.TimetableUnit
+            );
+
+            // Add Submissions
+            lesson.Assignment.Submissions = lesson.LessonsToStudents.Select(ls => new Submission
+            {
+                StudentId = ls.StudentId,
+                Assignment = lesson.Assignment,
+                Status = SubmissionStatus.NotSubmitted
+            })
+            .ToList();
         }
 
         private string GenerateValidDescription(Faker faker)

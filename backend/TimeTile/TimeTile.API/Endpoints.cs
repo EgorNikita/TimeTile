@@ -71,6 +71,7 @@ using TimeTile.API.Submissions.Endpoints.GetById;
 using TimeTile.API.Submissions.Endpoints.GetFiles;
 using TimeTile.API.Submissions.Endpoints.Submit;
 using TimeTile.API.Submissions.Endpoints.Update;
+using TimeTile.API.Submissions.Endpoints.Review;
 
 namespace TimeTile.API;
 
@@ -369,7 +370,8 @@ public static class Endpoints
             .MapEndpoint<GetSubmissionByIdEndpoint>()
             .MapEndpoint<GetSubmissionFilesEndpoint>()
             .MapEndpoint<SubmitSubmissionEndpoint>()
-            .MapEndpoint<UpdateSubmissionEndpoint>();
+            .MapEndpoint<UpdateSubmissionEndpoint>()
+            .MapEndpoint<ReviewSubmissionEndpoint>();
     }
 
 

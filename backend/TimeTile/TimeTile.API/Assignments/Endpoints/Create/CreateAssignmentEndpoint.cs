@@ -41,6 +41,17 @@ namespace TimeTile.API.Assignments.Endpoints.Create
                 Lesson = await db.Lessons.FirstAsync(l => l.Id == request.LessonId, cancellationToken)
             };
 
+            // Create default submissions for each student in the lesson
+            assignment.Submissions = assignment.Lesson
+                .LessonsToStudents
+                .Select(ls => new Submission
+                {
+                    Assignment = assignment,
+                    StudentId = ls.StudentId,
+                    Status = Core.Enums.SubmissionStatus.NotSubmitted
+                })
+                .ToList();
+
             var hasAttachments = request.Files?.Any();
 
             if (hasAttachments.HasValue && hasAttachments.Value)

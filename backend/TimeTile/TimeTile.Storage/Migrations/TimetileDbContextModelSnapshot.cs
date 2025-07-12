@@ -25,6 +25,116 @@ namespace TimeTile.Storage.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("TimeTile.Core.Models.Assignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset>("Deadline")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deadline");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("UploadAfterDeadline")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("upload_after_deadline");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("assignments", null, t =>
+                        {
+                            t.HasCheckConstraint("CHK_Assignment_Deadline_Valid", "\"deadline\"  > \"published_at\"");
+
+                            t.HasCheckConstraint("CHK_Assignment_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
+
+                            t.HasCheckConstraint("CHK_Assignment_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
+                        });
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.AssignmentToFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssignmentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("assignment_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("FileId")
+                        .HasColumnType("integer")
+                        .HasColumnName("file_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileId")
+                        .IsUnique();
+
+                    b.HasIndex("AssignmentId", "FileId", "DeletedAt")
+                        .IsUnique()
+                        .HasDatabaseName("assignments_files_assignment_file_deleted_at_key");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("AssignmentId", "FileId", "DeletedAt"), false);
+
+                    b.ToTable("assignments_files", (string)null);
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Classroom", b =>
                 {
                     b.Property<int>("Id")
@@ -610,6 +720,10 @@ namespace TimeTile.Storage.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AssignmentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("assignment_id");
+
                     b.Property<int>("ClassroomId")
                         .HasColumnType("integer")
                         .HasColumnName("classroom_id");
@@ -638,12 +752,6 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("character varying(250)")
                         .HasColumnName("description");
 
-                    b.Property<string>("HomeworkDescription")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)")
-                        .HasColumnName("homework_description");
-
                     b.Property<int>("LessonStatusId")
                         .HasColumnType("integer")
                         .HasColumnName("lesson_status_id");
@@ -659,6 +767,9 @@ namespace TimeTile.Storage.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId")
+                        .IsUnique();
 
                     b.HasIndex("ClassroomId");
 
@@ -743,10 +854,6 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("time with time zone")
                         .HasColumnName("came_at");
 
-                    b.Property<int?>("ClassworkGradeId")
-                        .HasColumnType("integer")
-                        .HasColumnName("classwork_grade_id");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -757,9 +864,9 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<int?>("HomeworkGradeId")
+                    b.Property<int?>("GradeId")
                         .HasColumnType("integer")
-                        .HasColumnName("homework_grade_id");
+                        .HasColumnName("grade_id");
 
                     b.Property<DateTimeOffset?>("LeftAt")
                         .HasColumnType("time with time zone")
@@ -781,10 +888,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClassworkGradeId")
-                        .IsUnique();
-
-                    b.HasIndex("HomeworkGradeId")
+                    b.HasIndex("GradeId")
                         .IsUnique();
 
                     b.HasIndex("StudentId");
@@ -1053,6 +1157,120 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_Subject_Title_Valid", "\"title\" ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.Submission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssignmentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("assignment_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Feedback")
+                        .HasColumnType("text")
+                        .HasColumnName("feedback");
+
+                    b.Property<int?>("GradeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("grade_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("student_id");
+
+                    b.Property<string>("StudentNote")
+                        .HasColumnType("text")
+                        .HasColumnName("student_note");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId");
+
+                    b.HasIndex("GradeId")
+                        .IsUnique();
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("submissions", null, t =>
+                        {
+                            t.HasCheckConstraint("CHK_Submission_Grade_Valid", "\"grade_id\" IS NULL OR LOWER(\"status\") = LOWER('Accepted')");
+
+                            t.HasCheckConstraint("CHK_Submission_Status_Valid", "LOWER(\"status\") IN ('notsubmitted', 'submitted', 'submittedlate', 'accepted', 'rejected')");
+                        });
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.SubmissionToFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int>("FileId")
+                        .HasColumnType("integer")
+                        .HasColumnName("file_id");
+
+                    b.Property<int>("SubmissionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("submission_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileId")
+                        .IsUnique();
+
+                    b.HasIndex("SubmissionId", "FileId", "DeletedAt")
+                        .IsUnique()
+                        .HasDatabaseName("submissions_files_submission_file_deleted_at_key");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("SubmissionId", "FileId", "DeletedAt"), false);
+
+                    b.ToTable("submissions_files", (string)null);
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.TeacherToSubject", b =>
@@ -1398,6 +1616,27 @@ namespace TimeTile.Storage.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.AssignmentToFile", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.Assignment", "Assignment")
+                        .WithMany("AssignmentToFiles")
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("assignments_files_assignment_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.File", "File")
+                        .WithOne("AssignmentToFile")
+                        .HasForeignKey("TimeTile.Core.Models.AssignmentToFile", "FileId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("assignments_files_file_id_fkey");
+
+                    b.Navigation("Assignment");
+
+                    b.Navigation("File");
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Classroom", b =>
                 {
                     b.HasOne("TimeTile.Core.Models.ClassroomType", "ClassroomType")
@@ -1551,6 +1790,12 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.Lesson", b =>
                 {
+                    b.HasOne("TimeTile.Core.Models.Assignment", "Assignment")
+                        .WithOne("Lesson")
+                        .HasForeignKey("TimeTile.Core.Models.Lesson", "AssignmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("lessons_assignment_id_fkey");
+
                     b.HasOne("TimeTile.Core.Models.Classroom", "Classroom")
                         .WithMany("Lessons")
                         .HasForeignKey("ClassroomId")
@@ -1579,6 +1824,8 @@ namespace TimeTile.Storage.Migrations
                         .IsRequired()
                         .HasConstraintName("lessons_timetable_unit_id_fkey");
 
+                    b.Navigation("Assignment");
+
                     b.Navigation("Classroom");
 
                     b.Navigation("Course");
@@ -1602,17 +1849,11 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.LessonToStudent", b =>
                 {
-                    b.HasOne("TimeTile.Core.Models.Grade", "ClassworkGrade")
-                        .WithOne("LessonToStudentClasswork")
-                        .HasForeignKey("TimeTile.Core.Models.LessonToStudent", "ClassworkGradeId")
+                    b.HasOne("TimeTile.Core.Models.Grade", "Grade")
+                        .WithOne("LessonToStudent")
+                        .HasForeignKey("TimeTile.Core.Models.LessonToStudent", "GradeId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("lessons_students_classwork_grade_id_fkey");
-
-                    b.HasOne("TimeTile.Core.Models.Grade", "HomeworkGrade")
-                        .WithOne("LessonToStudentHomework")
-                        .HasForeignKey("TimeTile.Core.Models.LessonToStudent", "HomeworkGradeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("lessons_students_homework_grade_id_fkey");
+                        .HasConstraintName("lessons_students_grade_id_fkey");
 
                     b.HasOne("TimeTile.Core.Models.Lesson", "Lesson")
                         .WithMany("LessonsToStudents")
@@ -1628,9 +1869,7 @@ namespace TimeTile.Storage.Migrations
                         .IsRequired()
                         .HasConstraintName("lessons_students_student_id_fkey");
 
-                    b.Navigation("ClassworkGrade");
-
-                    b.Navigation("HomeworkGrade");
+                    b.Navigation("Grade");
 
                     b.Navigation("Lesson");
 
@@ -1699,6 +1938,56 @@ namespace TimeTile.Storage.Migrations
                         .HasConstraintName("subjects_institution_id_fkey");
 
                     b.Navigation("Institution");
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.Submission", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.Assignment", "Assignment")
+                        .WithMany("Submissions")
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("submissions_assignment_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.Grade", "Grade")
+                        .WithOne("Submission")
+                        .HasForeignKey("TimeTile.Core.Models.Submission", "GradeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("submissions_grade_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.Student", "Student")
+                        .WithMany("Submissions")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("submissions_student_id_fkey");
+
+                    b.Navigation("Assignment");
+
+                    b.Navigation("Grade");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("TimeTile.Core.Models.SubmissionToFile", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.File", "File")
+                        .WithOne("SubmissionToFile")
+                        .HasForeignKey("TimeTile.Core.Models.SubmissionToFile", "FileId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("submissions_files_file_id_fkey");
+
+                    b.HasOne("TimeTile.Core.Models.Submission", "Submission")
+                        .WithMany("SubmissionToFiles")
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("submissions_files_submission_id_fkey");
+
+                    b.Navigation("File");
+
+                    b.Navigation("Submission");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.TeacherToSubject", b =>
@@ -1809,6 +2098,16 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Group");
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.Assignment", b =>
+                {
+                    b.Navigation("AssignmentToFiles");
+
+                    b.Navigation("Lesson")
+                        .IsRequired();
+
+                    b.Navigation("Submissions");
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Classroom", b =>
                 {
                     b.Navigation("InstitutionMembers");
@@ -1830,9 +2129,13 @@ namespace TimeTile.Storage.Migrations
 
             modelBuilder.Entity("TimeTile.Core.Models.File", b =>
                 {
+                    b.Navigation("AssignmentToFile");
+
                     b.Navigation("ClassroomType");
 
                     b.Navigation("Course");
+
+                    b.Navigation("SubmissionToFile");
 
                     b.Navigation("User");
                 });
@@ -1841,9 +2144,9 @@ namespace TimeTile.Storage.Migrations
                 {
                     b.Navigation("CourseToStudent");
 
-                    b.Navigation("LessonToStudentClasswork");
+                    b.Navigation("LessonToStudent");
 
-                    b.Navigation("LessonToStudentHomework");
+                    b.Navigation("Submission");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.Group", b =>
@@ -1905,6 +2208,11 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("TeachersToSubject");
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.Submission", b =>
+                {
+                    b.Navigation("SubmissionToFiles");
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.Term", b =>
                 {
                     b.Navigation("Courses");
@@ -1934,6 +2242,8 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("CoursesToStudents");
 
                     b.Navigation("LessonsToStudents");
+
+                    b.Navigation("Submissions");
                 });
 #pragma warning restore 612, 618
         }

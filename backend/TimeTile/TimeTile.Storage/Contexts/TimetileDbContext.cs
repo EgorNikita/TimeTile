@@ -24,6 +24,10 @@ public sealed partial class TimetileDbContext : DbContext
             .UseLazyLoadingProxies()
             .EnableSensitiveDataLogging();
 
+    public DbSet<Assignment> Assignments { get; set; } = null!;
+
+    public DbSet<AssignmentToFile> AssignmentsFiles { get; set; } = null!;
+
     public DbSet<Classroom> Classrooms { get; set; } = null!;
 
     public DbSet<ClassroomType> ClassroomTypes { get; set; } = null!;
@@ -54,7 +58,11 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<Student> Students { get; set; } = null!; 
 
-    public DbSet<Subject> Subjects { get; set; } = null!; 
+    public DbSet<Subject> Subjects { get; set; } = null!;
+
+    public DbSet<Submission> Submissions { get; set; } = null!;
+
+    public DbSet<SubmissionToFile> SubmissionsFiles { get; set; } = null!;
 
     public DbSet<InstitutionMember> InstitutionMembers { get; set; } = null!;
 

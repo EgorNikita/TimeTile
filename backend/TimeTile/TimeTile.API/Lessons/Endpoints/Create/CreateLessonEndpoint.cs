@@ -35,7 +35,6 @@ namespace TimeTile.API.Lessons.Endpoints.Create
                 LessonStatusId = request.LessonStatusId,
                 Date = request.Date.ToUniversalTime(),
                 Description = request.Description.Trim(),
-                HomeworkDescription = request.HomeworkDescription.Trim(),
                 LessonsToStudents = db.CoursesStudents
                     .Where(cs => cs.CourseId == request.CourseId)
                     .Select(cs => new LessonToStudent { StudentId = cs.StudentId })
@@ -54,7 +53,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
                 lesson.LessonStatusId,
                 lesson.Date,
                 lesson.Description,
-                lesson.HomeworkDescription
+                lesson.AssignmentId
             );
 
             var result = Result.Success(response);
@@ -68,8 +67,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             int ClassroomId,
             int LessonStatusId,
             DateTimeOffset Date,
-            string Description,
-            string HomeworkDescription
+            string Description
         );
 
         private sealed record Response(
@@ -80,7 +78,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             int LessonStatusId,
             DateTimeOffset Date,
             string Description,
-            string HomeworkDescription
+            int? AssignmentId
         );
     }
 }

@@ -8,6 +8,8 @@ public partial class Student : User
 
     public virtual Group? Group { get; set; }
 
+    public virtual ICollection<Submission> Submissions { get; set; } = new List<Submission>();
+
     // LessonsToStudents
     public virtual ICollection<LessonToStudent> LessonsToStudents { get; set; } = new List<LessonToStudent>();
 

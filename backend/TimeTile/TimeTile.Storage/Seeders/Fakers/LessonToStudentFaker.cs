@@ -9,7 +9,7 @@ using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
-    internal class LessonToStudentFaker : BaseFaker<LessonToStudent>
+    internal class LessonToStudentFaker
     {
         // CameAt constraints
         private const float CAME_AT_TIME_POSSIBILITY = 0.65f;
@@ -21,73 +21,36 @@ namespace TimeTile.Storage.Seeders.Fakers
         // ClassworkGrade constraints
         private const float CLASSWORK_GRADE_PRESENCE_POSSIBILITY = 0.8f;
 
-        // HomeworkGrade constraints
-        private const float HOMEWORK_GRADE_PRESENCE_POSSIBILITY = 0.5f;
+        // Extra fakers
+        private readonly GradeFaker _gradeFaker = new GradeFaker(GradeType.Classwork);
+        private readonly Faker _faker = new Faker();
 
-        // Pre generate all possible combinations
-        private readonly List<(int LessonId, int StudentId)> _possiblePairs = new();
-        private int _actualIndex = 0;
-
-        private readonly GradeFaker _classworkGradeFaker = new GradeFaker(GradeType.Classwork);
-        private readonly GradeFaker _homeworkGradeFaker = new GradeFaker(GradeType.Homework);
-
-        public LessonToStudentFaker(List<Lesson> lessons, List<Student> students)
+        public DateTimeOffset? GenerateValidCameAt(Lesson lesson)
         {
-            foreach (var lesson in lessons)
-            {
-                foreach (var student in lesson.Course.Students)
-                {
-                    if (students.Any(s => s.Id == student.Id))
-                    {
-                        _possiblePairs.Add((lesson.Id, student.Id));
-                    }
-                }
-            }
-
-            _possiblePairs = _possiblePairs.OrderBy(_ => Guid.NewGuid()).ToList();
-
-            _faker
-                .Rules((faker, lessonToStudent) =>
-                {
-                    (int, int) element = _possiblePairs.ElementAt(_actualIndex);
-
-                    lessonToStudent.Lesson = lessons.First(l => l.Id == element.Item1);
-                    lessonToStudent.StudentId = element.Item2;
-
-                    _actualIndex++;
-                })
-                .RuleFor(lts => lts.CameAt, GenerateValidCameAt)
-                .RuleFor(lts => lts.LeftAt, GenerateValidLeftAt)
-                .RuleFor(lts => lts.ClassworkGrade, GenerateValidClassworkGrade)
-                .RuleFor(lts => lts.HomeworkGrade, GenerateValidHomeworkGrade);
-        }
-
-        private DateTimeOffset? GenerateValidCameAt(Faker faker, LessonToStudent lessonToStudent)
-        {
-            if (IsLessonStartFromFuture(lessonToStudent))
+            if (IsLessonStartFromFuture(lesson))
             {
                 return null;
             }
 
-            if (faker.Random.Bool(CAME_AT_PRESENCE_POSSIBILITY))
+            if (_faker.Random.Bool(CAME_AT_PRESENCE_POSSIBILITY))
             {
-                DateTimeOffset startTime = lessonToStudent.Lesson.TimetableUnit.StartTime;
-                DateTimeOffset endTime = lessonToStudent.Lesson.TimetableUnit.EndTime;
+                DateTimeOffset startTime = lesson.TimetableUnit.StartTime;
+                DateTimeOffset endTime = lesson.TimetableUnit.EndTime;
 
-                if (faker.Random.Bool(CAME_AT_TIME_POSSIBILITY))
+                if (_faker.Random.Bool(CAME_AT_TIME_POSSIBILITY))
                 {
                     return startTime;
                 }
 
-                return faker.Date.BetweenOffset(startTime.AddMinutes(1), endTime);
+                return _faker.Date.BetweenOffset(startTime.AddMinutes(1), endTime);
             }
 
             return null;
         }
 
-        private DateTimeOffset? GenerateValidLeftAt(Faker faker, LessonToStudent lessonToStudent)
+        public DateTimeOffset? GenerateValidLeftAt(LessonToStudent lessonToStudent)
         {
-            if (IsLessondEndFromFuture(lessonToStudent))
+            if (IsLessondEndFromFuture(lessonToStudent.Lesson))
             {
                 return null;
             }
@@ -96,7 +59,7 @@ namespace TimeTile.Storage.Seeders.Fakers
             {
                 DateTimeOffset endTime = lessonToStudent.Lesson.TimetableUnit.EndTime;
 
-                if (faker.Random.Bool(STAYED_TILL_THE_END))
+                if (_faker.Random.Bool(STAYED_TILL_THE_END))
                 {
                     return endTime;
                 }
@@ -104,56 +67,41 @@ namespace TimeTile.Storage.Seeders.Fakers
                 if (lessonToStudent.CameAt >= endTime.AddMinutes(-2))
                     return endTime;
 
-                return faker.Date.BetweenOffset(((DateTimeOffset)lessonToStudent.CameAt).AddMinutes(1), endTime.AddMinutes(-1));
+                return _faker.Date.BetweenOffset(((DateTimeOffset)lessonToStudent.CameAt).AddMinutes(1), endTime.AddMinutes(-1));
             }
 
             return null;
         }
 
-        private Grade? GenerateValidClassworkGrade(Faker faker, LessonToStudent lessonToStudent)
+        public Grade? GenerateValidGrade(LessonToStudent lessonToStudent)
         {
-            if (IsLessondEndFromFuture(lessonToStudent) 
+            if (IsLessondEndFromFuture(lessonToStudent.Lesson) 
                 || lessonToStudent.CameAt is null)
             {
                 return null;
             }
 
-            if (faker.Random.Bool(CLASSWORK_GRADE_PRESENCE_POSSIBILITY))
+            if (_faker.Random.Bool(CLASSWORK_GRADE_PRESENCE_POSSIBILITY))
             {
-                return _classworkGradeFaker.Generate(1).First();
+                return _gradeFaker.Generate(1).First();
             }
 
             return null;
         }
 
-        private Grade? GenerateValidHomeworkGrade(Faker faker, LessonToStudent lessonToStudent)
-        {
-            if (IsLessondEndFromFuture(lessonToStudent))
-            {
-                return null;
-            }
-
-            if (faker.Random.Bool(HOMEWORK_GRADE_PRESENCE_POSSIBILITY))
-            {
-                return _homeworkGradeFaker.Generate(1).First();
-            }
-
-            return null;
-        }
-
-        private bool IsLessondEndFromFuture(LessonToStudent lessonToStudent)
+        private bool IsLessondEndFromFuture(Lesson lesson)
         {
             return IsFromFuture(
-                lessonToStudent.Lesson.Date,
-                lessonToStudent.Lesson.TimetableUnit.EndTime
+                lesson.Date,
+                lesson.TimetableUnit.EndTime
             );
         }
 
-        private bool IsLessonStartFromFuture(LessonToStudent lessonToStudent)
+        private bool IsLessonStartFromFuture(Lesson lesson)
         {
             return IsFromFuture(
-                lessonToStudent.Lesson.Date,
-                lessonToStudent.Lesson.TimetableUnit.StartTime
+                lesson.Date,
+                lesson.TimetableUnit.StartTime
             );
         }
 
@@ -167,18 +115,6 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             return onlyDate > currentDate ||
                 (onlyDate == currentDate && onlyTime > currentTime);
-        }
-
-        public override List<LessonToStudent> Generate(int count)
-        {
-            int rest = _possiblePairs.Count - _actualIndex;
-
-            if (count > rest)
-            {
-                return base.Generate(rest);
-            }
-
-            return base.Generate(count);
         }
     }
 }

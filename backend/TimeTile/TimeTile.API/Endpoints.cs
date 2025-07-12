@@ -61,6 +61,16 @@ using TimeTile.API.Courses.Endpoints.UpdateCourseToStudent;
 using TimeTile.API.Groups.Endpoints.UpdateStudents;
 using TimeTile.API.Groups.Endpoints.UpdateInstitutionMembers;
 using TimeTile.API.Subjects.Endpoints.GetBulk;
+using TimeTile.API.Assignments.Endpoints.Get;
+using TimeTile.API.Assignments.Endpoints.GetById;
+using TimeTile.API.Assignments.Endpoints.GetFiles;
+using TimeTile.API.Assignments.Endpoints.Create;
+using TimeTile.API.Assignments.Endpoints.Update;
+using TimeTile.API.Submissions.Endpoints.Get;
+using TimeTile.API.Submissions.Endpoints.GetById;
+using TimeTile.API.Submissions.Endpoints.GetFiles;
+using TimeTile.API.Submissions.Endpoints.Submit;
+using TimeTile.API.Submissions.Endpoints.Review;
 
 namespace TimeTile.API;
 
@@ -69,12 +79,14 @@ public static class Endpoints
     private static class Tags
     {
         public const string Authentication = "Authentication";
+        public const string Assignments = "Assignments";
         public const string ClassroomTypes = "ClassroomTypes";
         public const string LessonStatuses = "LessonStatuses";
         public const string Terms = "Terms";
         public const string TimetableUnits = "TimetableUnits";
         public const string Classrooms = "Classrooms";
         public const string Students = "Students";
+        public const string Submissions = "Submissions";
         public const string Roles = "Roles";
         public const string Institutions = "Institutions";
         public const string Files = "Files";
@@ -90,12 +102,14 @@ public static class Endpoints
     public static class Routes
     {
         public const string Auth = "/auth";
+        public const string Assignments = "/assignments";
         public const string ClassroomTypes = "/classroom-types";
         public const string LessonStatuses = "/lesson-statuses";
         public const string Terms = "/terms";
         public const string TimetableUnits = "/timetable-units";
         public const string Classrooms = "/classrooms";
         public const string Students = "/students";
+        public const string Submissions = "/submissions";
         public const string Roles = "/roles";
         public const string Institutions = "/institutions";
         public const string Files = "/files";
@@ -133,6 +147,8 @@ public static class Endpoints
         app.MapGroupsEndpoints();
         app.MapLessonsEndpoints();
         app.MapCoursesEndpoints();
+        app.MapAssignmentsEndpoints();
+        app.MapSubmissionsEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -334,6 +350,28 @@ public static class Endpoints
             .MapEndpoint<UpdateCourseToStudentEndpoint>();
     }
 
+    private static void MapAssignmentsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Assignments, Tags.Assignments);
+
+        endpoints.MapEndpoint<GetAssignmentsEndpoint>()
+            .MapEndpoint<GetAssignmentByIdEndpoint>()
+            .MapEndpoint<GetAssignmentFilesEndpoint>()
+            .MapEndpoint<CreateAssignmentEndpoint>()
+            .MapEndpoint<UpdateAssignmentEndpoint>();
+    }
+
+    private static void MapSubmissionsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Submissions, Tags.Submissions);
+
+        endpoints.MapEndpoint<GetSubmissionsEndpoint>()
+            .MapEndpoint<GetSubmissionByIdEndpoint>()
+            .MapEndpoint<GetSubmissionFilesEndpoint>()
+            .MapEndpoint<SubmitSubmissionEndpoint>()
+            .MapEndpoint<ReviewSubmissionEndpoint>();
+    }
+
 
     #region Helper Extensions
 
@@ -360,7 +398,12 @@ public static class Endpoints
     {
         return group.AddEndpointFilter<RequireUserIdFilter>();
     }
-    
+
+    public static RouteHandlerBuilder RequireUserId(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter<RequireUserIdFilter>();
+    }
+
     private static RouteGroupBuilder MapEndpoint<TEndpoint>(this RouteGroupBuilder group)
         where TEndpoint : IEndpoint
     {

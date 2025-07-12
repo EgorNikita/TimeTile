@@ -52,7 +52,7 @@ namespace TimeTile.API.Lessons.Endpoints.Update
                 lesson.LessonStatusId,
                 lesson.Date,
                 lesson.Description,
-                lesson.HomeworkDescription
+                lesson.AssignmentId
             );
 
             var result = Result.Success(response);
@@ -92,9 +92,6 @@ namespace TimeTile.API.Lessons.Endpoints.Update
 
             if (request.Description is not null)
                 lesson.Description = request.Description.Trim();
-
-            if (request.HomeworkDescription is not null)
-                lesson.HomeworkDescription = request.HomeworkDescription.Trim();
         }
 
         private static async Task<bool> IsDuplicate(Lesson lesson, TimetileDbContext db, CancellationToken cancellationToken)
@@ -120,8 +117,7 @@ namespace TimeTile.API.Lessons.Endpoints.Update
             int? ClassroomId,
             int? LessonStatusId,
             DateTimeOffset? Date,
-            string? Description,
-            string? HomeworkDescription
+            string? Description
         );
 
         private sealed record Response(
@@ -132,7 +128,7 @@ namespace TimeTile.API.Lessons.Endpoints.Update
             int LessonStatusId,
             DateTimeOffset Date,
             string Description,
-            string HomeworkDescription
+            int? AssignmentId
         );
     }
 }

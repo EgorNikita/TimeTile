@@ -13,9 +13,9 @@ public partial class Grade : AuditableEntity, IEntity
 
     public GradeType Type { get; set; }
 
-    public virtual LessonToStudent? LessonToStudentClasswork { get; set; }
-
-    public virtual LessonToStudent? LessonToStudentHomework { get; set; }
+    public virtual LessonToStudent? LessonToStudent { get; set; }
     
     public virtual CourseToStudent? CourseToStudent { get; set; }
+
+    public virtual Submission? Submission { get; set; }
 }

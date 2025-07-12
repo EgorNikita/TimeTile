@@ -38,9 +38,9 @@ namespace TimeTile.Storage.Configurations
                 .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength)
                 .HasColumnName("description");
 
-            builder.Property(e => e.HomeworkDescription)
-                .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength)
-                .HasColumnName("homework_description");
+            builder.Property(e => e.AssignmentId)
+                .HasColumnName("assignment_id")
+                .IsRequired(false);
 
             builder.Property(e => e.LessonStatusId)
                 .HasColumnName("lesson_status_id");
@@ -72,6 +72,12 @@ namespace TimeTile.Storage.Configurations
                 .HasForeignKey(d => d.TimetableUnitId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("lessons_timetable_unit_id_fkey");
+
+            builder.HasOne(d => d.Assignment)
+                .WithOne(p => p.Lesson)
+                .HasForeignKey<Lesson>(d => d.AssignmentId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("lessons_assignment_id_fkey");
         }
     }
 }

@@ -42,7 +42,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
                     x.LessonStatusId,
                     x.Date,
                     x.Description,
-                    x.HomeworkDescription
+                    x.AssignmentId
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
@@ -130,7 +130,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
             int LessonStatusId,
             DateTimeOffset Date,
             string Description,
-            string HomeworkDescription
+            int? AssignmentId
         );
     }
 }

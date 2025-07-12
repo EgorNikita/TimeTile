@@ -33,8 +33,7 @@ namespace TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent
             var lessonStudent = await db.LessonsStudents
                 .Include(ls => ls.Student)
                     .ThenInclude(s => s.Avatar)
-                .Include(ls => ls.ClassworkGrade)
-                .Include(ls => ls.HomeworkGrade)
+                .Include(ls => ls.Grade)
                 .Include(ls => ls.Lesson)
                 .FirstAsync(ls =>
                     ls.StudentId == parameters.StudentId &&
@@ -76,8 +75,7 @@ namespace TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent
                 ),
                 lessonStudent.CameAt,
                 lessonStudent.LeftAt,
-                lessonStudent.ClassworkGradeId,
-                lessonStudent.HomeworkGradeId
+                lessonStudent.GradeId
             );
 
             var result = Result.Success(response);
@@ -104,18 +102,18 @@ namespace TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent
             }
 
             // If user included ClassworkGrade to request's body
-            if (request.ClassworkGrade.WasProvided)
+            if (request.Grade.WasProvided)
             {
-                if (lessonStudent.ClassworkGrade is not null)
+                if (lessonStudent.Grade is not null)
                 {
-                    db.Grades.Remove(lessonStudent.ClassworkGrade);
+                    db.Grades.Remove(lessonStudent.Grade);
                 }
 
-                var grade = request.ClassworkGrade.Value;
+                var grade = request.Grade.Value;
 
                 if (grade is null)
                 {
-                    lessonStudent.ClassworkGrade = null;
+                    lessonStudent.Grade = null;
                 }
                 else
                 {
@@ -128,36 +126,7 @@ namespace TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent
 
                     await db.Grades.AddAsync(gradeToAdd, cancellationToken);
 
-                    lessonStudent.ClassworkGrade = gradeToAdd;
-                }
-            }
-
-            // If user included HomeworkGrade to request's body
-            if (request.HomeworkGrade.WasProvided)
-            {
-                if (lessonStudent.HomeworkGrade is not null)
-                {
-                    db.Grades.Remove(lessonStudent.HomeworkGrade);
-                }
-
-                var grade = request.HomeworkGrade.Value;
-
-                if (grade is null)
-                {
-                    lessonStudent.HomeworkGrade = null;
-                }
-                else
-                {
-                    var gradeToAdd = new Grade
-                    {
-                        Value = grade.Value,
-                        Weight = grade.Weight,
-                        Type = GradeType.Homework
-                    };
-
-                    await db.Grades.AddAsync(gradeToAdd, cancellationToken);
-
-                    lessonStudent.HomeworkGrade = gradeToAdd;
+                    lessonStudent.Grade = gradeToAdd;
                 }
             }
         }
@@ -170,8 +139,7 @@ namespace TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent
         public sealed record RequestBody(
             PatchOptionalProperty<DateTimeOffset?> CameAt,
             PatchOptionalProperty<DateTimeOffset?> LeftAt,
-            PatchOptionalProperty<GradeInfo?> ClassworkGrade,
-            PatchOptionalProperty<GradeInfo?> HomeworkGrade
+            PatchOptionalProperty<GradeInfo?> Grade
         );
 
         public sealed record GradeInfo(
@@ -184,8 +152,7 @@ namespace TimeTile.API.Lessons.Endpoints.UpdateLessonToStudent
             StudentInfo Student,
             DateTimeOffset? CameAt,
             DateTimeOffset? LeftAt,
-            int? ClassworkGradeId,
-            int? HomeworkGradeId
+            int? GradeId
         );
 
         private sealed record StudentInfo(

@@ -8,6 +8,6 @@
         LessonStatusId,
         Date,
         Description,
-        HomeworkDescription
+        AssignmentId
     }
 }

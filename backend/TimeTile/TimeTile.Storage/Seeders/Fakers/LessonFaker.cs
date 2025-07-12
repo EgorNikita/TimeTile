@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Bogus.DataSets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,12 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
 
 namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class LessonFaker : BaseFaker<Lesson>
     {
+        // Assignment constraints
+        private const float ASSIGNMENT_PRESENCE_POSSIBILITY = 0.6f;
+        private const int DEADLINE_DAYS = 7;
+        private const float UPLOAD_AFTER_DEADLINE_POSSIBILITY = 0.8f;
+
         // Cashing for optimization
         private readonly Dictionary<int, List<LessonStatus>> _institutionLessonStatuses = new();
 
@@ -23,6 +30,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
         private readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
 
+        // Extra fakers
+        private readonly LessonToStudentFaker _lessonToStudentFaker = new();
 
         public LessonFaker(List<Institution> institutions, List<Classroom> classrooms, List<Course> courses, List<LessonStatus> lessonStatuses, List<TimetableUnit> timetableUnits)
         {
@@ -78,16 +87,22 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                         lesson.CourseId = combination.courseId;
                         lesson.ClassroomId = combination.classroomId;
-                        lesson.TimetableUnitId = combination.timetableUnitId;
+                        lesson.TimetableUnit = timetableUnits.First(u => u.Id == combination.timetableUnitId);
                         lesson.Date = combination.date;
+                        
+                        AddAssociationsWithStudents(lesson, suitableCourses, combination.courseId);
+
+                        if (faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
+                        {
+                            AddAssignment(faker, lesson, combination.date);
+                        }
 
                         return;
                     }
 
                     throw new ArgumentException("It is impossible to find combination for all dependencies: classroom, course, timetableUnit and date");
                 })
-                .RuleFor(l => l.Description, GenerateValidDescription)
-                .RuleFor(l => l.HomeworkDescription, GenerateValidHomeworkDescription);
+                .RuleFor(l => l.Description, GenerateValidDescription);
         }
 
         private Result<(int CourseId, int ClassroomId, int TimetableUnitId, DateTimeOffset Date)> FindPossibleCombinationOfDependencies(IEnumerable<Course> suitableCourses, IEnumerable<TimetableUnit> suitableTimetableUnits, IEnumerable<Classroom> classrooms)
@@ -128,6 +143,51 @@ namespace TimeTile.Storage.Seeders.Fakers
             return Result.Failure<(int, int, int, DateTimeOffset)>(error);
         }
 
+        private void AddAssociationsWithStudents(Lesson lesson, IEnumerable<Course> courses, int courseId)
+        {
+            var course = courses.First(c => c.Id == courseId);
+
+            lesson.LessonsToStudents = course.CoursesToStudents.Select(cs =>
+            {
+                var lessonToStudent = new LessonToStudent
+                {
+                    Lesson = lesson,
+                    StudentId = cs.StudentId
+                };
+
+                // If lesson date is in the future, we do not fill CameAt, LeftAt and Grade
+                if (lesson.Date > DateTimeOffset.UtcNow)
+                {
+                    return lessonToStudent;
+                }
+
+                lessonToStudent.CameAt = _lessonToStudentFaker.GenerateValidCameAt(lesson);
+                lessonToStudent.LeftAt = _lessonToStudentFaker.GenerateValidLeftAt(lessonToStudent);
+                lessonToStudent.Grade = _lessonToStudentFaker.GenerateValidGrade(lessonToStudent);
+
+                return lessonToStudent;
+            })
+            .ToList();
+        }
+
+        private void AddAssignment(Faker faker, Lesson lesson, DateTimeOffset date)
+        {
+            lesson.Assignment = GenerateValidAssignment(
+                faker,
+                date,
+                lesson.TimetableUnit
+            );
+
+            // Add Submissions
+            lesson.Assignment.Submissions = lesson.LessonsToStudents.Select(ls => new Submission
+            {
+                StudentId = ls.StudentId,
+                Assignment = lesson.Assignment,
+                Status = SubmissionStatus.NotSubmitted
+            })
+            .ToList();
+        }
+
         private string GenerateValidDescription(Faker faker)
         {
             string description = $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
@@ -137,13 +197,22 @@ namespace TimeTile.Storage.Seeders.Fakers
             return TruncateToMaxLength(description, maxLength);
         }
 
-        private string GenerateValidHomeworkDescription(Faker faker)
+        private Assignment GenerateValidAssignment(Faker faker, DateTimeOffset date, TimetableUnit timetableUnit)
         {
-            string description = faker.Lorem.Paragraphs(1, 2);
+            string title = faker.Lorem.Sentence(3, 5);
+            string description = faker.Lorem.Sentences(3);
+            DateTimeOffset publishedAt = new DateTimeOffset(date.UtcDateTime.Date + timetableUnit.EndTime.UtcDateTime.TimeOfDay);
+            DateTimeOffset deadline = publishedAt.AddDays(DEADLINE_DAYS);
+            bool uploadAfterDeadline = faker.Random.Bool(UPLOAD_AFTER_DEADLINE_POSSIBILITY);
 
-            int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
-
-            return TruncateToMaxLength(description, maxLength);
+            return new Assignment
+            {
+                Title = title,
+                Description = description,
+                PublishedAt = publishedAt,
+                Deadline = deadline,
+                UploadAfterDeadline = uploadAfterDeadline,
+            };
         }
     }
 }

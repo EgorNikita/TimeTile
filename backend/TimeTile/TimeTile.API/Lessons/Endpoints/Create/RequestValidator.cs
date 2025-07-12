@@ -52,9 +52,6 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             RuleFor(x => x.Description)
                 .MustBeValidDescription();
 
-            RuleFor(x => x.HomeworkDescription)
-                .MustBeValidDescription();
-
             // Unique constraint
             RuleFor(x => x)
                .MustAsync(async (request, cancellationToken) =>

@@ -69,6 +69,11 @@ namespace TimeTile.API.Submissions.Endpoints.Create
                 .Must(x => (x.GradeValue == null && x.GradeWeight == null) || x.Status == Core.Enums.SubmissionStatus.Accepted)
                 .WithMessage("Grade can be passed only if Submission status is Accepted.");
 
+            RuleFor(x => x.StudentNote)
+                .MustBeValidString();
+
+            RuleFor(x => x.Feedback)
+                .MustBeValidString();
 
             When(x => x.GradeValue != null, () =>
             {

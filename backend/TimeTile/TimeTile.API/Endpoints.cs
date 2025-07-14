@@ -73,6 +73,7 @@ using TimeTile.API.Students.Endpoints.GetLessons;
 using TimeTile.API.Lessons.Endpoints.GetStudents;
 using TimeTile.API.Submissions.Endpoints.Submit;
 using TimeTile.API.Submissions.Endpoints.Review;
+using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 
 namespace TimeTile.API;
 
@@ -241,7 +242,8 @@ public static class Endpoints
 
         endpoints
             .MapEndpoint<GetStudentCoursesEndpoint>()
-            .MapEndpoint<GetStudentLessonsEndpoint>();
+            .MapEndpoint<GetStudentLessonsEndpoint>()
+            .MapEndpoint<GetAttendanceCountEndpoint>();
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)

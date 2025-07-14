@@ -23,6 +23,17 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                     RuleFor(x => x.Id)
                         .MustBeValidOptionalInstitutionEntityId<GetStudentLessonsEndpoint.Request, Student>(db, institutionId);
                 });
+
+            // CourseIds
+            RuleFor(x => x.CourseIds)
+                .MustBeValidOptionalListOfIds()
+                .DependentRules(() =>
+                {
+                    When(x => x.CourseIds != null, () => {
+                        RuleFor(x => x.CourseIds!)
+                            .MustBeValidInstitutionEntityIdsList<GetStudentLessonsEndpoint.Request, Course>(db, institutionId);
+                    });
+                });
         }
     }
 }

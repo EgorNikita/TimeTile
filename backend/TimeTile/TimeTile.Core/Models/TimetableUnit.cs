@@ -16,5 +16,5 @@ public partial class TimetableUnit : AuditableEntity, IInstitutionEntity
     
     public virtual Institution Institution { get; set; } = null!;
 
-    public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
+    public virtual ICollection<LessonToTimetableUnit> LessonsToTimetableUnit { get; set; } = new List<LessonToTimetableUnit>();
 }

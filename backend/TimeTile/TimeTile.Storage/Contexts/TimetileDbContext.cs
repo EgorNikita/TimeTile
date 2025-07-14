@@ -48,7 +48,9 @@ public sealed partial class TimetileDbContext : DbContext
 
     public DbSet<LessonStatus> LessonStatuses { get; set; } = null!; 
 
-    public DbSet<LessonToStudent> LessonsStudents { get; set; } = null!; 
+    public DbSet<LessonToStudent> LessonsStudents { get; set; } = null!;
+
+    public DbSet<LessonToTimetableUnit> LessonsTimetableUnits { get; set; } = null!;
 
     public DbSet<Permission> Permissions { get; set; } = null!; 
     

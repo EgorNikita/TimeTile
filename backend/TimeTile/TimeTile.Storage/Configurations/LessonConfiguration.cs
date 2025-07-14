@@ -14,11 +14,6 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.CourseId, e.TimetableUnitId, e.Date, e.DeletedAt })
-                .HasDatabaseName("lessons_course_timetable_date_deleted_at_key")
-                .AreNullsDistinct(false)
-                .IsUnique();
-
             // Property Configurations
             builder.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
@@ -45,9 +40,6 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.LessonStatusId)
                 .HasColumnName("lesson_status_id");
 
-            builder.Property(e => e.TimetableUnitId)
-                .HasColumnName("timetable_unit_id");
-
             // Relationship Configurations
             builder.HasOne(d => d.Classroom)
                 .WithMany(p => p.Lessons)
@@ -66,12 +58,6 @@ namespace TimeTile.Storage.Configurations
                 .HasForeignKey(d => d.LessonStatusId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("lessons_lesson_status_id_fkey");
-
-            builder.HasOne(d => d.TimetableUnit)
-                .WithMany(p => p.Lessons)
-                .HasForeignKey(d => d.TimetableUnitId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("lessons_timetable_unit_id_fkey");
 
             builder.HasOne(d => d.Assignment)
                 .WithOne(p => p.Lesson)

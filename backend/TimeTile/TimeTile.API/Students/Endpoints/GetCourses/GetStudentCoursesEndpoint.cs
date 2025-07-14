@@ -35,27 +35,77 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
                     request.SortBy,
                     request.Descending
                 )
-                .Select(cs => new Response(
+                .Select(cs => new {
                     cs.CourseId,
-                    new CourseInfo(
-                        cs.Course.Id,
-                        cs.Course.Title,
-                        cs.Course.SubjectId,
-                        cs.Course.TeacherId,
-                        cs.Course.IsAdvanced,
-                        cs.Course.TermId,
-                        courseService.GetIconUrl(cs.Course)
-                    ),
+                    cs.Course,
                     cs.ExamGradeId,
                     cs.HasExam,
                     cs.PositionX,
                     cs.PositionY
-                ))
+                })
                 .ToPagedListAsync(request, cancellationToken);
 
-            var result = Result.Success(relations);
+            var responses = new List<Response>();
+
+            foreach (var item in relations.Items)
+            {
+                var averageGrade = await CalculateAverageGrade(request.Id, item.CourseId, db, cancellationToken);
+
+                responses.Add(new Response(
+                    item.CourseId,
+                    new CourseInfo(
+                        item.Course.Id,
+                        item.Course.Title,
+                        item.Course.SubjectId,
+                        item.Course.TeacherId,
+                        item.Course.IsAdvanced,
+                        item.Course.TermId,
+                        courseService.GetIconUrl(item.Course)
+                    ),
+                    item.ExamGradeId,
+                    item.HasExam,
+                    item.PositionX,
+                    item.PositionY,
+                    averageGrade
+                ));
+            }
+
+            var result = Result.Success(new PagedList<Response>(
+                responses,
+                relations.Page,
+                relations.PageSize,
+                relations.TotalPages,
+                relations.TotalCount
+            ));
 
             return TypedResults.Ok(result);
+        }
+
+        private static async Task<float> CalculateAverageGrade(int studentId, int courseId, TimetileDbContext db, CancellationToken cancellationToken)
+        {
+            var submissionGradeIds = await db.Submissions
+                .Where(s => s.GradeId != null && s.StudentId == studentId && s.Assignment.Lesson.CourseId == courseId)
+                .Select(s => s.GradeId!.Value)
+                .ToListAsync(cancellationToken);
+
+            var classworkGradeIds = await db.LessonsStudents
+                .Where(ls => ls.GradeId != null && ls.StudentId == studentId && ls.Lesson.CourseId == courseId)
+                .Select(ls => ls.GradeId!.Value)
+                .ToListAsync(cancellationToken);
+
+            var combinedGradeIds = submissionGradeIds.Union(classworkGradeIds);
+
+            if (!combinedGradeIds.Any())
+                return 0f;
+
+            var weightedGrades = await db.Grades
+                .Where(g => combinedGradeIds.Contains(g.Id))
+                .Select(g => new { g.Value, g.Weight })
+                .ToListAsync(cancellationToken);
+
+            var totalWeight = weightedGrades.Sum(g => g.Weight);
+
+            return weightedGrades.Sum(g => g.Value * g.Weight) / totalWeight;
         }
 
         private static IQueryable<CourseToStudent> BuildFilteredQuery(Request request, int studentId, TimetileDbContext db)
@@ -87,7 +137,8 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
             int? ExamGradeId,
             bool HasExam,
             short PositionX,
-            short PositionY
+            short PositionY,
+            float AverageGrade
         );
 
         private sealed record CourseInfo(

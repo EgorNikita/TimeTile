@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Bogus.DataSets;
 using System;
 using System.Collections.Generic;
@@ -80,7 +80,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                             FindPossibleCombinationOfDependencies(
                                 faker,
                                 suitableCourses.OrderBy(_ => Guid.NewGuid()),
-                                suitableTimetableUnits.OrderBy(_ => Guid.NewGuid()),
+                                suitableTimetableUnits.OrderBy(unit => unit.StartTime.UtcDateTime.TimeOfDay),
                                 suitableClassrooms.OrderBy(_ => Guid.NewGuid())
                             );
 

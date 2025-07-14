@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Serilog;
@@ -106,7 +106,10 @@ namespace TimeTile.API.Authentication.Authorization
                 // Leave all parameters except an ignored one
                 if (!string.Equals(pair.Key, ignoredParameter, StringComparison.OrdinalIgnoreCase))
                 {
-                    queryBuilder.Add(pair.Key, pair.Value.ToString());
+                    foreach (var value in pair.Value)
+                    {
+                        queryBuilder.Add(pair.Key, value);
+                    }
                 }
             }
 

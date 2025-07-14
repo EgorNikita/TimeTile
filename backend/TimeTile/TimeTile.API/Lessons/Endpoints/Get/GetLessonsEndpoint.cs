@@ -30,6 +30,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
             // Form a final paged list
             var lessons = await BuildFilteredQuery(request, db)
                 .Include(l => l.Course)
+                .Include(l => l.LessonToTimetableUnits)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -37,7 +38,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
                 .Select(x => new Response
                 (
                     x.Id,
-                    x.TimetableUnitId,
+                    x.LessonToTimetableUnits.Select(lt => lt.TimetableUnitId).ToArray(),
                     x.CourseId,
                     x.Course.SubjectId,
                     x.Course.TeacherId,
@@ -78,7 +79,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
 
             if (request.TimetableUnitIds is not null && request.TimetableUnitIds.Any())
                 baseQuery = baseQuery.Where(l =>
-                    request.TimetableUnitIds.Contains(l.TimetableUnitId)
+                    l.LessonToTimetableUnits.Any(lt => request.TimetableUnitIds.Contains(lt.TimetableUnitId))
                 );
 
             if (request.CourseIds is not null && request.CourseIds.Any())
@@ -127,7 +128,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
 
         private sealed record Response(
             int Id,
-            int TimetableUnitId,
+            int[] TimetableUnitIds,
             int CourseId,
             int SubjectId,
             int TeacherId,

@@ -6,6 +6,7 @@ using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Students.Endpoints.GetLessons
@@ -29,6 +30,8 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                 .AsNoTracking()
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.Course)
+                .Include(ls => ls.Lesson)
+                    .ThenInclude(l => l.LessonToTimetableUnits)
                 .Where(cs => cs.StudentId == request.Id)
                 .ApplySorting(
                     request.SortBy,
@@ -38,7 +41,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                     ls.LessonId,
                     new LessonInfo(
                         ls.Lesson.Id,
-                        ls.Lesson.TimetableUnitId,
+                        ls.Lesson.LessonToTimetableUnits.Select(lt => lt.TimetableUnitId).ToArray(),
                         ls.Lesson.CourseId,
                         ls.Lesson.Course.SubjectId,
                         ls.Lesson.Course.TeacherId,
@@ -77,7 +80,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
 
         private sealed record LessonInfo(
             int Id,
-            int TimetableUnitId,
+            int[] TimetableUnitIds,
             int CourseId,
             int SubjectId,
             int TeacherId,

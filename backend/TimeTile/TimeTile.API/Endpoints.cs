@@ -77,6 +77,7 @@ using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 using TimeTile.API.Grades.Endpoints.GetBulk;
 using TimeTile.API.Messages.Endpoints.Get;
 using TimeTile.API.Messages.Endpoints.GetById;
+using TimeTile.API.Messages.Endpoints.Create;
 
 namespace TimeTile.API;
 
@@ -390,7 +391,8 @@ public static class Endpoints
         var endpoints = app.CreateInstitutionGroup(Routes.Messages, Tags.Messages);
 
         endpoints.MapEndpoint<GetMessagesEndpoint>()
-            .MapEndpoint<GetMessageByIdEndpoint>();
+            .MapEndpoint<GetMessageByIdEndpoint>()
+            .MapEndpoint<CreateMessageEndpoint>();
     }
 
 

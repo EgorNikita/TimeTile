@@ -37,9 +37,9 @@ namespace TimeTile.API.Messages.Endpoints.GetById
                 message.SentAt,
                 message.EditedAt,
                 db.MessagesFiles
-                        .Where(mf => mf.MessageId == message.Id)
-                        .Select(mf => mf.File.FileGuid.ToString())
-                        .ToArray()
+                    .Where(mf => mf.MessageId == message.Id)
+                    .Select(mf => mf.File.FileGuid.ToString())
+                    .ToArray()
             );
 
             var result = Result.Success(response);

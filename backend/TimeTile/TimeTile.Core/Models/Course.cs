@@ -38,4 +38,6 @@ public partial class Course : AuditableEntity, IInstitutionEntity
 
     [NotMapped]
     public virtual IEnumerable<Student> Students => CoursesToStudents.Select(x => x.Student);
+
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 }

@@ -37,6 +37,7 @@ namespace TimeTile.Storage.Seeders
         private const int COURSES_TO_STUDENTS_COUNT = 1000;
         private const int LESSONS_COUNT = 1000;
         private const int SUBMISSIONS_COUNT = 5000;
+        private const int MESSAGES_COUNT = 10000;
 
         private readonly TimetileDbContext _context;
         private readonly IUserService _userService;
@@ -139,6 +140,9 @@ namespace TimeTile.Storage.Seeders
 
             var submissions = new SubmissionFaker(lessons).Generate(SUBMISSIONS_COUNT);
             await _context.Submissions.AddRangeAsync(submissions, cancellationToken);
+
+            var messages = new MessageFaker(courses).Generate(MESSAGES_COUNT);
+            await _context.Messages.AddRangeAsync(messages, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
         }

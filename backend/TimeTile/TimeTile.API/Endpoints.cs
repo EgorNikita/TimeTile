@@ -73,6 +73,7 @@ using TimeTile.API.Students.Endpoints.GetLessons;
 using TimeTile.API.Lessons.Endpoints.GetStudents;
 using TimeTile.API.Submissions.Endpoints.Submit;
 using TimeTile.API.Submissions.Endpoints.Review;
+using TimeTile.API.Messages.Endpoints.Get;
 
 namespace TimeTile.API;
 
@@ -99,6 +100,7 @@ public static class Endpoints
         public const string Groups = "Groups";
         public const string Lessons = "Lessons";
         public const string Courses = "Courses";
+        public const string Messages = "Messages";
     }
 
     public static class Routes
@@ -122,6 +124,7 @@ public static class Endpoints
         public const string Groups = "/groups";
         public const string Lessons = "/lessons";
         public const string Courses = "/courses";
+        public const string Messages = "/messages";
     }
 
     private static class RateLimits
@@ -151,6 +154,7 @@ public static class Endpoints
         app.MapCoursesEndpoints();
         app.MapAssignmentsEndpoints();
         app.MapSubmissionsEndpoints();
+        app.MapMessagesEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -374,6 +378,13 @@ public static class Endpoints
             .MapEndpoint<GetSubmissionFilesEndpoint>()
             .MapEndpoint<SubmitSubmissionEndpoint>()
             .MapEndpoint<ReviewSubmissionEndpoint>();
+    }
+
+    private static void MapMessagesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Messages, Tags.Messages);
+
+        endpoints.MapEndpoint<GetMessagesEndpoint>();
     }
 
 

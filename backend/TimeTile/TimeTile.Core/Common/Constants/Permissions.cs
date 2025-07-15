@@ -37,6 +37,11 @@ public static class Permissions
         public const string Get = "GetGrades";
     }
 
+    public static class Messages
+    {
+        public const string Get = "GetMessages";
+    }
+
     private static readonly Lazy<IReadOnlyList<string>> _allPermissions = new(() => 
         typeof(Permissions)
             .GetNestedTypes(BindingFlags.Public | BindingFlags.Static)

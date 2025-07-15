@@ -26,18 +26,15 @@ namespace TimeTile.API.Grades.Endpoints.GetBulk
                             RuleFor(x => x.Ids)
                                 .MustAsync(async (ids, cancellationToken) =>
                                 {
-                                    return await db.Grades
+                                    var invalidGradeExists = await db.Grades
+                                        .Where(g => ids.Contains(g.Id))
                                         .AnyAsync(g =>
-                                            (
-                                                g.Type == GradeType.Classwork && 
-                                                g.LessonToStudent!.Student.InstitutionId != institutionId
-                                            ) || (
-                                                g.Type == GradeType.Homework && 
-                                                g.Submission!.Student.InstitutionId != institutionId
-                                            ) || (
-                                                g.Type == GradeType.Exam &&
-                                                g.CourseToStudent!.Course.InstitutionId != institutionId
-                                            ), cancellationToken);
+                                                (g.Type == GradeType.Classwork && g.LessonToStudent!.Student.InstitutionId != institutionId) ||
+                                                (g.Type == GradeType.Homework && g.Submission!.Student.InstitutionId != institutionId) ||
+                                                (g.Type == GradeType.Exam && g.CourseToStudent!.Course.InstitutionId != institutionId),
+                                            cancellationToken);
+
+                                    return !invalidGradeExists;
                                 })
                                 .WithMessage("Some of Grades do not belong to the current institution.");
                         });

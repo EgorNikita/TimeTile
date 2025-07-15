@@ -34,8 +34,8 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             if (_faker.Random.Bool(CAME_AT_PRESENCE_POSSIBILITY))
             {
-                DateTimeOffset startTime = lesson.TimetableUnit.StartTime;
-                DateTimeOffset endTime = lesson.TimetableUnit.EndTime;
+                DateTimeOffset startTime = lesson.StartTime;
+                DateTimeOffset endTime = lesson.EndTime;
 
                 if (_faker.Random.Bool(CAME_AT_TIME_POSSIBILITY))
                 {
@@ -57,7 +57,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             if (lessonToStudent.CameAt is not null)
             {
-                DateTimeOffset endTime = lessonToStudent.Lesson.TimetableUnit.EndTime;
+                DateTimeOffset endTime = lessonToStudent.Lesson.EndTime;
 
                 if (_faker.Random.Bool(STAYED_TILL_THE_END))
                 {
@@ -93,7 +93,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             return IsFromFuture(
                 lesson.Date,
-                lesson.TimetableUnit.EndTime
+                lesson.EndTime
             );
         }
 
@@ -101,7 +101,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             return IsFromFuture(
                 lesson.Date,
-                lesson.TimetableUnit.StartTime
+                lesson.StartTime
             );
         }
 

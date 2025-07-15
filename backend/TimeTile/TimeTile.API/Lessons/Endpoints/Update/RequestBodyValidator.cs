@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Lessons.Endpoints.Create;
@@ -13,16 +13,27 @@ namespace TimeTile.API.Lessons.Endpoints.Update
         {
             var institutionId = institutionProvider.GetInstitutionId();
 
-            When(x => x.TimetableUnitId != null, () =>
-            {
-                RuleFor(x => x.TimetableUnitId!.Value)
-                    .MustBeValidId()
-                    .DependentRules(() =>
-                    {
-                        RuleFor(x => x.TimetableUnitId!.Value)
-                            .MustBeValidInstitutionEntityId<UpdateLessonEndpoint.RequestBody, TimetableUnit>(db, institutionId);
-                    });
-            });
+            RuleFor(x => x.TimetableUnitsToAdd)
+               .MustBeValidOptionalListOfIds()
+               .DependentRules(() =>
+               {
+                   When(x => x.TimetableUnitsToAdd != null, () =>
+                   {
+                       RuleFor(x => x.TimetableUnitsToAdd!)
+                           .MustBeValidInstitutionEntityIdsList<UpdateLessonEndpoint.RequestBody, TimetableUnit>(db, institutionId);
+                   });
+               });
+
+            RuleFor(x => x.TimetableUnitsToRemove)
+               .MustBeValidOptionalListOfIds()
+               .DependentRules(() =>
+               {
+                   When(x => x.TimetableUnitsToRemove != null, () =>
+                   {
+                       RuleFor(x => x.TimetableUnitsToRemove!)
+                           .MustBeValidInstitutionEntityIdsList<UpdateLessonEndpoint.RequestBody, TimetableUnit>(db, institutionId);
+                   });
+               });
 
             When(x => x.CourseId != null, () =>
             {

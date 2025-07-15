@@ -29,12 +29,14 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             // Save Lesson
             var lesson = new Lesson
             {
-                TimetableUnitId = request.TimetableUnitId,
                 CourseId = request.CourseId,
                 ClassroomId = request.ClassroomId,
                 LessonStatusId = request.LessonStatusId,
                 Date = request.Date.ToUniversalTime(),
                 Description = request.Description.Trim(),
+                LessonToTimetableUnits = request.TimetableUnitIds
+                    .Select(id => new LessonToTimetableUnit { TimetableUnitId = id })
+                    .ToList(),
                 LessonsToStudents = db.CoursesStudents
                     .Where(cs => cs.CourseId == request.CourseId)
                     .Select(cs => new LessonToStudent { StudentId = cs.StudentId })
@@ -47,7 +49,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             // Return result
             var response = new Response(
                 lesson.Id,
-                lesson.TimetableUnitId,
+                lesson.LessonToTimetableUnits.Select(lt => lt.TimetableUnitId).ToArray(),
                 lesson.CourseId,
                 lesson.ClassroomId,
                 lesson.LessonStatusId,
@@ -62,7 +64,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
         }
 
         public sealed record Request(
-            int TimetableUnitId,
+            List<int> TimetableUnitIds,
             int CourseId,
             int ClassroomId,
             int LessonStatusId,
@@ -72,7 +74,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
 
         private sealed record Response(
             int Id,
-            int TimetableUnitId,
+            int[] TimetableUnitIds,
             int CourseId,
             int ClassroomId,
             int LessonStatusId,

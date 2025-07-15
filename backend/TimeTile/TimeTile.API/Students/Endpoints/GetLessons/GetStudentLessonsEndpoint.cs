@@ -29,6 +29,9 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             var relations = await BuildFilteredQuery(request, request.Id, db)
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.Course)
+                .Include(ls => ls.Lesson)
+                    .ThenInclude(l => l.LessonToTimetableUnits)
+                .Where(cs => cs.StudentId == request.Id)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -37,7 +40,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                     ls.LessonId,
                     new LessonInfo(
                         ls.Lesson.Id,
-                        ls.Lesson.TimetableUnitId,
+                        ls.Lesson.LessonToTimetableUnits.Select(lt => lt.TimetableUnitId).ToArray(),
                         ls.Lesson.CourseId,
                         ls.Lesson.Course.SubjectId,
                         ls.Lesson.Course.TeacherId,
@@ -91,7 +94,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
 
         private sealed record LessonInfo(
             int Id,
-            int TimetableUnitId,
+            int[] TimetableUnitIds,
             int CourseId,
             int SubjectId,
             int TeacherId,

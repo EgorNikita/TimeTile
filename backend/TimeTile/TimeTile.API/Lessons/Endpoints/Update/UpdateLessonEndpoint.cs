@@ -29,6 +29,7 @@ namespace TimeTile.API.Lessons.Endpoints.Update
         {
             var lesson = await db.Lessons
                 .Include(l => l.LessonsToStudents)
+                .Include(l => l.LessonToTimetableUnits)
                 .FirstAsync(l => l.Id == parameters.Id, cancellationToken);
 
             await UpdateEntity(lesson, body, db, cancellationToken);
@@ -46,7 +47,10 @@ namespace TimeTile.API.Lessons.Endpoints.Update
             // Return result
             var response = new Response(
                 lesson.Id,
-                lesson.TimetableUnitId,
+                db.LessonsTimetableUnits
+                    .Where(lt => lt.LessonId == lesson.Id)
+                    .Select(lt => lt.TimetableUnitId)
+                    .ToArray(),
                 lesson.CourseId,
                 lesson.ClassroomId,
                 lesson.LessonStatusId,
@@ -66,8 +70,14 @@ namespace TimeTile.API.Lessons.Endpoints.Update
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            if (request.TimetableUnitId is not null)
-                lesson.TimetableUnitId = request.TimetableUnitId.Value;
+            if (request.TimetableUnitsToAdd is not null && request.TimetableUnitsToAdd.Any())
+            {
+                await AddTimetableUnits(lesson.Id, request.TimetableUnitsToAdd, db, cancellationToken);
+            }
+            if (request.TimetableUnitsToRemove is not null && request.TimetableUnitsToRemove.Any())
+            {
+                await RemoveTimetableUnits(lesson.Id, request.TimetableUnitsToRemove, db, cancellationToken);
+            }
 
             if (request.CourseId is not null)
             {
@@ -94,6 +104,48 @@ namespace TimeTile.API.Lessons.Endpoints.Update
                 lesson.Description = request.Description.Trim();
         }
 
+        private static async Task AddTimetableUnits(
+            int lessonId,
+            List<int> timetableUnitIds,
+            TimetileDbContext db,
+            CancellationToken cancellationToken)
+        {
+            var existingTimetableUnitIds = await db.LessonsTimetableUnits
+                .Where(x => x.LessonId == lessonId)
+                .Select(x => x.TimetableUnitId)
+                .ToListAsync(cancellationToken);
+
+            var timetableUnitsToAdd = timetableUnitIds
+                .Where(unitId => !existingTimetableUnitIds.Contains(unitId))
+                .Select(unitId => new LessonToTimetableUnit
+                {
+                    LessonId = lessonId,
+                    TimetableUnitId = unitId
+                })
+                .ToList();
+
+            if (timetableUnitsToAdd.Any())
+            {
+                await db.LessonsTimetableUnits.AddRangeAsync(timetableUnitsToAdd, cancellationToken);
+            }
+        }
+
+        private static async Task RemoveTimetableUnits(
+            int lessonId,
+            List<int> timetableUnitIds,
+            TimetileDbContext db,
+            CancellationToken cancellationToken)
+        {
+            var timetableUnitsToRemove = await db.LessonsTimetableUnits
+                .Where(x => x.LessonId == lessonId && timetableUnitIds.Contains(x.TimetableUnitId))
+                .ToListAsync(cancellationToken);
+
+            if (timetableUnitsToRemove.Any())
+            {
+                db.LessonsTimetableUnits.RemoveRange(timetableUnitsToRemove);
+            }
+        }
+
         private static async Task<bool> IsDuplicate(Lesson lesson, TimetileDbContext db, CancellationToken cancellationToken)
         {
             return await db.Lessons
@@ -101,8 +153,8 @@ namespace TimeTile.API.Lessons.Endpoints.Update
                 .AnyAsync(l =>
                     l.Id != lesson.Id &&
                     l.CourseId == lesson.CourseId &&
-                    l.TimetableUnitId == lesson.TimetableUnitId &&
-                    l.Date == lesson.Date,
+                    l.Date == lesson.Date &&
+                    l.LessonToTimetableUnits.Any(lt => lesson.LessonToTimetableUnits.Select(lt => lt.TimetableUnitId).Contains(lt.TimetableUnitId)),
                     cancellationToken
                 );
         }
@@ -112,7 +164,8 @@ namespace TimeTile.API.Lessons.Endpoints.Update
         );
 
         public sealed record RequestBody(
-            int? TimetableUnitId,
+            List<int>? TimetableUnitsToAdd,
+            List<int>? TimetableUnitsToRemove,
             int? CourseId,
             int? ClassroomId,
             int? LessonStatusId,
@@ -122,7 +175,7 @@ namespace TimeTile.API.Lessons.Endpoints.Update
 
         private sealed record Response(
             int Id,
-            int TimetableUnitId,
+            int[] TimetableUnitIds,
             int CourseId,
             int ClassroomId,
             int LessonStatusId,

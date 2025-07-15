@@ -25,11 +25,12 @@ namespace TimeTile.API.Lessons.Endpoints.GetById
             // Find Lesson
             var lesson = await db.Lessons
                 .AsNoTracking()
+                .Include(l => l.LessonToTimetableUnits)
                 .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(
                 lesson.Id,
-                lesson.TimetableUnitId,
+                lesson.LessonToTimetableUnits.Select(lt => lt.TimetableUnitId).ToArray(),
                 lesson.CourseId,
                 lesson.ClassroomId,
                 lesson.LessonStatusId,
@@ -49,7 +50,7 @@ namespace TimeTile.API.Lessons.Endpoints.GetById
 
         private sealed record Response(
             int Id,
-            int TimetableUnitId,
+            int[] TimetableUnitIds,
             int CourseId,
             int ClassroomId,
             int LessonStatusId,

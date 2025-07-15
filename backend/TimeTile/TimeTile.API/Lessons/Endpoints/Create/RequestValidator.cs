@@ -13,12 +13,12 @@ namespace TimeTile.API.Lessons.Endpoints.Create
         {
             var institutionId = institutionProvider.GetInstitutionId();
 
-            RuleFor(x => x.TimetableUnitId)
-                .MustBeValidId()
+            RuleFor(x => x.TimetableUnitIds)
+                .MustBeValidListOfIds()
                 .DependentRules(() =>
                 {
-                    RuleFor(x => x.TimetableUnitId)
-                        .MustBeValidInstitutionEntityId<CreateLessonEndpoint.Request, TimetableUnit>(db, institutionId);
+                    RuleFor(x => x.TimetableUnitIds)
+                        .MustBeValidInstitutionEntityIdsList<CreateLessonEndpoint.Request, TimetableUnit>(db, institutionId);
                 });
 
             RuleFor(x => x.CourseId)
@@ -58,14 +58,14 @@ namespace TimeTile.API.Lessons.Endpoints.Create
                {
                    var date = request.Date.ToUniversalTime();
 
-                   return !await db.Lessons
-                       .AsNoTracking()
-                       .AnyAsync(l =>
-                           l.CourseId == request.CourseId &&
-                           l.TimetableUnitId == request.TimetableUnitId &&
-                           l.Date == date,
-                           cancellationToken
-                       );
+                    return !await db.Lessons
+                        .AsNoTracking()
+                        .AnyAsync(l =>
+                            l.CourseId == request.CourseId &&
+                            l.Date == date &&
+                            l.LessonToTimetableUnits.Any(lt => request.TimetableUnitIds.Contains(lt.TimetableUnitId)),
+                            cancellationToken
+                        );
                })
                .WithMessage("Lesson with such data already exists")
                // Call to the database only in case of successfull validation before
@@ -74,7 +74,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
                    var validator = new InlineValidator<CreateLessonEndpoint.Request>();
 
                    validator.RuleFor(x => x.CourseId).MustBeValidId();
-                   validator.RuleFor(x => x.TimetableUnitId).MustBeValidId();
+                   validator.RuleFor(x => x.TimetableUnitIds).MustBeValidListOfIds();
                    validator.RuleFor(x => x.Date).Must(date => date >= DateTimeOffset.UtcNow);
 
                    var result = validator.Validate(request);

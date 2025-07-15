@@ -7,8 +7,6 @@ public partial class Lesson : AuditableEntity, IEntity
 {
     public int Id { get; set; }
 
-    public int TimetableUnitId { get; set; }
-
     public int CourseId { get; set; }
 
     public int ClassroomId { get; set; }
@@ -20,7 +18,13 @@ public partial class Lesson : AuditableEntity, IEntity
     public string Description { get; set; } = null!;
 
     public int? AssignmentId { get; set; }
-    
+
+    [NotMapped]
+    public DateTimeOffset StartTime => LessonToTimetableUnits.Select(lt => lt.TimetableUnit).Min(t => t.StartTime);
+
+    [NotMapped]
+    public DateTimeOffset EndTime => LessonToTimetableUnits.Select(lt => lt.TimetableUnit).Max(t => t.EndTime);
+
     public virtual Classroom Classroom { get; set; } = null!;
 
     public virtual Course Course { get; set; } = null!;
@@ -32,7 +36,7 @@ public partial class Lesson : AuditableEntity, IEntity
     [NotMapped]
     public virtual IEnumerable<Student> Students => LessonsToStudents.Select(x => x.Student);
 
-    public virtual TimetableUnit TimetableUnit { get; set; } = null!;
+    public virtual ICollection<LessonToTimetableUnit> LessonToTimetableUnits { get; set; } = new List<LessonToTimetableUnit>();
 
     public virtual Assignment? Assignment { get; set; }
 }

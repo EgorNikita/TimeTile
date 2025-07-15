@@ -19,7 +19,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const float STAYED_TILL_THE_END = 0.95f;
 
         // ClassworkGrade constraints
-        private const float CLASSWORK_GRADE_PRESENCE_POSSIBILITY = 0.8f;
+        private const float CLASSWORK_GRADE_PRESENCE_POSSIBILITY = 1f;
 
         // Extra fakers
         private readonly GradeFaker _gradeFaker = new GradeFaker(GradeType.Classwork);

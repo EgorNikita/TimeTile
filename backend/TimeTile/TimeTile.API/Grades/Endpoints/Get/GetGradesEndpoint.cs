@@ -44,10 +44,15 @@ namespace TimeTile.API.Grades.Endpoints.Get
                     Type = x.Type.ToString(),
                     Date = x.UpdatedAt,
                     Course = x.CourseToStudent != null
-                            ? x.CourseToStudent.Course
-                            : x.LessonToStudent != null
-                                ? x.LessonToStudent.Lesson.Course
-                                : x.Submission!.Assignment.Lesson.Course
+                        ? x.CourseToStudent.Course
+                        : x.LessonToStudent != null
+                            ? x.LessonToStudent.Lesson.Course
+                            : x.Submission!.Assignment.Lesson.Course,
+                    LessonId = x.LessonToStudent != null
+                        ? x.LessonToStudent.LessonId
+                        : x.Submission != null
+                            ? x.Submission!.Assignment.Lesson.Id
+                            : (int?)null
                 })
                 .Select(x => new Response(
                     x.Id,
@@ -56,7 +61,8 @@ namespace TimeTile.API.Grades.Endpoints.Get
                     x.Type,
                     x.Date,
                     x.Course.SubjectId,
-                    x.Course.Id
+                    x.Course.Id,
+                    x.LessonId
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
@@ -126,7 +132,8 @@ namespace TimeTile.API.Grades.Endpoints.Get
             string Type,
             DateTimeOffset Date,
             int SubjectId,
-            int CourseId
+            int CourseId,
+            int? LessonId
         );
     }
 }

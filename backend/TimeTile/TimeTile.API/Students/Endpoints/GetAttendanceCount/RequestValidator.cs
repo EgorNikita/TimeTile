@@ -1,27 +1,23 @@
 ﻿using FluentValidation;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
-using TimeTile.API.Students.Endpoints.GetCourses;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Students.Endpoints.GetLessons
+namespace TimeTile.API.Students.Endpoints.GetAttendanceCount
 {
-    public class RequestValidator : AbstractValidator<GetStudentLessonsEndpoint.Request>
+    public class RequestValidator : AbstractValidator<GetAttendanceCountEndpoint.Request>
     {
         public RequestValidator(TimetileDbContext db, IInstitutionProvider institutionProvider)
         {
             var institutionId = institutionProvider.GetInstitutionId();
-
-            RuleFor(x => x.SortBy)
-                .MustBeValidSortField<GetStudentLessonsEndpoint.Request, AllowedSortFields>();
 
             RuleFor(x => x.Id)
                 .MustBeValidId()
                 .DependentRules(() =>
                 {
                     RuleFor(x => x.Id)
-                        .MustBeValidOptionalInstitutionEntityId<GetStudentLessonsEndpoint.Request, Student>(db, institutionId);
+                        .MustBeValidOptionalInstitutionEntityId<GetAttendanceCountEndpoint.Request, Student>(db, institutionId);
                 });
 
             // CourseIds
@@ -31,7 +27,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                 {
                     When(x => x.CourseIds != null, () => {
                         RuleFor(x => x.CourseIds!)
-                            .MustBeValidInstitutionEntityIdsList<GetStudentLessonsEndpoint.Request, Course>(db, institutionId);
+                            .MustBeValidInstitutionEntityIdsList<GetAttendanceCountEndpoint.Request, Course>(db, institutionId);
                     });
                 });
         }

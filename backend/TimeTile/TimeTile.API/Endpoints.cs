@@ -73,6 +73,8 @@ using TimeTile.API.Students.Endpoints.GetLessons;
 using TimeTile.API.Lessons.Endpoints.GetStudents;
 using TimeTile.API.Submissions.Endpoints.Submit;
 using TimeTile.API.Submissions.Endpoints.Review;
+using TimeTile.API.Students.Endpoints.GetAttendanceCount;
+using TimeTile.API.Grades.Endpoints.GetBulk;
 
 namespace TimeTile.API;
 
@@ -241,7 +243,8 @@ public static class Endpoints
 
         endpoints
             .MapEndpoint<GetStudentCoursesEndpoint>()
-            .MapEndpoint<GetStudentLessonsEndpoint>();
+            .MapEndpoint<GetStudentLessonsEndpoint>()
+            .MapEndpoint<GetAttendanceCountEndpoint>();
     }
 
     private static void MapRolesEndpoints(this IEndpointRouteBuilder app)
@@ -305,7 +308,8 @@ public static class Endpoints
         var endpoints = app.CreateInstitutionGroup(Routes.Grades, Tags.Grades);
 
         endpoints.MapEndpoint<GetGradesEndpoint>()
-            .MapEndpoint<GetGradeByIdEndpoint>();
+            .MapEndpoint<GetGradeByIdEndpoint>()
+            .MapEndpoint<GetGradesBulkEndpoint>();
     }
 
     private static void MapSubjectsEndpoints(this IEndpointRouteBuilder app)

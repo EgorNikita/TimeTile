@@ -26,8 +26,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            var relations = await db.LessonsStudents
-                .AsNoTracking()
+            var relations = await BuildFilteredQuery(request, request.Id, db)
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.Course)
                 .Include(ls => ls.Lesson)
@@ -62,8 +61,23 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             return TypedResults.Ok(result);
         }
 
+        private static IQueryable<LessonToStudent> BuildFilteredQuery(Request request, int studentId, TimetileDbContext db)
+        {
+            var baseQuery = db.LessonsStudents
+                .AsNoTracking()
+                .Where(ls => ls.StudentId == studentId);
+
+            if (request.CourseIds is not null && request.CourseIds.Any())
+                baseQuery = baseQuery.Where(ls =>
+                    request.CourseIds.Contains(ls.Lesson.CourseId)
+                );
+
+            return baseQuery;
+        }
+
         public sealed record Request(
             int Id,
+            int[]? CourseIds,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

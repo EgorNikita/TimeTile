@@ -27,5 +27,7 @@ namespace TimeTile.Core.Models
         public virtual ClassroomType? ClassroomType { get; set; }
         public virtual AssignmentToFile? AssignmentToFile { get; set; }
         public virtual SubmissionToFile? SubmissionToFile { get; set; }
+
+        public virtual ICollection<MessageToFile> MessagesToFile { get; set; } = new List<MessageToFile>();
     }
 }

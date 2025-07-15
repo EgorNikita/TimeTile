@@ -18,5 +18,7 @@ namespace TimeTile.Core.Models
 
         public virtual User User { get; set; } = null!;
         public virtual Course Course { get; set; } = null!;
+
+        public virtual ICollection<MessageToFile> MessageToFiles { get; set; } = new List<MessageToFile>();
     }
 }

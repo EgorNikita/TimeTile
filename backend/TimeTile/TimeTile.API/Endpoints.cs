@@ -78,6 +78,7 @@ using TimeTile.API.Grades.Endpoints.GetBulk;
 using TimeTile.API.Messages.Endpoints.Get;
 using TimeTile.API.Messages.Endpoints.GetById;
 using TimeTile.API.Messages.Endpoints.Create;
+using TimeTile.API.Messages.Endpoints.Update;
 
 namespace TimeTile.API;
 
@@ -392,7 +393,8 @@ public static class Endpoints
 
         endpoints.MapEndpoint<GetMessagesEndpoint>()
             .MapEndpoint<GetMessageByIdEndpoint>()
-            .MapEndpoint<CreateMessageEndpoint>();
+            .MapEndpoint<CreateMessageEndpoint>()
+            .MapEndpoint<UpdateMessageEndpoint>();
     }
 
 

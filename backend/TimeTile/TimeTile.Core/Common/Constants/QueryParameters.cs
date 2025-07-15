@@ -11,5 +11,6 @@ namespace TimeTile.Core.Common.Constants
         public const string StudentIds = "StudentIds";
         public const string InstitutionMemberIds = "InstitutionMemberIds";
         public const string TeacherIds = "TeacherIds";
+        public const string UserIds = "UserIds";
     }
 }

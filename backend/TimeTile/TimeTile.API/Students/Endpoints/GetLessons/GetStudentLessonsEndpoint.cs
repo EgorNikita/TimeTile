@@ -67,6 +67,18 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                 .AsNoTracking()
                 .Where(ls => ls.StudentId == studentId);
 
+            // Date
+            if (request.From is not null)
+                baseQuery = baseQuery.Where(ls =>
+                    ls.Lesson.Date >= request.From.Value.ToUniversalTime()
+                );
+
+            if (request.Until is not null)
+                baseQuery = baseQuery.Where(ls =>
+                    ls.Lesson.Date <= request.Until.Value.ToUniversalTime()
+                );
+
+            // FKs
             if (request.CourseIds is not null && request.CourseIds.Any())
                 baseQuery = baseQuery.Where(ls =>
                     request.CourseIds.Contains(ls.Lesson.CourseId)
@@ -78,6 +90,8 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
         public sealed record Request(
             int Id,
             int[]? CourseIds,
+            DateTimeOffset? From = null,
+            DateTimeOffset? Until = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

@@ -41,6 +41,8 @@ public static class ConfigureServices
         builder.AddRateLimiting();
         builder.AddCors();
 
+        builder.Services.AddSignalR();
+
         builder.Services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(new PatchPropertyConverterFactory());
@@ -73,9 +75,10 @@ public static class ConfigureServices
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.AllowAnyOrigin()
+                policy.WithOrigins("http://localhost:3000") // Vue dev server
                       .AllowAnyMethod()
-                      .AllowAnyHeader();
+                      .AllowAnyHeader()
+                      .AllowCredentials();
             });
         });
     }

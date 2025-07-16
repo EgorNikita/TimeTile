@@ -18,6 +18,7 @@ namespace TimeTile.Core.Models
         public SubmissionStatus Status { get; set; } = SubmissionStatus.NotSubmitted;
         public string? StudentNote { get; set; }
         public string? Feedback { get; set; }
+        public DateTimeOffset? SubmittedAt { get; set; }
 
         public virtual Assignment Assignment { get; set; } = null!;
         public virtual Student Student { get; set; } = null!;

@@ -19,6 +19,40 @@ namespace TimeTile.API.Messages.Hubs
             return $"course_{courseId}";
         }
 
+        public async Task JoinGroup(int courseId)
+        {
+            await ValidateCourseId(courseId);
+
+            var groupName = GetGroupName(courseId);
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        }
+
+        public async Task LeaveGroup(int courseId)
+        {
+            await ValidateCourseId(courseId);
+
+            var groupName = GetGroupName(courseId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        }
+
+        private async Task ValidateCourseId(int courseId)
+        {
+            var userId = UserId;
+
+            var courseExists = await _db.Courses
+                .AnyAsync(c => c.Id == courseId);
+
+            if (!courseExists)
+                throw new HubException("CourseId is invalid.");
+
+            var hasAccess = await _db.Courses
+                .AnyAsync(c => c.Id == courseId &&
+                    (c.TeacherId == userId || c.CoursesToStudents.Any(cs => cs.StudentId == userId)));
+
+            if (!hasAccess)
+                throw new HubException($"User with id '{userId}' does not have access to this course.");
+        }
+
         public override async Task OnConnectedAsync()
         {
             await base.OnConnectedAsync();

@@ -78,6 +78,7 @@ using TimeTile.API.Grades.Endpoints.GetBulk;
 using TimeTile.API.Courses.Endpoints.GetBulk;
 using TimeTile.API.InstitutionMembers.Endpoints.GetBulk;
 using TimeTile.API.Classrooms.Endpoints.GetBulk;
+using TimeTile.API.LessonStatuses.Endpoints.GetBulk;
 
 namespace TimeTile.API;
 
@@ -195,7 +196,8 @@ public static class Endpoints
         endpoints
             .MapEndpoint<GetLessonStatusesEndpoint>()
             .MapEndpoint<GetLessonStatusByIdEndpoint>()
-            .MapEndpoint<CreateLessonStatusEndpoint>();
+            .MapEndpoint<CreateLessonStatusEndpoint>()
+            .MapEndpoint<GetLessonStatusesBulkEndpoint>();
     }
 
     private static void MapTermsEndpoints(this IEndpointRouteBuilder app)

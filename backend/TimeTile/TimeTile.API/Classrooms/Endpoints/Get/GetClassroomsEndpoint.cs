@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
@@ -28,6 +25,7 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            IClassroomTypeService classroomTypeService,
             TimetileDbContext db,
             IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
@@ -36,6 +34,8 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
             var institutionId = institutionProvider.GetInstitutionId();
 
             var classrooms = await BuildFilteredQuery(request, institutionId, db)
+                .Include(c => c.ClassroomType)
+                    .ThenInclude(t => t.Icon)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -44,7 +44,11 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
                     c.Id,
                     c.Title,
                     c.Capacity,
-                    c.ClassroomTypeId
+                    new ClassroomTypeInfo(
+                        c.ClassroomType.Id,
+                        c.ClassroomType.Description,
+                        classroomTypeService.GetIconUrl(c.ClassroomType)
+                    )
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
@@ -75,11 +79,17 @@ namespace TimeTile.API.Classrooms.Endpoints.Get
             bool Descending = false
         ) : IPagedRequest, ISortRequest;
 
-        public sealed record Response(
+        private sealed record Response(
             int Id,
             string Title,
             int Capacity,
-            int ClassroomTypeId
+            ClassroomTypeInfo ClassroomType
+        );
+
+        private sealed record ClassroomTypeInfo(
+            int Id,
+            string Description,
+            string? IconUrl
         );
     }
 }

@@ -75,6 +75,10 @@ using TimeTile.API.Submissions.Endpoints.Submit;
 using TimeTile.API.Submissions.Endpoints.Review;
 using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 using TimeTile.API.Grades.Endpoints.GetBulk;
+using TimeTile.API.Courses.Endpoints.GetBulk;
+using TimeTile.API.InstitutionMembers.Endpoints.GetBulk;
+using TimeTile.API.Classrooms.Endpoints.GetBulk;
+using TimeTile.API.LessonStatuses.Endpoints.GetBulk;
 
 namespace TimeTile.API;
 
@@ -192,7 +196,8 @@ public static class Endpoints
         endpoints
             .MapEndpoint<GetLessonStatusesEndpoint>()
             .MapEndpoint<GetLessonStatusByIdEndpoint>()
-            .MapEndpoint<CreateLessonStatusEndpoint>();
+            .MapEndpoint<CreateLessonStatusEndpoint>()
+            .MapEndpoint<GetLessonStatusesBulkEndpoint>();
     }
 
     private static void MapTermsEndpoints(this IEndpointRouteBuilder app)
@@ -222,7 +227,8 @@ public static class Endpoints
         endpoints
             .MapEndpoint<GetClassroomsEndpoint>()
             .MapEndpoint<GetClassroomByIdEndpoint>()
-            .MapEndpoint<CreateClassroomEndpoint>();
+            .MapEndpoint<CreateClassroomEndpoint>()
+            .MapEndpoint<GetClassroomsBulkEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)
@@ -300,7 +306,8 @@ public static class Endpoints
             .MapEndpoint<GetInstitutionMembersEndpoint>()
             .MapEndpoint<GetInstitutionMemberByIdEndpoint>()
             .MapEndpoint<UpdateTeacherSubjectsEndpoint>()
-            .MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>();
+            .MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>()
+            .MapEndpoint<GetInstitutionMembersBulkEndpoint>();
     }
 
     private static void MapGradesEndpoints(this IEndpointRouteBuilder app)
@@ -355,7 +362,8 @@ public static class Endpoints
             .MapEndpoint<CreateCourseEndpoint>()
             .MapEndpoint<UpdateCourseStudentsEndpoint>()
             .MapEndpoint<GetCourseStudentsEndpoint>()
-            .MapEndpoint<UpdateCourseToStudentEndpoint>();
+            .MapEndpoint<UpdateCourseToStudentEndpoint>()
+            .MapEndpoint<GetCoursesBulkEndpoint>();
     }
 
     private static void MapAssignmentsEndpoints(this IEndpointRouteBuilder app)

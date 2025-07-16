@@ -75,6 +75,7 @@ using TimeTile.API.Submissions.Endpoints.Submit;
 using TimeTile.API.Submissions.Endpoints.Review;
 using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 using TimeTile.API.Grades.Endpoints.GetBulk;
+using TimeTile.API.Submissions.Endpoints.GetBulk;
 
 namespace TimeTile.API;
 
@@ -377,7 +378,8 @@ public static class Endpoints
             .MapEndpoint<GetSubmissionByIdEndpoint>()
             .MapEndpoint<GetSubmissionFilesEndpoint>()
             .MapEndpoint<SubmitSubmissionEndpoint>()
-            .MapEndpoint<ReviewSubmissionEndpoint>();
+            .MapEndpoint<ReviewSubmissionEndpoint>()
+            .MapEndpoint<GetSubmissionsBulkEndpoint>();
     }
 
 

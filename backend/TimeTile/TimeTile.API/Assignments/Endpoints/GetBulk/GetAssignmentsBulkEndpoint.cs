@@ -25,6 +25,7 @@ namespace TimeTile.API.Assignments.Endpoints.GetBulk
             // Form a final paged list
             var assignments = await db.Assignments
                 .AsNoTracking()
+                .Include(a => a.Lesson)
                 .Where(a => request.Ids.Contains(a.Id))
                 .Select(x => new Response
                 (
@@ -34,6 +35,7 @@ namespace TimeTile.API.Assignments.Endpoints.GetBulk
                     x.PublishedAt,
                     x.Deadline,
                     x.UploadAfterDeadline,
+                    x.Lesson.CourseId,
                     db.AssignmentsFiles.Any(af => af.AssignmentId == x.Id)
                 ))
                 .ToListAsync(cancellationToken);
@@ -54,6 +56,7 @@ namespace TimeTile.API.Assignments.Endpoints.GetBulk
             DateTimeOffset PublishedAt,
             DateTimeOffset Deadline,
             bool UploadAfterDeadline,
+            int CourseId,
             bool HasAttachments
         );
     }

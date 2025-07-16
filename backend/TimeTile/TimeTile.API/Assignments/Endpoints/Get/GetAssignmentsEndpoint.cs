@@ -32,6 +32,7 @@ namespace TimeTile.API.Assignments.Endpoints.Get
 
             // Form a final paged list
             var lessons = await BuildFilteredQuery(request, institutionId, db)
+                .Include(a => a.Lesson)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -44,6 +45,7 @@ namespace TimeTile.API.Assignments.Endpoints.Get
                     x.PublishedAt,
                     x.Deadline,
                     x.UploadAfterDeadline,
+                    x.Lesson.CourseId,
                     db.AssignmentsFiles.Any(f => f.AssignmentId == x.Id)
                 ))
                 .ToPagedListAsync(request, cancellationToken);
@@ -90,6 +92,7 @@ namespace TimeTile.API.Assignments.Endpoints.Get
             DateTimeOffset PublishedAt,
             DateTimeOffset Deadline,
             bool UploadAfterDeadline,
+            int CourseId,
             bool HasAttachments
         );
     }

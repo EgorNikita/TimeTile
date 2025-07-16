@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -19,18 +20,25 @@ namespace TimeTile.API.Classrooms.Endpoints.GetBulk
 
         private static async Task<Ok<Result<List<Response>>>> Handle(
             [AsParameters] Request request,
+            IClassroomTypeService classroomTypeService,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
             // Form a final paged list
             var classrooms = await db.Classrooms
                 .AsNoTracking()
+                .Include(c => c.ClassroomType)
+                    .ThenInclude(t => t.Icon)
                 .Where(c => request.Ids.Contains(c.Id))
                 .Select(c => new Response(
                     c.Id,
                     c.Title,
                     c.Capacity,
-                    c.ClassroomTypeId
+                    new ClassroomTypeInfo(
+                        c.ClassroomType.Id,
+                        c.ClassroomType.Description,
+                        classroomTypeService.GetIconUrl(c.ClassroomType)
+                    )
                 ))
                 .ToListAsync(cancellationToken);
 
@@ -47,7 +55,13 @@ namespace TimeTile.API.Classrooms.Endpoints.GetBulk
             int Id,
             string Title,
             int Capacity,
-            int ClassroomTypeId
+            ClassroomTypeInfo ClassroomType
+        );
+
+        public sealed record ClassroomTypeInfo(
+            int Id,
+            string Description,
+            string? IconUrl
         );
     }
 }

@@ -28,6 +28,7 @@ namespace TimeTile.API.Messages.Endpoints.Create
             TimetileDbContext db,
             IFileService fileService,
             IUserProvider userProvider,
+            IMessageNotificationService messageNotificationService,
             CancellationToken cancellationToken)
         {
             var userId = userProvider.GetUserId();
@@ -57,6 +58,9 @@ namespace TimeTile.API.Messages.Endpoints.Create
                 await db.Messages.AddAsync(message, cancellationToken);
                 await db.SaveChangesAsync(cancellationToken);
             }
+
+            // Notification is processed in other thread to not block the response
+            _ = messageNotificationService.NotifyMessageCreated(message);
 
             // Return result
             var response = new Response(

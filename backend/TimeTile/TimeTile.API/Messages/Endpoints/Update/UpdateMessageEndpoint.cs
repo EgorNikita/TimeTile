@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Messages.Services;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
@@ -27,6 +28,7 @@ namespace TimeTile.API.Messages.Endpoints.Update
             [AsParameters] RequestParameters parameters,
             [FromForm] RequestBody body,
             IFileService fileService,
+            IMessageNotificationService messageNotificationService,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
@@ -44,6 +46,9 @@ namespace TimeTile.API.Messages.Endpoints.Update
             }
 
             await db.SaveChangesAsync(cancellationToken);
+
+            // Notification is processed in other thread to not block the response
+            _ = messageNotificationService.NotifyMessageEdited(message);
 
             // Return result
             var response = new Response(

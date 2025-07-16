@@ -62,6 +62,13 @@ namespace TimeTile.API.Courses.Endpoints.Get
                 .AsNoTracking()
                 .Where(c => c.InstitutionId == institutionId);
 
+            if (request.IsActive is not null)
+            {
+                baseQuery = baseQuery.Where(c =>
+                    (c.Term.EndDate > DateTime.UtcNow && c.Term.StartDate <= DateTime.UtcNow) == request.IsActive.Value
+                );
+            }
+
             if (request.SubjectIds is not null && request.SubjectIds.Any())
                 baseQuery = baseQuery.Where(c =>
                     request.SubjectIds.Contains(c.SubjectId)
@@ -99,6 +106,7 @@ namespace TimeTile.API.Courses.Endpoints.Get
             int[]? TermIds = null,
             int[]? StudentIds = null,
             int[]? GroupIds = null,
+            bool? IsActive = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

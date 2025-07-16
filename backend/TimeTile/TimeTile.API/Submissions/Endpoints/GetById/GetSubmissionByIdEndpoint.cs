@@ -35,6 +35,7 @@ namespace TimeTile.API.Submissions.Endpoints.GetById
                 submission.Status.ToString(),
                 submission.StudentNote,
                 submission.Feedback,
+                submission.SubmittedAt,
                 db.SubmissionsFiles.Any(sf => sf.SubmissionId == request.Id)
             );
 
@@ -55,6 +56,7 @@ namespace TimeTile.API.Submissions.Endpoints.GetById
             string Status,
             string? StudentNote,
             string? Feedback,
+            DateTimeOffset? SubmittedAt,
             bool HasAttachments
         );
     }

@@ -41,6 +41,7 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                     x.Status.ToString(),
                     x.StudentNote,
                     x.Feedback,
+                    x.SubmittedAt,
                     db.SubmissionsFiles.Any(sf => sf.SubmissionId == x.Id)
                 ))
                 .ToPagedListAsync(request, cancellationToken);
@@ -97,6 +98,7 @@ namespace TimeTile.API.Submissions.Endpoints.Get
             string Status,
             string? StudentNote,
             string? Feedback,
+            DateTimeOffset? SubmittedAt,
             bool HasAttachments
         );
     }

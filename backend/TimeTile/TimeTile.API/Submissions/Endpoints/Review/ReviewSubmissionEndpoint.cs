@@ -82,6 +82,7 @@ namespace TimeTile.API.Submissions.Endpoints.Review
                 submission.Status.ToString(),
                 submission.StudentNote,
                 submission.Feedback,
+                submission.SubmittedAt,
                 await db.SubmissionsFiles
                     .Where(sf => sf.SubmissionId == submission.Id)
                     .Select(sf => sf.File.FileGuid.ToString())
@@ -116,6 +117,7 @@ namespace TimeTile.API.Submissions.Endpoints.Review
             string Status,
             string? StudentNote,
             string? Feedback,
+            DateTimeOffset? SubmittedAt,
             string[] FileUrls
         );
     }

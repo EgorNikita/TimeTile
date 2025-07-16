@@ -67,6 +67,10 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("feedback")
                 .IsRequired(false);
 
+            builder.Property(e => e.SubmittedAt)
+                .HasColumnName("submitted_at")
+                .IsRequired(false);
+
             // Relationships
             builder.HasOne(d => d.Assignment)
                 .WithMany(p => p.Submissions)

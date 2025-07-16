@@ -102,7 +102,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                         
                         AddAssociationsWithStudents(lesson, suitableCourses, combination.courseId);
 
-                        if (faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
+                        if (lesson.Date <= DateTimeOffset.UtcNow && faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
                         {
                             AddAssignment(faker, lesson, combination.date);
                         }

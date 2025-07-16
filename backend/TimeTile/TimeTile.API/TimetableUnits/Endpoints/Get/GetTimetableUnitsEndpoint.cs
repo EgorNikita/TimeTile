@@ -30,7 +30,7 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Get
             var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
-            var timetableUnits = await db.TimetableUnits
+            var timetableUnitsQuery = db.TimetableUnits
                 .AsNoTracking()
                 .Where(x => x.InstitutionId == institutionId)
                 .ApplySorting(
@@ -43,8 +43,23 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Get
                     x.Title,
                     x.StartTime,
                     x.EndTime
-                ))
-                .ToPagedListAsync(request, cancellationToken);
+                ));
+
+            PagedList<Response> timetableUnits;
+
+            if (request.FetchAll.HasValue && request.FetchAll.Value)
+            {
+                var count = timetableUnitsQuery.Count();
+                timetableUnits = new PagedList<Response>( 
+                    await timetableUnitsQuery.ToListAsync(cancellationToken), 
+                    1, count, 1, count
+                );
+            }
+            else
+            {
+                timetableUnits = await timetableUnitsQuery
+                    .ToPagedListAsync(request, cancellationToken);
+            }
 
             var result = Result.Success(timetableUnits);
 
@@ -52,6 +67,7 @@ namespace TimeTile.API.TimetableUnits.Endpoints.Get
         }
 
         public sealed record Request(
+            bool? FetchAll = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

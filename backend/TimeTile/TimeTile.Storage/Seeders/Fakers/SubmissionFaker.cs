@@ -53,7 +53,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 {
                     var newSubmission = new Submission
                     {
-                        AssignmentId = submission.AssignmentId,
+                        Assignment = submission.Assignment,
                         StudentId = submission.StudentId,
                         Status = SubmissionStatus.NotSubmitted
                     };
@@ -70,6 +70,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 submission.StudentNote = GenerateValidStudentNote(submission);
                 submission.Feedback = GenerateValidFeedback(submission);
                 submission.Grade = GenerateValidGrade(submission);
+                submission.SubmittedAt = GenerateValidSubmittedAt(submission);
             }
 
             return newSubmissions;
@@ -113,6 +114,27 @@ namespace TimeTile.Storage.Seeders.Fakers
             }
 
             return null;
+        }
+
+        private DateTimeOffset? GenerateValidSubmittedAt(Submission submission)
+        {
+            var assignment = submission.Assignment;
+            var status = submission.Status;
+
+            if (status == SubmissionStatus.NotSubmitted)
+                return null;
+
+            var start = assignment.PublishedAt;
+            var end = status switch
+            {
+                SubmissionStatus.SubmittedLate => DateTimeOffset.Now,
+                SubmissionStatus.Submitted => assignment.Deadline,
+                _ => assignment.UploadAfterDeadline 
+                    ? DateTimeOffset.Now
+                    : assignment.Deadline
+            };
+
+            return _faker.Date.BetweenOffset(start, end);
         }
     }
 }

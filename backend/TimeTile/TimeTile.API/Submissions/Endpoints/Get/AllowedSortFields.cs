@@ -7,6 +7,7 @@
         GradeId,
         Status,
         StudentNote,
-        Feedback
+        Feedback,
+        SubmittedAt
     }
 }

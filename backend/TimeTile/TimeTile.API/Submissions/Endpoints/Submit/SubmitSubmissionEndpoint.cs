@@ -44,7 +44,9 @@ namespace TimeTile.API.Submissions.Endpoints.Submit
                     : null;
             }
 
-            submission.Status = submission.Assignment.Lesson.Date > DateTimeOffset.UtcNow
+            submission.SubmittedAt = DateTimeOffset.UtcNow;
+
+            submission.Status = submission.Assignment.Deadline >= submission.SubmittedAt
                     ? SubmissionStatus.Submitted
                     : SubmissionStatus.SubmittedLate;
 
@@ -69,6 +71,7 @@ namespace TimeTile.API.Submissions.Endpoints.Submit
                 submission.Status.ToString(),
                 submission.StudentNote,
                 submission.Feedback,
+                submission.SubmittedAt,
                 await db.SubmissionsFiles
                     .Where(sf => sf.SubmissionId == submission.Id)
                     .Select(sf => sf.File.FileGuid.ToString())
@@ -136,6 +139,7 @@ namespace TimeTile.API.Submissions.Endpoints.Submit
             string Status,
             string? StudentNote,
             string? Feedback,
+            DateTimeOffset? SubmittedAt,
             string[] FileUrls
         );
     }

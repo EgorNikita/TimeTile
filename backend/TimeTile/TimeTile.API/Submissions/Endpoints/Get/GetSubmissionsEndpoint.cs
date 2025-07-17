@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
@@ -24,15 +25,18 @@ namespace TimeTile.API.Submissions.Endpoints.Get
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            IInstitutionProvider institutionProvider,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
+            var institutionId = institutionProvider.GetInstitutionId();
+
+            var baseQuery = BuildFilteredQuery(request, institutionId, db);
+
+            baseQuery = ApplySorting(baseQuery, request.SortBy, request.Descending);
+
             // Form a final paged list
-            var grades = await BuildFilteredQuery(request, db)
-                .ApplySorting(
-                    request.SortBy,
-                    request.Descending
-                )
+            var grades = await baseQuery
                 .Select(x => new Response(
                     x.Id,
                     x.AssignmentId,
@@ -51,10 +55,11 @@ namespace TimeTile.API.Submissions.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
-        private static IQueryable<Submission> BuildFilteredQuery(Request request, TimetileDbContext db)
+        private static IQueryable<Submission> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
         {
             var baseQuery = db.Submissions
-                .AsNoTracking();
+                .AsNoTracking()
+                .Where(s => s.Assignment.Lesson.Course.InstitutionId == institutionId);
 
             if (request.Statuses is not null && request.Statuses.Any())
             {
@@ -78,6 +83,25 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                 );
 
             return baseQuery;
+        }
+
+        private static IQueryable<Submission> ApplySorting(IQueryable<Submission> query, string? sortBy, bool descending)
+        {
+            if (sortBy != null)
+            {
+                return query.ApplySorting(
+                    sortBy,
+                    descending
+                );
+            }
+            else
+            {
+                return descending
+                    ? query.OrderByDescending(s =>
+                        s.Assignment.Deadline)
+                    : query.OrderBy(s =>
+                        s.Assignment.Deadline);
+            }
         }
 
         public sealed record Request(

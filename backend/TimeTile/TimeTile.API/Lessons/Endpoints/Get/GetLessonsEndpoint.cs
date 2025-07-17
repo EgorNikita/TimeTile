@@ -24,11 +24,14 @@ namespace TimeTile.API.Lessons.Endpoints.Get
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            IInstitutionProvider institutionProvider,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
+            var institutionId = institutionProvider.GetInstitutionId();
+
             // Form a final paged list
-            var lessons = await BuildFilteredQuery(request, db)
+            var lessons = await BuildFilteredQuery(request, institutionId, db)
                 .Include(l => l.Course)
                 .Include(l => l.LessonToTimetableUnits)
                 .ApplySorting(
@@ -55,10 +58,11 @@ namespace TimeTile.API.Lessons.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
-        private static IQueryable<Lesson> BuildFilteredQuery(Request request, TimetileDbContext db)
+        private static IQueryable<Lesson> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
         {
             var baseQuery = db.Lessons
-                .AsNoTracking();
+                .AsNoTracking()
+                .Where(l => l.Course.InstitutionId == institutionId);
 
             // Date
             if (request.From is not null)

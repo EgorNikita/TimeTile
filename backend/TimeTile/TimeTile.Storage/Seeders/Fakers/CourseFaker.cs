@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +19,9 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const float TEACHER_INFO_PRESENCE_POSSIBILITY = 0.3f;
 
         // Cashing for optimization
-        private readonly Dictionary<int, List<Subject>> _institutionSubjects = new();
-        private readonly Dictionary<int, List<InstitutionMember>> _subjectTeachers = new();
-        private readonly Dictionary<int, List<Term>> _institutionTerms = new();
+        private static readonly Dictionary<int, List<Subject>> _institutionSubjects = new();
+        private static readonly Dictionary<int, List<InstitutionMember>> _subjectTeachers = new();
+        private static readonly Dictionary<int, List<Term>> _institutionTerms = new();
 
         // For generating unique values
         private static readonly HashSet<string> _usedTitles = new();

@@ -25,13 +25,13 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const float UPLOAD_AFTER_DEADLINE_POSSIBILITY = 0.8f;
 
         // Cashing for optimization
-        private readonly Dictionary<int, IEnumerable<Course>> _institutionCourses = new();
-        private readonly Dictionary<int, IEnumerable<Classroom>> _institutionClassrooms = new();
-        private readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
+        private static readonly Dictionary<int, IEnumerable<Course>> _institutionCourses = new();
+        private static readonly Dictionary<int, IEnumerable<Classroom>> _institutionClassrooms = new();
+        private static readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
 
         // Maintain uniqueness of rows
-        private readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
-        private readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
+        private static readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
+        private static readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
 
         // Extra fakers
         private readonly LessonToStudentFaker _lessonToStudentFaker = new();

@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const int MIN_UNIT_DURATION_MINUTES = 35;
         private const int MAX_UNIT_DURATION_MINUTES = 60;
 
-        private readonly Dictionary<int, List<KeyValuePair<TimeOnly, TimeOnly>>> _institutionsToLessonTime = new();
+        private static readonly Dictionary<int, List<KeyValuePair<TimeOnly, TimeOnly>>> _institutionsToLessonTime = new();
 
         public TimetableUnitFaker(List<Institution> institutions)
         {

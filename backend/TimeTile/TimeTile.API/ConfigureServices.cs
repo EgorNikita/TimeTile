@@ -17,6 +17,7 @@ using TimeTile.API.Common.Api.Json;
 using TimeTile.API.Courses.Services;
 using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
+using TimeTile.API.Messages.Hubs.Validators;
 using TimeTile.API.Messages.Services;
 using TimeTile.API.Users.Services;
 using TimeTile.Core.Common.Constants;
@@ -59,6 +60,7 @@ public static class ConfigureServices
         builder.Services.AddScoped<RequireUserIdFilter>();
         builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+        builder.Services.AddScoped<IMessagesHubValidator, MessagesHubValidator>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IAvatarService, AvatarService>();

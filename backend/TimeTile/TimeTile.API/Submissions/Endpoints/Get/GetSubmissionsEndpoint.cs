@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
@@ -87,21 +88,19 @@ namespace TimeTile.API.Submissions.Endpoints.Get
 
         private static IQueryable<Submission> ApplySorting(IQueryable<Submission> query, string? sortBy, bool descending)
         {
-            if (sortBy != null)
+            if (!sortBy.IsNullOrEmpty())
             {
                 return query.ApplySorting(
                     sortBy,
                     descending
                 );
             }
-            else
-            {
-                return descending
-                    ? query.OrderByDescending(s =>
-                        s.Assignment.Deadline)
-                    : query.OrderBy(s =>
-                        s.Assignment.Deadline);
-            }
+           
+            return descending
+                ? query.OrderByDescending(s =>
+                    s.Assignment.Deadline)
+                : query.OrderBy(s =>
+                    s.Assignment.Deadline);
         }
 
         public sealed record Request(

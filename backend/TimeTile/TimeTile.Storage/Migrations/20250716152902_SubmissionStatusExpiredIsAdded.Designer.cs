@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TimeTile.Storage.Contexts;
@@ -11,9 +12,11 @@ using TimeTile.Storage.Contexts;
 namespace TimeTile.Storage.Migrations
 {
     [DbContext(typeof(TimetileDbContext))]
-    partial class TimetileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250716152902_SubmissionStatusExpiredIsAdded")]
+    partial class SubmissionStatusExpiredIsAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -785,6 +788,10 @@ namespace TimeTile.Storage.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ArgbColor")
+                        .HasColumnType("integer")
+                        .HasColumnName("argb_color");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -801,6 +808,10 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("character varying(250)")
                         .HasColumnName("description");
 
+                    b.Property<int>("InstitutionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("institution_id");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -809,11 +820,13 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Description", "DeletedAt")
-                        .IsUnique()
-                        .HasDatabaseName("lesson_statuses_description_deleted_at_key");
+                    b.HasIndex("InstitutionId");
 
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Description", "DeletedAt"), false);
+                    b.HasIndex("Description", "InstitutionId", "DeletedAt")
+                        .IsUnique()
+                        .HasDatabaseName("lesson_statuses_description_institution_deleted_at_key");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Description", "InstitutionId", "DeletedAt"), false);
 
                     b.ToTable("lesson_statuses", null, t =>
                         {
@@ -1856,6 +1869,18 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("LessonStatus");
                 });
 
+            modelBuilder.Entity("TimeTile.Core.Models.LessonStatus", b =>
+                {
+                    b.HasOne("TimeTile.Core.Models.Institution", "Institution")
+                        .WithMany("LessonStatuses")
+                        .HasForeignKey("InstitutionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("lesson_statuses_institution_id_fkey");
+
+                    b.Navigation("Institution");
+                });
+
             modelBuilder.Entity("TimeTile.Core.Models.LessonToStudent", b =>
                 {
                     b.HasOne("TimeTile.Core.Models.Grade", "Grade")
@@ -2195,6 +2220,8 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Courses");
 
                     b.Navigation("Groups");
+
+                    b.Navigation("LessonStatuses");
 
                     b.Navigation("Roles");
 

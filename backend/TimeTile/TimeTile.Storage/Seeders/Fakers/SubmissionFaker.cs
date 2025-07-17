@@ -47,7 +47,14 @@ namespace TimeTile.Storage.Seeders.Fakers
             {
                 var submission = _submissions[_actualIndex++];
 
-                submission.Status = _faker.PickRandom<SubmissionStatus>();
+                var validStatuses = Enum.GetValues(typeof(SubmissionStatus))
+                    .Cast<SubmissionStatus>()
+                    .Where(s =>
+                        submission.Assignment.Deadline <= DateTimeOffset.UtcNow ||
+                        (s != SubmissionStatus.SubmittedLate && s != SubmissionStatus.Expired))
+                    .ToList();
+
+                submission.Status = _faker.PickRandom(validStatuses);
 
                 if (submission.Status == SubmissionStatus.Rejected)
                 {
@@ -65,6 +72,12 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                     _submissions.Add(newSubmission);
                     newSubmissions.Add(newSubmission);
+                }
+                else if (submission.Status == SubmissionStatus.SubmittedLate)
+                {
+                    submission.Status = submission.Assignment.UploadAfterDeadline
+                        ? SubmissionStatus.SubmittedLate
+                        : SubmissionStatus.Submitted;
                 }
 
                 submission.StudentNote = GenerateValidStudentNote(submission);

@@ -91,7 +91,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string? GenerateValidStudentNote(Submission submission)
         {
-            if (submission.Status == SubmissionStatus.NotSubmitted)
+            if (submission.Status == SubmissionStatus.NotSubmitted || submission.Status == SubmissionStatus.Expired)
             {
                 return null;
             }
@@ -134,7 +134,7 @@ namespace TimeTile.Storage.Seeders.Fakers
             var assignment = submission.Assignment;
             var status = submission.Status;
 
-            if (status == SubmissionStatus.NotSubmitted)
+            if (status == SubmissionStatus.NotSubmitted || status == SubmissionStatus.Expired)
                 return null;
 
             var start = assignment.PublishedAt;

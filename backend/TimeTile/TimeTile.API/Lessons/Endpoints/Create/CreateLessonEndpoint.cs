@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TimeTile.API.Common.Api;
-using static TimeTile.API.Endpoints;
-using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
-using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api.Extensions;
+using Microsoft.EntityFrameworkCore;
+using static TimeTile.API.Endpoints;
 
 namespace TimeTile.API.Lessons.Endpoints.Create
 {
@@ -31,7 +30,8 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             {
                 CourseId = request.CourseId,
                 ClassroomId = request.ClassroomId,
-                LessonStatusId = request.LessonStatusId,
+                LessonStatusId = request.LessonStatusId 
+                    ?? (await db.LessonStatuses.FirstAsync(ls => ls.Description == Core.Common.Constants.LessonStatuses.Scheduled)).Id,
                 Date = request.Date.ToUniversalTime(),
                 Description = request.Description.Trim(),
                 LessonToTimetableUnits = request.TimetableUnitIds
@@ -67,7 +67,7 @@ namespace TimeTile.API.Lessons.Endpoints.Create
             List<int> TimetableUnitIds,
             int CourseId,
             int ClassroomId,
-            int LessonStatusId,
+            int? LessonStatusId,
             DateTimeOffset Date,
             string Description
         );

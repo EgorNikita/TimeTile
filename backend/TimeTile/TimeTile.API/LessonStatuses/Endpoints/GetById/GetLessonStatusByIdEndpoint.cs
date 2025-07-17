@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -31,8 +29,7 @@ namespace TimeTile.API.LessonStatuses.Endpoints.GetById
 
             var response = new Response(
                 lessonStatus.Id,
-                lessonStatus.Description,
-                lessonStatus.ArgbColor
+                lessonStatus.Description
             );
 
             var result = Result.Success(response);
@@ -46,8 +43,7 @@ namespace TimeTile.API.LessonStatuses.Endpoints.GetById
 
         private sealed record Response(
             int Id,
-            string Description,
-            int ArgbColor
+            string Description
         );
     }
 }

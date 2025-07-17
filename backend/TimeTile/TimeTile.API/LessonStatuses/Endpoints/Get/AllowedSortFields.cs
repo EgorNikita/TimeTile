@@ -2,7 +2,6 @@
 {
     public enum AllowedSortFields
     {
-        Description,
-        ArgbColor
+        Description
     }
 }

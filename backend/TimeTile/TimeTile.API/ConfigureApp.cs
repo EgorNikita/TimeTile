@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -77,6 +78,7 @@ public static class ConfigureApp
             await db.Database.MigrateAsync();
 
             await PermissionsSeeder.Seed(db, logger);
+            await LessonStatusesSeeder.Seed(db, logger);
             await RolesSeeder.SeedRequiredRoles(db, logger);
             await AdminSeeder.Seed(db, hasher, userService, fileService, logger);
         }

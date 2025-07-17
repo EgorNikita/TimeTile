@@ -28,8 +28,7 @@ namespace TimeTile.API.LessonStatuses.Endpoints.GetBulk
                 .Where(s => request.Ids.Contains(s.Id))
                 .Select(x => new Response(
                     x.Id,
-                    x.Description,
-                    x.ArgbColor
+                    x.Description
                 ))
                 .ToListAsync(cancellationToken);
 
@@ -44,8 +43,7 @@ namespace TimeTile.API.LessonStatuses.Endpoints.GetBulk
 
         private sealed record Response(
             int Id,
-            string Description,
-            int ArgbColor
+            string Description
         );
     }
 }

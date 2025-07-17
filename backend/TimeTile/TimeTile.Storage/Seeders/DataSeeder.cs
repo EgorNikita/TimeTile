@@ -67,6 +67,9 @@ namespace TimeTile.Storage.Seeders
             // Get already seeded permissions
             var permissions = await _context.Permissions.ToListAsync(cancellationToken);
 
+            // Get already seeded lesson statuses
+            var lessonStatuses = await _context.LessonStatuses.ToListAsync(cancellationToken);
+
             // Get already seeded roles
             var adminRole = await _context.Roles.FirstAsync(r => r.Title == GeneralRoles.Admin, cancellationToken);
             var studentRole = await _context.Roles.FirstAsync(r => r.Title == GeneralRoles.Student, cancellationToken);
@@ -78,9 +81,6 @@ namespace TimeTile.Storage.Seeders
 
             var classroomTypes = new ClassroomTypeFaker(institutions).Generate(CLASSROOM_TYPES_COUNT);
             await _context.ClassroomTypes.AddRangeAsync(classroomTypes, cancellationToken);
-
-            var lessonStatuses = new LessonStatusFaker(institutions).Generate(LESSON_STATUSES_COUNT);
-            await _context.LessonStatuses.AddRangeAsync(lessonStatuses, cancellationToken);
 
             var timetableUnits = new TimetableUnitFaker(institutions).Generate(TIMETABLE_UNITS_COUNT);
             await _context.TimetableUnits.AddRangeAsync(timetableUnits, cancellationToken);

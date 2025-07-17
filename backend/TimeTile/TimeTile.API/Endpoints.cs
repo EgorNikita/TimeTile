@@ -14,7 +14,6 @@ using TimeTile.API.Files.Endpoints.GetByUrl;
 using TimeTile.API.Institutions.Endpoints.Create;
 using TimeTile.API.Institutions.Endpoints.GetById;
 using TimeTile.API.Institutions.Endpoints.Get;
-using TimeTile.API.LessonStatuses.Endpoints.Create;
 using TimeTile.API.LessonStatuses.Endpoints.Get;
 using TimeTile.API.LessonStatuses.Endpoints.GetById;
 using TimeTile.API.Roles.Endpoints.Create;
@@ -197,7 +196,6 @@ public static class Endpoints
         endpoints
             .MapEndpoint<GetLessonStatusesEndpoint>()
             .MapEndpoint<GetLessonStatusByIdEndpoint>()
-            .MapEndpoint<CreateLessonStatusEndpoint>()
             .MapEndpoint<GetLessonStatusesBulkEndpoint>();
     }
 

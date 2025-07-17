@@ -225,11 +225,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidDescription(Faker faker)
         {
-            string description = $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
+            var rawDescriptionGenerator = () => $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
 
-            int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
-
-            return TruncateToMaxLength(description, maxLength);
+            return GenerateValidValue(rawDescriptionGenerator, RegexPatterns.Pattern.Description);
         }
 
         private Assignment GenerateValidAssignment(Faker faker, DateTimeOffset date, DateTimeOffset endTime)

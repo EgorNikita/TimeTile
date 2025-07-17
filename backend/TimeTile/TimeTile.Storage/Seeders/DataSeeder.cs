@@ -1,18 +1,14 @@
-﻿using Bogus;
+using Bogus;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Constants;
-using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
-using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
-using TimeTile.Storage.DataSeeders;
 using TimeTile.Storage.Seeders.Fakers;
 
 namespace TimeTile.Storage.Seeders
 {
     public class DataSeeder
     {
-        private const string CURRENT_ASSEMBLY = "TimeTile.Storage";
         private const string CURRENT_FOLDER = "Seeders";
         public static readonly string CURRENT_DIRECTORY = Path.Combine(AppContext.BaseDirectory, CURRENT_FOLDER);
 
@@ -20,7 +16,6 @@ namespace TimeTile.Storage.Seeders
         // Influence Generation's volume
         private const int INSTITUTIONS_COUNT = 2;
         private const int CLASSROOM_TYPES_COUNT = 5;
-        private const int LESSON_STATUSES_COUNT = 10;
         private const int TIMETABLE_UNITS_COUNT = 16;
         private const int SUBJECTS_COUNT = 20;
         private const int TERMS_COUNT = 4;

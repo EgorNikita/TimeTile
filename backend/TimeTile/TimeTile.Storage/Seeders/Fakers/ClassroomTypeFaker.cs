@@ -14,6 +14,9 @@ namespace TimeTile.Storage.Seeders.Fakers
         // Description constraints
         private const int DESCRIPTION_WORDS_COUNT = 3;
 
+        // For generating unique values
+        private static readonly HashSet<string> _usedDescriptions = new();
+
         public ClassroomTypeFaker(List<Institution> institutions)            // TODO: add icons
         {
             _faker
@@ -23,9 +26,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidDescription(Faker faker)
         {
-            Func<string> generator = () => MakeUniqueValue(faker.Lorem.Sentence(DESCRIPTION_WORDS_COUNT));
+            Func<string> rawDescriptionGenerator = () => faker.Lorem.Sentence(DESCRIPTION_WORDS_COUNT);
+            Func<string> generator = () => GenerateValidValue(rawDescriptionGenerator, RegexPatterns.Pattern.Description);
 
-            return GenerateValidValue(generator, RegexPatterns.Pattern.Description);
+            return MakeUniqueValue(generator, _usedDescriptions);
         }
     }
 }

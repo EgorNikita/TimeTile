@@ -11,6 +11,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class RoleFaker : BaseFaker<Role>
     {
+        // For generating unique values
+        private static readonly HashSet<string> _usedTitles = new();
+
         public RoleFaker(List<Institution> institutions)
         {
             _faker
@@ -20,10 +23,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidTitle(Faker faker)
         {
-            Func<string> generator = () =>
-                MakeUniqueValue(faker.Name.JobTitle());
+            Func<string> rawTitleGenerator = faker.Name.JobTitle;
+            Func<string> generator = () => GenerateValidValue(rawTitleGenerator, RegexPatterns.Pattern.Title);
 
-            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
+            return MakeUniqueValue(generator, _usedTitles);
         }
     }
 }

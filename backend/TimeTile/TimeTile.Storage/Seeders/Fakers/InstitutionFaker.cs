@@ -7,8 +7,9 @@ namespace TimeTile.Storage.Seeders.Fakers
     internal class InstitutionFaker : BaseFaker<Institution>
     {
         // For generating unique values
-        private readonly HashSet<string> _usedEmails = new();
-        private readonly HashSet<string> _usedDomains = new();
+        private static readonly HashSet<string> _usedTitles = new();
+        private static readonly HashSet<string> _usedEmails = new();
+        private static readonly HashSet<string> _usedDomains = new();
 
         public InstitutionFaker()
         {
@@ -22,9 +23,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidTitle(Faker faker)
         {
-            Func<string> generator = () => MakeUniqueValue(faker.Company.CompanyName());
+            Func<string> rawTitleGenerator = () => faker.Company.CompanyName();
+            Func<string> generator = () => GenerateValidValue(rawTitleGenerator, RegexPatterns.Pattern.Title);
 
-            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
+            return MakeUniqueValue(generator, _usedTitles);
         }
 
         private string GenerateValidAddress(Faker faker)
@@ -43,36 +45,18 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidEmail(Faker faker)
         {
-            Func<string> generator = () => faker.Internet.Email();
+            Func<string> rawEmailGenerator = () => faker.Internet.Email();
+            Func<string> generator = () => GenerateValidValue(rawEmailGenerator, RegexPatterns.Pattern.Email);
 
-            while (true)
-            {
-                string email = GenerateValidValue(generator, RegexPatterns.Pattern.Email);
-
-                if (! _usedEmails.Contains(email))
-                {
-                    _usedEmails.Add(email);
-
-                    return email;
-                }
-            }
+            return MakeUniqueValue(generator, _usedEmails);
         }
 
         private string GenerateValidDomain(Faker faker)
         {
-            Func<string> generator = () => faker.Internet.DomainName();
+            Func<string> rawDomainGenerator = faker.Internet.DomainName;
+            Func<string> generator = () => GenerateValidValue(rawDomainGenerator, RegexPatterns.Pattern.Domain);
 
-            while (true)
-            {
-                string domain = GenerateValidValue(generator, RegexPatterns.Pattern.Domain);
-
-                if (! _usedDomains.Contains(domain))
-                {
-                    _usedDomains.Add(domain);
-
-                    return domain;
-                }
-            }
+            return MakeUniqueValue(generator, _usedDomains);
         }
     }
 }

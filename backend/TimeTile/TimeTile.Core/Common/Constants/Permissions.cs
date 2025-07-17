@@ -42,6 +42,13 @@ public static class Permissions
         public const string Get = "GetMessages";
     }
 
+    public static class Courses
+    {
+        public const string AddStudent = "AddStudentToCourse";
+        public const string RemoveStudent = "RemoveStudentFromCourse";
+        public const string UpdateTeacher = "UpdateTeacher";
+    }
+
     private static readonly Lazy<IReadOnlyList<string>> _allPermissions = new(() => 
         typeof(Permissions)
             .GetNestedTypes(BindingFlags.Public | BindingFlags.Static)

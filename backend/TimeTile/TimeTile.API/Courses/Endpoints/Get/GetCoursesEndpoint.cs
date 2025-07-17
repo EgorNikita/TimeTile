@@ -99,27 +99,25 @@ namespace TimeTile.API.Courses.Endpoints.Get
 
         private static IQueryable<Course> ApplySorting(IQueryable<Course> query, int userId, string? sortBy, bool descending)
         {
-            if (sortBy != null)
+            if (!string.IsNullOrEmpty(sortBy))
             {
                 return query.ApplySorting(
                     sortBy,
                     descending
                 );
             }
-            else
-            {
-                return descending
-                    ? query.OrderByDescending(c =>
-                        c.CoursesToUsers
-                            .Where(cu => cu.UserId == userId)
-                            .Select(cu => (int?)cu.OrderNumber)
-                            .FirstOrDefault())
-                    : query.OrderBy(c =>
-                        c.CoursesToUsers
-                            .Where(cu => cu.UserId == userId)
-                            .Select(cu => (int?)cu.OrderNumber)
-                            .FirstOrDefault());
-            }
+
+            return descending
+                ? query.OrderByDescending(c =>
+                    c.CoursesToUsers
+                        .Where(cu => cu.UserId == userId)
+                        .Select(cu => (int?)cu.OrderNumber)
+                        .FirstOrDefault())
+                : query.OrderBy(c =>
+                    c.CoursesToUsers
+                        .Where(cu => cu.UserId == userId)
+                        .Select(cu => (int?)cu.OrderNumber)
+                        .FirstOrDefault());
         }
 
         public sealed record Request(

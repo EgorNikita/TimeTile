@@ -34,7 +34,7 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                 .MustBeValidOptionalListOfIds()
                 .DependentRules(() =>
                 {
-                    When(x => x.AssignmentIds != null, () => {
+                    When(x => x.AssignmentIds != null && x.AssignmentIds.Any(), () => {
                         RuleFor(x => x.AssignmentIds!)
                             .MustBeValidEntityIdsList<GetSubmissionsEndpoint.Request, Assignment>(db)
                             .DependentRules(() =>

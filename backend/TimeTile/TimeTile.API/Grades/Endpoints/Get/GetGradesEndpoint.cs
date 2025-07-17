@@ -27,11 +27,14 @@ namespace TimeTile.API.Grades.Endpoints.Get
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            IInstitutionProvider institutionProvider,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
+            var institutionId = institutionProvider.GetInstitutionId();
+
             // Form a final paged list
-            var grades = await BuildFilteredQuery(request, db)
+            var grades = await BuildFilteredQuery(request, institutionId, db)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -71,10 +74,15 @@ namespace TimeTile.API.Grades.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
-        private static IQueryable<Grade> BuildFilteredQuery(Request request, TimetileDbContext db)
+        private static IQueryable<Grade> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
         {
             var baseQuery = db.Grades
-                .AsNoTracking();
+                .AsNoTracking()
+                .Where(g =>
+                    (g.Type == GradeType.Classwork && g.LessonToStudent!.Student.InstitutionId == institutionId) ||
+                    (g.Type == GradeType.Homework && g.Submission!.Student.InstitutionId == institutionId) ||
+                    (g.Type == GradeType.Exam && g.CourseToStudent!.Course.InstitutionId == institutionId)
+                );
 
             if (request.Types is not null && request.Types.Any())
             {

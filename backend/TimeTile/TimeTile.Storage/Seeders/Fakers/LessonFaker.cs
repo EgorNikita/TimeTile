@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
@@ -16,6 +17,7 @@ namespace TimeTile.Storage.Seeders.Fakers
     {
         // Lesson constraints
         private const float TWO_LESSONS_IN_A_ROW_POSSIBILITY = 0.8f;
+        private const float LESSON_SCHEDULED_POSSIBILITY = 0.9f;
 
         // Assignment constraints
         private const float ASSIGNMENT_PRESENCE_POSSIBILITY = 0.6f;
@@ -23,8 +25,6 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const float UPLOAD_AFTER_DEADLINE_POSSIBILITY = 0.8f;
 
         // Cashing for optimization
-        private readonly Dictionary<int, List<LessonStatus>> _institutionLessonStatuses = new();
-
         private readonly Dictionary<int, IEnumerable<Course>> _institutionCourses = new();
         private readonly Dictionary<int, IEnumerable<Classroom>> _institutionClassrooms = new();
         private readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
@@ -42,12 +42,11 @@ namespace TimeTile.Storage.Seeders.Fakers
                 .Where(i =>
                     classrooms.Any(c => c.InstitutionId == i.Id) &&
                     courses.Any(c => c.InstitutionId == i.Id) &&
-                    lessonStatuses.Any(s => s.InstitutionId == i.Id) &&
                     timetableUnits.Any(u => u.InstitutionId == i.Id))
                 .ToList();
 
             if (suitableInstitutions.Count == 0)
-                throw new InvalidOperationException("There are no associations between classrooms, courses, lesson statuses and timetable units.");
+                throw new InvalidOperationException("There are no associations between classrooms, courses and timetable units.");
 
             _faker
                 .Rules((faker, lesson) =>
@@ -56,14 +55,16 @@ namespace TimeTile.Storage.Seeders.Fakers
                     {
                         int institutionId = institution.Id;
 
-                        lesson.LessonStatus = PickAssociatedEntity(
-                            faker,
-                            institutionId,
-                            lessonStatuses,
-                            _institutionLessonStatuses,
-                            s => s.InstitutionId == institutionId
-                        );
+                        // LessonStatus
+                        var scheduledLessonStatus = lessonStatuses
+                            .First(ls => ls.Description == LessonStatuses.Scheduled);
 
+                        if (faker.Random.Bool(LESSON_SCHEDULED_POSSIBILITY))
+                            lesson.LessonStatus = scheduledLessonStatus;
+                        else
+                            lesson.LessonStatus = faker.PickRandom(lessonStatuses.Except([scheduledLessonStatus]));
+
+                        // Other FKs
                         var suitableTimetableUnits = _institutionTimetableUnits.ContainsKey(institutionId) 
                             ? _institutionTimetableUnits[institutionId]
                             : timetableUnits.Where(u => u.InstitutionId == institutionId);
@@ -100,8 +101,10 @@ namespace TimeTile.Storage.Seeders.Fakers
                             .ToList();
                         lesson.Date = combination.date;
                         
+                        // LessonsToStudents
                         AddAssociationsWithStudents(lesson, suitableCourses, combination.courseId);
 
+                        // Assignment
                         if (lesson.Date <= DateTimeOffset.UtcNow && faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
                         {
                             AddAssignment(faker, lesson, combination.date);

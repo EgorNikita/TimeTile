@@ -16,8 +16,6 @@ public partial class Institution : AuditableEntity, IEntity
     
     public string Domain { get; set; } = null!;
     
-    public virtual ICollection<LessonStatus> LessonStatuses { get; set; } = new List<LessonStatus>();
-    
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
     
     public virtual ICollection<User> Users { get; set; } = new List<User>();

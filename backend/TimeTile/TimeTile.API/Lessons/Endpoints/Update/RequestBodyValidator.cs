@@ -64,7 +64,7 @@ namespace TimeTile.API.Lessons.Endpoints.Update
                     .DependentRules(() =>
                     {
                         RuleFor(x => x.LessonStatusId!.Value)
-                            .MustBeValidInstitutionEntityId<UpdateLessonEndpoint.RequestBody, LessonStatus>(db, institutionId);
+                            .MustBeValidEntityId<UpdateLessonEndpoint.RequestBody, LessonStatus>(db);
                     });
             });
 

@@ -14,7 +14,6 @@ using TimeTile.API.Files.Endpoints.GetByUrl;
 using TimeTile.API.Institutions.Endpoints.Create;
 using TimeTile.API.Institutions.Endpoints.GetById;
 using TimeTile.API.Institutions.Endpoints.Get;
-using TimeTile.API.LessonStatuses.Endpoints.Create;
 using TimeTile.API.LessonStatuses.Endpoints.Get;
 using TimeTile.API.LessonStatuses.Endpoints.GetById;
 using TimeTile.API.Roles.Endpoints.Create;
@@ -76,6 +75,11 @@ using TimeTile.API.Submissions.Endpoints.Review;
 using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 using TimeTile.API.Grades.Endpoints.GetBulk;
 using TimeTile.API.Submissions.Endpoints.GetBulk;
+using TimeTile.API.Assignments.Endpoints.GetBulk;
+using TimeTile.API.Courses.Endpoints.GetBulk;
+using TimeTile.API.InstitutionMembers.Endpoints.GetBulk;
+using TimeTile.API.Classrooms.Endpoints.GetBulk;
+using TimeTile.API.LessonStatuses.Endpoints.GetBulk;
 
 namespace TimeTile.API;
 
@@ -193,7 +197,7 @@ public static class Endpoints
         endpoints
             .MapEndpoint<GetLessonStatusesEndpoint>()
             .MapEndpoint<GetLessonStatusByIdEndpoint>()
-            .MapEndpoint<CreateLessonStatusEndpoint>();
+            .MapEndpoint<GetLessonStatusesBulkEndpoint>();
     }
 
     private static void MapTermsEndpoints(this IEndpointRouteBuilder app)
@@ -223,7 +227,8 @@ public static class Endpoints
         endpoints
             .MapEndpoint<GetClassroomsEndpoint>()
             .MapEndpoint<GetClassroomByIdEndpoint>()
-            .MapEndpoint<CreateClassroomEndpoint>();
+            .MapEndpoint<CreateClassroomEndpoint>()
+            .MapEndpoint<GetClassroomsBulkEndpoint>();
     }
 
     private static void MapStudentEndpoints(this IEndpointRouteBuilder app)
@@ -301,7 +306,8 @@ public static class Endpoints
             .MapEndpoint<GetInstitutionMembersEndpoint>()
             .MapEndpoint<GetInstitutionMemberByIdEndpoint>()
             .MapEndpoint<UpdateTeacherSubjectsEndpoint>()
-            .MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>();
+            .MapEndpoint<UpdateInstitutionMemberGroupsEndpoint>()
+            .MapEndpoint<GetInstitutionMembersBulkEndpoint>();
     }
 
     private static void MapGradesEndpoints(this IEndpointRouteBuilder app)
@@ -356,7 +362,8 @@ public static class Endpoints
             .MapEndpoint<CreateCourseEndpoint>()
             .MapEndpoint<UpdateCourseStudentsEndpoint>()
             .MapEndpoint<GetCourseStudentsEndpoint>()
-            .MapEndpoint<UpdateCourseToStudentEndpoint>();
+            .MapEndpoint<UpdateCourseToStudentEndpoint>()
+            .MapEndpoint<GetCoursesBulkEndpoint>();
     }
 
     private static void MapAssignmentsEndpoints(this IEndpointRouteBuilder app)
@@ -367,7 +374,8 @@ public static class Endpoints
             .MapEndpoint<GetAssignmentByIdEndpoint>()
             .MapEndpoint<GetAssignmentFilesEndpoint>()
             .MapEndpoint<CreateAssignmentEndpoint>()
-            .MapEndpoint<UpdateAssignmentEndpoint>();
+            .MapEndpoint<UpdateAssignmentEndpoint>()
+            .MapEndpoint<GetAssignmentsBulkEndpoint>();
     }
 
     private static void MapSubmissionsEndpoints(this IEndpointRouteBuilder app)

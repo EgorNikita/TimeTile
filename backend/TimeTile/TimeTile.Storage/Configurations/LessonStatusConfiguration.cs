@@ -20,8 +20,8 @@ namespace TimeTile.Storage.Configurations
 
             builder.HasKey(e => e.Id);
 
-            builder.HasIndex(e => new { e.Description, e.InstitutionId, e.DeletedAt })
-                .HasDatabaseName("lesson_statuses_description_institution_deleted_at_key")
+            builder.HasIndex(e => new { e.Description, e.DeletedAt })
+                .HasDatabaseName("lesson_statuses_description_deleted_at_key")
                 .AreNullsDistinct(false)
                 .IsUnique();
 
@@ -33,19 +33,6 @@ namespace TimeTile.Storage.Configurations
             builder.Property(e => e.Description)
                 .HasMaxLength(RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength)
                 .HasColumnName("description");
-
-            builder.Property(e => e.ArgbColor)
-                .HasColumnName("argb_color");
-
-            builder.Property(e => e.InstitutionId)
-                .HasColumnName("institution_id");
-
-            // Many-to-Many Configuration
-            builder.HasOne(e => e.Institution)
-                .WithMany(e => e.LessonStatuses)
-                .HasForeignKey(e => e.InstitutionId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("lesson_statuses_institution_id_fkey");
         }
     }
 }

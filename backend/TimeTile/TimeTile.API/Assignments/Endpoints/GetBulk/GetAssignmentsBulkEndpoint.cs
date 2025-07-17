@@ -2,53 +2,51 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Common.Api.Pagination.PagedRequest;
-using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Assignments.Endpoints.GetById
+namespace TimeTile.API.Assignments.Endpoints.GetBulk
 {
-    public class GetAssignmentByIdEndpoint : IEndpoint
+    public class GetAssignmentsBulkEndpoint : IEndpoint
     {
         public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
         {
             return app
-                .MapGet("/{id}", Handle)
-                .WithSummary("Returns Assignment by passed Id")
+                .MapGet("/bulk", Handle)
+                .WithSummary("Returns assignments by passed ids")
                 .WithRequestValidation<Request>();
         }
 
-        private static async Task<Ok<Result<Response>>> Handle(
+        private static async Task<Ok<Result<List<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            // Find Assignment
-            var assignment = await db.Assignments
+            // Form a final paged list
+            var assignments = await db.Assignments
                 .AsNoTracking()
                 .Include(a => a.Lesson)
-                .Include(a => a.AssignmentToFiles)
-                .FirstAsync(x => x.Id == request.Id, cancellationToken);
+                .Where(a => request.Ids.Contains(a.Id))
+                .Select(x => new Response
+                (
+                    x.Id,
+                    x.Title,
+                    x.Description,
+                    x.PublishedAt,
+                    x.Deadline,
+                    x.UploadAfterDeadline,
+                    x.Lesson.CourseId,
+                    db.AssignmentsFiles.Any(af => af.AssignmentId == x.Id)
+                ))
+                .ToListAsync(cancellationToken);
 
-            var response = new Response(
-                assignment.Id,
-                assignment.Title,
-                assignment.Description,
-                assignment.PublishedAt,
-                assignment.Deadline,
-                assignment.UploadAfterDeadline,
-                assignment.Lesson.CourseId,
-                assignment.AssignmentToFiles.Any()
-            );
-
-            var result = Result.Success(response);
+            var result = Result.Success(assignments);
 
             return TypedResults.Ok(result);
         }
 
         public sealed record Request(
-            int Id
+            int[] Ids
         );
 
         private sealed record Response(

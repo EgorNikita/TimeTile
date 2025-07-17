@@ -149,6 +149,11 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                                         if (nextTimetableUnit is not null)
                                         {
+                                            if (timetableUnit.EndTime != nextTimetableUnit.StartTime)
+                                            {
+                                                continue; // Skip if the next unit does not follow the current one
+                                            }
+
                                             // If it is possible to have second lesson with the same data in a row
                                             var nextTeacherActivityInfo = (course.TeacherId, nextTimetableUnit.Id, currentDate);
                                             var nextClassroomUsageInfo = (classroom.Id, nextTimetableUnit.Id, currentDate);

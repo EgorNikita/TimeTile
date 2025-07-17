@@ -2,8 +2,11 @@ using Bogus;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
+using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
+using TimeTile.Storage.Seeders.Config;
 using TimeTile.Storage.Seeders.Fakers;
+using TimeTile.Storage.Seeders.RealisticFakers;
 
 namespace TimeTile.Storage.Seeders
 {
@@ -30,7 +33,7 @@ namespace TimeTile.Storage.Seeders
         private const int TEACHERS_TO_SUBJECTS_COUNT = 35;
         private const int COURSES_COUNT = 70;
         private const int COURSES_TO_STUDENTS_COUNT = 1000;
-        private const int LESSONS_COUNT = 1000;
+        private const int LESSONS_COUNT = 3000;
         private const int SUBMISSIONS_COUNT = 5000;
 
         private readonly TimetileDbContext _context;
@@ -48,6 +51,10 @@ namespace TimeTile.Storage.Seeders
 
         public async Task Seed(CancellationToken cancellationToken = default)
         {
+            Randomizer.Seed = new Random(2048);
+
+            DataGenerationConfig.SetMode(DataGenerationMode.Realistic);
+
             // if database is not empty
             if (await _context.Institutions.AnyAsync(cancellationToken))
                 return;
@@ -77,7 +84,10 @@ namespace TimeTile.Storage.Seeders
             var classroomTypes = new ClassroomTypeFaker(institutions).Generate(CLASSROOM_TYPES_COUNT);
             await _context.ClassroomTypes.AddRangeAsync(classroomTypes, cancellationToken);
 
-            var timetableUnits = new TimetableUnitFaker(institutions).Generate(TIMETABLE_UNITS_COUNT);
+            var timetableUnits = DataGenerationConfig.GenerationMode == DataGenerationMode.Random
+                ? new TimetableUnitFaker(institutions).Generate(TIMETABLE_UNITS_COUNT)
+                : TimetableUnitRealisticFaker.Generate(institutions);
+
             await _context.TimetableUnits.AddRangeAsync(timetableUnits, cancellationToken);
 
             var subjects = new SubjectFaker(institutions).Generate(SUBJECTS_COUNT);

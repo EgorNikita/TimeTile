@@ -14,7 +14,9 @@ namespace TimeTile.Storage.Seeders.Fakers
     internal abstract class BaseFaker<T>
         where T : class
     {
+        // Handling unexpected cases
         private const int MAX_ATTEMPTS_COUNT = 1000;
+        private const string INVALID_GENERATOR_ERROR = "Unable to generate a valid value.";
 
         protected readonly Faker<T> _faker = new Faker<T>();
 
@@ -23,22 +25,20 @@ namespace TimeTile.Storage.Seeders.Fakers
             return _faker.Generate(count);
         }
 
-        protected string MakeUniqueValue(string baseValue)
-        {
-            Guid guid = Guid.NewGuid();
-            BigInteger bigInt = new BigInteger(guid.ToByteArray());
-
-            string numericString = BigInteger.Abs(bigInt).ToString().PadLeft(39, '0');
-
-            return $"{baseValue} {numericString}";
-        }
-
         protected string TruncateToMaxLength(string baseValue, int maxLength)
         {
             return baseValue.Length <= maxLength ? baseValue : baseValue.Substring(0, maxLength);
         }
 
-        protected string GenerateValidValue(Func<string> valueGenerator, string regex, int maxLength)
+        protected string GenerateValidValue(Func<string> valueGenerator, RegexPatterns.Pattern pattern)
+        {
+            string regex = RegexPatterns.Patterns[pattern].Pattern.ToString();
+            int maxLength = RegexPatterns.Patterns[pattern].MaxLength;
+
+            return GenerateValidValue(valueGenerator, regex, maxLength);
+        }
+
+        private string GenerateValidValue(Func<string> valueGenerator, string regex, int maxLength)
         {
             Regex regexObj = new Regex(regex);
 
@@ -58,15 +58,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 }
             }
 
-            throw new InvalidOperationException("Unable to generate a valid value.");
-        }
-
-        protected string GenerateValidValue(Func<string> valueGenerator, RegexPatterns.Pattern pattern)
-        {
-            string regex = RegexPatterns.Patterns[pattern].Pattern.ToString();
-            int maxLength = RegexPatterns.Patterns[pattern].MaxLength;
-
-            return GenerateValidValue(valueGenerator, regex, maxLength);
+            throw new InvalidOperationException(INVALID_GENERATOR_ERROR);
         }
 
         protected static K GenerateValidValue<K>(Func<K> generator, Predicate<K> predicate)
@@ -81,17 +73,17 @@ namespace TimeTile.Storage.Seeders.Fakers
                 }
             }
 
-            throw new InvalidOperationException("Unable to generate a valid value.");
+            throw new InvalidOperationException(INVALID_GENERATOR_ERROR);
         }
 
-        protected static T PickAssociatedEntity<T>(
+        protected static K PickAssociatedEntity<K>(
             Faker faker,
             int basisId,
-            List<T> allValues,
-            Dictionary<int, List<T>> cachedAssociations,
-            Predicate<T> predicate)
+            List<K> allValues,
+            Dictionary<int, List<K>> cachedAssociations,
+            Predicate<K> predicate)
         {
-            List<T> suitableValues;
+            List<K> suitableValues;
 
             if (cachedAssociations.ContainsKey(basisId))
             {
@@ -107,6 +99,24 @@ namespace TimeTile.Storage.Seeders.Fakers
             }
 
             return faker.PickRandom(suitableValues);
+        }
+
+        protected string MakeUniqueValue(
+            Func<string> generator,
+            HashSet<string> usedValues)
+        {
+            for (int i = 0; i < MAX_ATTEMPTS_COUNT; ++i)
+            {
+                string value = generator();
+
+                if (!usedValues.Contains(value))
+                {
+                    usedValues.Add(value);
+                    return value;
+                }
+            }
+
+            throw new InvalidOperationException(INVALID_GENERATOR_ERROR);
         }
 
         protected static string FormFullPath(string fileName)

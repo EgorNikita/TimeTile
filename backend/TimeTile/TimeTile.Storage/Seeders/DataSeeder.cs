@@ -1,18 +1,17 @@
-﻿using Bogus;
+using Bogus;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Constants;
-using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
-using TimeTile.Storage.DataSeeders;
+using TimeTile.Storage.Seeders.Config;
 using TimeTile.Storage.Seeders.Fakers;
+using TimeTile.Storage.Seeders.RealisticFakers;
 
 namespace TimeTile.Storage.Seeders
 {
     public class DataSeeder
     {
-        private const string CURRENT_ASSEMBLY = "TimeTile.Storage";
         private const string CURRENT_FOLDER = "Seeders";
         public static readonly string CURRENT_DIRECTORY = Path.Combine(AppContext.BaseDirectory, CURRENT_FOLDER);
 
@@ -20,14 +19,13 @@ namespace TimeTile.Storage.Seeders
         // Influence Generation's volume
         private const int INSTITUTIONS_COUNT = 2;
         private const int CLASSROOM_TYPES_COUNT = 5;
-        private const int LESSON_STATUSES_COUNT = 10;
         private const int TIMETABLE_UNITS_COUNT = 16;
         private const int SUBJECTS_COUNT = 20;
         private const int TERMS_COUNT = 4;
         private const int ROLES_COUNT = 20;
         private const int GROUPS_COUNT = 10;
         private const int ADMINS_COUNT = 2;
-        private const int CLASSROOMS_COUNT = 6;
+        private const int CLASSROOMS_COUNT = 12;
         private const int ROLES_TO_PERMISSIONS_COUNT = 100;
         private const int STUDENTS_COUNT = 200;
         private const int INSTITUTION_MEMBERS_COUNT = 20;
@@ -35,7 +33,7 @@ namespace TimeTile.Storage.Seeders
         private const int TEACHERS_TO_SUBJECTS_COUNT = 35;
         private const int COURSES_COUNT = 70;
         private const int COURSES_TO_STUDENTS_COUNT = 1000;
-        private const int LESSONS_COUNT = 1000;
+        private const int LESSONS_COUNT = 3000;
         private const int SUBMISSIONS_COUNT = 5000;
 
         private readonly TimetileDbContext _context;
@@ -53,6 +51,10 @@ namespace TimeTile.Storage.Seeders
 
         public async Task Seed(CancellationToken cancellationToken = default)
         {
+            Randomizer.Seed = new Random(2048);
+
+            DataGenerationConfig.SetMode(DataGenerationMode.Realistic);
+
             // if database is not empty
             if (await _context.Institutions.AnyAsync(cancellationToken))
                 return;
@@ -82,13 +84,22 @@ namespace TimeTile.Storage.Seeders
             var classroomTypes = new ClassroomTypeFaker(institutions).Generate(CLASSROOM_TYPES_COUNT);
             await _context.ClassroomTypes.AddRangeAsync(classroomTypes, cancellationToken);
 
-            var timetableUnits = new TimetableUnitFaker(institutions).Generate(TIMETABLE_UNITS_COUNT);
+            var timetableUnits = DataGenerationConfig.GenerationMode == DataGenerationMode.Random
+                ? new TimetableUnitFaker(institutions).Generate(TIMETABLE_UNITS_COUNT)
+                : TimetableUnitRealisticFaker.Generate(institutions);
+
             await _context.TimetableUnits.AddRangeAsync(timetableUnits, cancellationToken);
 
-            var subjects = new SubjectFaker(institutions).Generate(SUBJECTS_COUNT);
+            var subjects = DataGenerationConfig.GenerationMode == DataGenerationMode.Random
+                ? new SubjectFaker(institutions).Generate(SUBJECTS_COUNT)
+                : SubjectRealisticFaker.Generate(institutions);
+
             await _context.Subjects.AddRangeAsync(subjects, cancellationToken);
 
-            var terms = new TermFaker(institutions).Generate(TERMS_COUNT);
+            var terms = DataGenerationConfig.GenerationMode == DataGenerationMode.Random
+                ? new TermFaker(institutions).Generate(TERMS_COUNT)
+                : TermRealisticFaker.Generate(institutions);
+
             await _context.Terms.AddRangeAsync(terms, cancellationToken);
 
             var roles = new RoleFaker(institutions).Generate(ROLES_COUNT);

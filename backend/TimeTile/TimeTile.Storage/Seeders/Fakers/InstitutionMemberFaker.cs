@@ -26,8 +26,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         private readonly UserFaker _userFaker;
 
         // Cashing for optimization
-        private readonly Dictionary<int, List<Role>> _institutionRoles = new();
-        private readonly Dictionary<int, List<Classroom>> _institutionClassrooms = new();
+        private static readonly Dictionary<int, List<Role>> _institutionRoles = new();
+        private static readonly Dictionary<int, List<Classroom>> _institutionClassrooms = new();
 
         public InstitutionMemberFaker(List<Role> roles, List<Institution> institutions, List<Classroom> classrooms, IUserService userService, IFileService fileService)
         {

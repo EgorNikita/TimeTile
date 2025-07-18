@@ -25,13 +25,13 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const float UPLOAD_AFTER_DEADLINE_POSSIBILITY = 0.8f;
 
         // Cashing for optimization
-        private readonly Dictionary<int, IEnumerable<Course>> _institutionCourses = new();
-        private readonly Dictionary<int, IEnumerable<Classroom>> _institutionClassrooms = new();
-        private readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
+        private static readonly Dictionary<int, IEnumerable<Course>> _institutionCourses = new();
+        private static readonly Dictionary<int, IEnumerable<Classroom>> _institutionClassrooms = new();
+        private static readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
 
         // Maintain uniqueness of rows
-        private readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
-        private readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
+        private static readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
+        private static readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
 
         // Extra fakers
         private readonly LessonToStudentFaker _lessonToStudentFaker = new();
@@ -149,6 +149,11 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                                         if (nextTimetableUnit is not null)
                                         {
+                                            if (timetableUnit.EndTime != nextTimetableUnit.StartTime)
+                                            {
+                                                continue; // Skip if the next unit does not follow the current one
+                                            }
+
                                             // If it is possible to have second lesson with the same data in a row
                                             var nextTeacherActivityInfo = (course.TeacherId, nextTimetableUnit.Id, currentDate);
                                             var nextClassroomUsageInfo = (classroom.Id, nextTimetableUnit.Id, currentDate);
@@ -225,11 +230,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidDescription(Faker faker)
         {
-            string description = $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
+            var rawDescriptionGenerator = () => $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
 
-            int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
-
-            return TruncateToMaxLength(description, maxLength);
+            return GenerateValidValue(rawDescriptionGenerator, RegexPatterns.Pattern.Description);
         }
 
         private Assignment GenerateValidAssignment(Faker faker, DateTimeOffset date, DateTimeOffset endTime)

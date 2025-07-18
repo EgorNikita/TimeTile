@@ -11,6 +11,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class SubjectFaker : BaseFaker<Subject>
     {
+        // For generating unique values
+        private static readonly HashSet<string> _usedTitles = new();
+
         public SubjectFaker(List<Institution> institutions)
         {
             _faker
@@ -20,9 +23,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidTitle(Faker faker)
         {
-            Func<string> generator = () => MakeUniqueValue($"{faker.Commerce.Department()} Studies");
+            Func<string> rawTitleGenerator = () => $"{faker.Commerce.Department()} Studies";
+            Func<string> generator = () => GenerateValidValue(rawTitleGenerator, RegexPatterns.Pattern.Title);
 
-            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
+            return MakeUniqueValue(generator, _usedTitles);
         }
     }
 }

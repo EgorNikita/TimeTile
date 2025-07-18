@@ -16,6 +16,9 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const int CAPACITY_MIN_VALUE = 10;
         private const int CAPACITY_MAX_VALUE = 40;
 
+        // For generating unique values
+        private static readonly HashSet<string> _usedTitles = new();
+
         // Caching for optimization
         private readonly Dictionary<int, List<ClassroomType>> _institutionClassroomTypes = new();
 
@@ -44,19 +47,20 @@ namespace TimeTile.Storage.Seeders.Fakers
                 });
         }
 
+        private string GenerateValidTitle(Faker faker)
+        {
+            Func<string> rawTitleGenerator = () => GenerateRandomTitle(faker);
+            Func<string> generator = () => GenerateValidValue(rawTitleGenerator, RegexPatterns.Pattern.Title);
+
+            return MakeUniqueValue(generator, _usedTitles);
+        }
+
         private static string GenerateRandomTitle(Faker faker)
         {
             char building = faker.Random.Char('A', 'Z');
             int classroomNumber = faker.Random.Int(1, 1000);
 
             return $"{building}{classroomNumber}";
-        }
-
-        private string GenerateValidTitle(Faker faker)
-        {
-            Func<string> generator = () => MakeUniqueValue(GenerateRandomTitle(faker));
-
-            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
         }
     }
 }

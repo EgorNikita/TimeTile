@@ -13,10 +13,18 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class CourseFaker : BaseFaker<Course>
     {
+        // Title constraints
+        private const float MODIFIER_PRESENCE_POSSIBILITY = 0.4f;
+        private const float YEAR_INFO_PRESENCE_POSSIBILITY = 0.5f;
+        private const float TEACHER_INFO_PRESENCE_POSSIBILITY = 0.3f;
+
         // Cashing for optimization
-        private readonly Dictionary<int, List<Subject>> _institutionSubjects = new();
-        private readonly Dictionary<int, List<InstitutionMember>> _subjectTeachers = new();
-        private readonly Dictionary<int, List<Term>> _institutionTerms = new();
+        private static readonly Dictionary<int, List<Subject>> _institutionSubjects = new();
+        private static readonly Dictionary<int, List<InstitutionMember>> _subjectTeachers = new();
+        private static readonly Dictionary<int, List<Term>> _institutionTerms = new();
+
+        // For generating unique values
+        private static readonly HashSet<string> _usedTitles = new();
 
         private readonly ICourseService _courseService;
         private readonly IFileService _fileService;
@@ -78,15 +86,37 @@ namespace TimeTile.Storage.Seeders.Fakers
                         t => t.InstitutionId == course.InstitutionId
                     );
                 })
-                .RuleFor(c => c.Title, (f, c) => GenerateValidTitle(c.Subject.Title, c.Term.StartDate, c.Term.EndDate))
+                .RuleFor(c => c.Title, (f, c) => GenerateValidTitle(f, c.Teacher.Lastname, c.Subject.Title, c.Term.StartDate))
                 .RuleFor(c => c.IsAdvanced, f => f.Random.Bool(0.2f));
         }
 
-        private string GenerateValidTitle(string subjectTitle, DateTimeOffset startDate, DateTimeOffset endDate)
+        private string GenerateValidTitle(Faker faker, string teacherName, string subjectTitle, DateTimeOffset startDate)
         {
-            string mainPart = $"{subjectTitle.Substring(0, 10)} {startDate.Date:dd.MM.yyyy}-{endDate.Date:dd.MM.yyyy}";
+            var modifiers = new[]
+            {
+                "Intro to", "Advanced", "Seminar", "Workshop", "Project", "Lab", "Review",
+                "New Course", "Theory of", "Basics of", "Applied", "Foundations of", "Essentials of"
+            };
 
-            return TruncateToMaxLength(MakeUniqueValue(mainPart), RegexPatterns.Patterns[RegexPatterns.Pattern.Title].MaxLength);
+            Func<string> rawTitleGenerator = () =>
+            {
+                var modifier = faker.Random.Bool(MODIFIER_PRESENCE_POSSIBILITY) 
+                    ? $"{faker.PickRandom(modifiers)}"
+                    : string.Empty;
+
+                var year = faker.Random.Bool(YEAR_INFO_PRESENCE_POSSIBILITY) 
+                    ? startDate.Year.ToString()
+                    : string.Empty;
+
+                var teacherInfo = faker.Random.Bool(TEACHER_INFO_PRESENCE_POSSIBILITY)
+                    ? teacherName
+                    : string.Empty;
+
+                return $"{modifier} {subjectTitle} {year} {teacherInfo}".Trim();
+            };
+            Func<string> generator = () => GenerateValidValue(rawTitleGenerator, RegexPatterns.Pattern.Title);
+
+            return MakeUniqueValue(generator, _usedTitles);
         }
 
 

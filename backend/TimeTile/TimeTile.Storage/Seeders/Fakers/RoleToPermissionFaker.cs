@@ -9,7 +9,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class RoleToPermissionFaker : BaseFaker<RoleToPermission>
     {
-        private readonly HashSet<(int RoleId, int PermissionId)> _fkPairs = new();
+        private static readonly HashSet<(int RoleId, int PermissionId)> _fkPairs = new();
 
         private readonly int _possibleCombinations;
 

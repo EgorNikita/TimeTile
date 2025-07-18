@@ -12,7 +12,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class TermFaker : BaseFaker<Term>
     {
-        private readonly Dictionary<int, List<KeyValuePair<DateOnly, DateOnly>>> _institutionsToTerms = new();
+        // For generating unique values
+        private static readonly HashSet<string> _usedTitles = new();
+
+        private static readonly Dictionary<int, List<KeyValuePair<DateOnly, DateOnly>>> _institutionsToTerms = new();
 
         // Title constraints
         private const int MAX_QUARTER_NUMBER = 12;
@@ -42,14 +45,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidTitle(Faker faker, int year)
         {
-            Func<string> generator = () =>
-            {
-                int quarter = faker.Random.Int(1, MAX_QUARTER_NUMBER);
+            Func<string> rawTitleGenerator = () => $"Quarter {year} {faker.Random.Int(1, MAX_QUARTER_NUMBER)}";
+            Func<string> generator = () => GenerateValidValue(rawTitleGenerator, RegexPatterns.Pattern.Title);
 
-                return MakeUniqueValue($"Quarter {year} {quarter}");
-            };
-
-            return GenerateValidValue(generator, RegexPatterns.Pattern.Title);
+            return MakeUniqueValue(generator, _usedTitles);
         }
 
         private DateTimeOffset GenerateValidStartDate(Faker faker, int year, int institutionId)

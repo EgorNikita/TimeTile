@@ -22,11 +22,6 @@ public static class Permissions
         public const string Create = "CreateInstitution";
     }
 
-    public static class Schedule
-    {
-        public const string Get = "GetSchedule";
-    }
-
     public static class Groups
     {
         public const string GetOwn = "GetOwnGroup";
@@ -35,6 +30,26 @@ public static class Permissions
     public static class Grades
     {
         public const string Get = "GetGrades";
+    }
+
+    public static class Courses
+    {
+        public const string Get = "GetCourses";
+    }
+
+    public static class Lessons
+    {
+        public const string Get = "GetLessons";
+    }
+
+    public static class Submissions
+    {
+        public const string Get = "GetSubmissions";
+    }
+
+    public static class Assignments
+    {
+        public const string Get = "GetAssignments";
     }
 
     private static readonly Lazy<IReadOnlyList<string>> _allPermissions = new(() => 

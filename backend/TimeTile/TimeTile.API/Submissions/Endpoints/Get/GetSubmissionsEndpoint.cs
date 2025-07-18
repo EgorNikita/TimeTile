@@ -7,6 +7,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
@@ -21,7 +22,8 @@ namespace TimeTile.API.Submissions.Endpoints.Get
             return app
                  .MapGet("/", Handle)
                  .WithSummary("Returns a page of submissions")
-                 .WithRequestValidation<Request>();
+                 .WithRequestValidation<Request>()
+                 .RequireAuthorization(Permissions.Submissions.Get);
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(

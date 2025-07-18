@@ -30,6 +30,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         private static readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
 
         // Maintain uniqueness of rows
+        private static readonly Dictionary<(int TimatableUnitId, DateTimeOffset Date), List<int>> _usedStudents = new();
         private static readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
         private static readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
 
@@ -129,8 +130,24 @@ namespace TimeTile.Storage.Seeders.Fakers
                     DateTimeOffset currentDate = course.Term.StartDate;
                     DateTimeOffset endDate = course.Term.EndDate;
 
-                    while (currentDate <= endDate)
+                    while (currentDate  <= endDate)
                     {
+                        var dayOfWeek = currentDate.UtcDateTime.Date.DayOfWeek;
+                        if (dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday)
+                        {
+                            currentDate = currentDate.AddDays(1);
+                            continue;
+                        }
+
+                        if (_usedStudents.TryGetValue((timetableUnit.Id, currentDate), out List<int>? studentIds))
+                        {
+                            if (course.CoursesToStudents.Any(cs => studentIds.Contains(cs.StudentId)))
+                            {
+                                currentDate = currentDate.AddDays(1);
+                                continue;
+                            }
+                        }
+
                         var teacherActivityInfo = (course.TeacherId, timetableUnit.Id, currentDate);
                         if (!_usedTeachers.Contains(teacherActivityInfo))
                         {
@@ -143,15 +160,38 @@ namespace TimeTile.Storage.Seeders.Fakers
                                     _usedTeachers.Add(teacherActivityInfo);
                                     _usedClassrooms.Add(classroomUsageInfo);
 
+                                    var studentIdsFromCourse = course.CoursesToStudents.Select(cs => cs.StudentId).ToList();
+
+                                    if (studentIds is not null)
+                                    {
+                                        var newStudentIds = studentIdsFromCourse.Except(studentIds);
+
+                                        studentIds.AddRange(newStudentIds);
+                                    }
+                                    else
+                                    {
+                                        studentIds = studentIdsFromCourse;
+                                    }
+                                    _usedStudents[(timetableUnit.Id, currentDate)] = studentIds;
+
                                     if (faker.Random.Bool(TWO_LESSONS_IN_A_ROW_POSSIBILITY))
                                     {
                                         var nextTimetableUnit = suitableTimetableUnits.ElementAtOrDefault(i + 1);
 
                                         if (nextTimetableUnit is not null)
                                         {
+                                            if (_usedStudents.TryGetValue((nextTimetableUnit.Id, currentDate), out List<int>? studentIdsFromNextLesson))
+                                            {
+                                                if (course.CoursesToStudents.Any(cs => studentIdsFromNextLesson.Contains(cs.StudentId)))
+                                                {
+                                                    return Result.Success((course.Id, classroom.Id, new[] { timetableUnit.Id }, currentDate));
+                                                }
+                                            }
+
                                             if (timetableUnit.EndTime != nextTimetableUnit.StartTime)
                                             {
-                                                continue; // Skip if the next unit does not follow the current one
+                                                // Skip if the next unit does not follow the current one
+                                                return Result.Success((course.Id, classroom.Id, new[] { timetableUnit.Id }, currentDate));
                                             }
 
                                             // If it is possible to have second lesson with the same data in a row
@@ -162,6 +202,18 @@ namespace TimeTile.Storage.Seeders.Fakers
                                             {
                                                 _usedTeachers.Add(nextTeacherActivityInfo);
                                                 _usedClassrooms.Add(nextClassroomUsageInfo);
+
+                                                if (studentIdsFromNextLesson is not null)
+                                                {
+                                                    var newStudentIds = studentIdsFromCourse.Except(studentIdsFromNextLesson);
+
+                                                    studentIdsFromNextLesson.AddRange(newStudentIds);
+                                                }
+                                                else
+                                                {
+                                                    studentIdsFromNextLesson = studentIdsFromCourse;
+                                                }
+                                                _usedStudents[(nextTimetableUnit.Id, currentDate)] = studentIdsFromNextLesson;
 
                                                 return Result.Success((course.Id, classroom.Id, new[] { timetableUnit.Id, nextTimetableUnit.Id }, currentDate));
                                             }
@@ -176,6 +228,9 @@ namespace TimeTile.Storage.Seeders.Fakers
                         currentDate = currentDate.AddDays(1);
                     }
                 }
+
+                suitableTimetableUnits = suitableTimetableUnits.Except([timetableUnit]);
+                --i;
             }
 
             var error = Error.From("Unable to find combination.");

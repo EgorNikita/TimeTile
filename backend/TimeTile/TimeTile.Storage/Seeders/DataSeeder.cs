@@ -25,7 +25,7 @@ namespace TimeTile.Storage.Seeders
         private const int ROLES_COUNT = 20;
         private const int GROUPS_COUNT = 10;
         private const int ADMINS_COUNT = 2;
-        private const int CLASSROOMS_COUNT = 6;
+        private const int CLASSROOMS_COUNT = 12;
         private const int ROLES_TO_PERMISSIONS_COUNT = 100;
         private const int STUDENTS_COUNT = 200;
         private const int INSTITUTION_MEMBERS_COUNT = 20;
@@ -90,10 +90,16 @@ namespace TimeTile.Storage.Seeders
 
             await _context.TimetableUnits.AddRangeAsync(timetableUnits, cancellationToken);
 
-            var subjects = new SubjectFaker(institutions).Generate(SUBJECTS_COUNT);
+            var subjects = DataGenerationConfig.GenerationMode == DataGenerationMode.Random
+                ? new SubjectFaker(institutions).Generate(SUBJECTS_COUNT)
+                : SubjectRealisticFaker.Generate(institutions);
+
             await _context.Subjects.AddRangeAsync(subjects, cancellationToken);
 
-            var terms = new TermFaker(institutions).Generate(TERMS_COUNT);
+            var terms = DataGenerationConfig.GenerationMode == DataGenerationMode.Random
+                ? new TermFaker(institutions).Generate(TERMS_COUNT)
+                : TermRealisticFaker.Generate(institutions);
+
             await _context.Terms.AddRangeAsync(terms, cancellationToken);
 
             var roles = new RoleFaker(institutions).Generate(ROLES_COUNT);

@@ -81,7 +81,8 @@ public static class ConfigureServices
             {
                 policy.AllowAnyOrigin()
                       .AllowAnyMethod()
-                      .AllowAnyHeader();
+                      .AllowAnyHeader()
+                      .WithExposedHeaders("Content-Disposition", "Content-Type", "Content-Length");
             });
         });
     }

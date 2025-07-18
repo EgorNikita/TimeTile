@@ -83,6 +83,11 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                     request.StudentIds.Contains(s.StudentId)
                 );
 
+            if (request.CourseIds is not null && request.CourseIds.Any())
+                baseQuery = baseQuery.Where(s =>
+                    request.CourseIds.Contains(s.Assignment.Lesson.CourseId)
+                );
+
             return baseQuery;
         }
 
@@ -106,6 +111,7 @@ namespace TimeTile.API.Submissions.Endpoints.Get
         public sealed record Request(
             int[]? StudentIds = null,
             int[]? AssignmentIds = null,
+            int[]? CourseIds = null,
             string[]? Statuses = null,
             int? Page = 1,
             int? PageSize = 10,

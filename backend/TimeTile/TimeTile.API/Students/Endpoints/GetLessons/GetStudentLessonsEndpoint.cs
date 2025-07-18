@@ -26,7 +26,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            var relations = await BuildFilteredQuery(request, request.Id, db)
+            var relationsQuery = BuildFilteredQuery(request, request.Id, db)
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.Course)
                 .Include(ls => ls.Lesson)
@@ -53,8 +53,23 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                     ls.CameAt,
                     ls.LeftAt,
                     ls.GradeId
-                ))
-                .ToPagedListAsync(request, cancellationToken);
+                ));
+
+            PagedList<Response> relations;
+
+            if (request.FetchAll.HasValue && request.FetchAll.Value)
+            {
+                var count = await relationsQuery.CountAsync(cancellationToken);
+                relations = new PagedList<Response>(
+                    await relationsQuery.ToListAsync(cancellationToken),
+                    1, count, 1, count
+                );
+            } 
+            else
+            {
+                relations = await relationsQuery
+                    .ToPagedListAsync(request, cancellationToken);
+            }
 
             var result = Result.Success(relations);
 
@@ -92,6 +107,7 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             int[]? CourseIds,
             DateTimeOffset? From = null,
             DateTimeOffset? Until = null,
+            bool? FetchAll = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

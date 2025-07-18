@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
@@ -27,6 +28,7 @@ namespace TimeTile.API.Grades.Endpoints.Get
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            IWebHostEnvironment env,
             IInstitutionProvider institutionProvider,
             TimetileDbContext db,
             CancellationToken cancellationToken)
@@ -34,18 +36,25 @@ namespace TimeTile.API.Grades.Endpoints.Get
             var institutionId = institutionProvider.GetInstitutionId();
 
             // Form a final paged list
-            var grades = await BuildFilteredQuery(request, institutionId, db)
-                .ApplySorting(
-                    request.SortBy,
-                    request.Descending
-                )
+            var baseQuery = BuildFilteredQuery(request, institutionId, db);
+
+            baseQuery = ApplySorting(baseQuery, request.SortBy, request.Descending, env.IsDevelopment());
+
+            // Form a final paged list
+            var grades = await baseQuery
                 .Select(x => new
                 {
                     x.Id,
                     x.Value,
                     x.Weight,
                     Type = x.Type.ToString(),
-                    Date = x.UpdatedAt,
+                    Date = env.IsDevelopment() 
+                        ? x.CourseToStudent != null
+                            ? x.CourseToStudent.Course.Term.EndDate
+                            : x.LessonToStudent != null
+                                ? x.LessonToStudent.Lesson.Date
+                                : x.Submission!.SubmittedAt!.Value
+                        : x.UpdatedAt,
                     Course = x.CourseToStudent != null
                         ? x.CourseToStudent.Course
                         : x.LessonToStudent != null
@@ -72,6 +81,29 @@ namespace TimeTile.API.Grades.Endpoints.Get
             var result = Result.Success(grades);
 
             return TypedResults.Ok(result);
+        }
+
+        private static IQueryable<Grade> ApplySorting(IQueryable<Grade> query, string? sortBy, bool descending, bool isDevelopment = false)
+        {
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                return query.ApplySorting(
+                    sortBy,
+                    descending
+                );
+            }
+
+            Expression<Func<Grade, DateTimeOffset>> keySelector = isDevelopment
+                ? g => g.CourseToStudent != null
+                    ? g.CourseToStudent.Course.Term.EndDate
+                    : g.LessonToStudent != null
+                        ? g.LessonToStudent.Lesson.Date
+                        : g.Submission!.SubmittedAt!.Value
+                : g => g.UpdatedAt;
+
+            return descending
+                ? query.OrderByDescending(keySelector)
+                : query.OrderBy(keySelector);
         }
 
         private static IQueryable<Grade> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)

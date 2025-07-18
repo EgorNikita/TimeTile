@@ -12,10 +12,13 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class SubmissionFaker : BaseFaker<Submission>
     {
-        // StudentNote constraints
+        // Status constants
+        private const float STATUS_ACCEPTED_POSSIBILITY = 0.7f;
+
+        // StudentNote constants
         private const float STUDENT_NOTE_PRESENCE_POSSIBILITY = 0.3f;
 
-        // Feedback constraints
+        // Feedback constants
         private const float FEEDBACK_PRESENCE_POSSIBILITY = 0.75f;
 
         // Pre generate all possible combinations
@@ -47,37 +50,44 @@ namespace TimeTile.Storage.Seeders.Fakers
             {
                 var submission = _submissions[_actualIndex++];
 
-                var validStatuses = Enum.GetValues(typeof(SubmissionStatus))
-                    .Cast<SubmissionStatus>()
-                    .Where(s =>
-                        submission.Assignment.Deadline <= DateTimeOffset.UtcNow ||
-                        (s != SubmissionStatus.SubmittedLate && s != SubmissionStatus.Expired))
-                    .ToList();
-
-                submission.Status = _faker.PickRandom(validStatuses);
-
-                if (submission.Status == SubmissionStatus.Rejected)
+                if (_faker.Random.Bool(STATUS_ACCEPTED_POSSIBILITY))
                 {
-                    var newSubmission = new Submission
-                    {
-                        Assignment = submission.Assignment,
-                        StudentId = submission.StudentId,
-                        Status = SubmissionStatus.NotSubmitted
-                    };
+                    submission.Status = SubmissionStatus.Accepted;
+                } 
+                else
+                {
+                    var validStatuses = Enum.GetValues(typeof(SubmissionStatus))
+                        .Cast<SubmissionStatus>()
+                        .Where(s =>
+                            submission.Assignment.Deadline <= DateTimeOffset.UtcNow ||
+                            (s != SubmissionStatus.SubmittedLate && s != SubmissionStatus.Expired))
+                        .ToList();
 
-                    if (iterationsCount < count)
+                    submission.Status = _faker.PickRandom(validStatuses);
+
+                    if (submission.Status == SubmissionStatus.Rejected)
                     {
-                        iterationsCount++;
+                        var newSubmission = new Submission
+                        {
+                            Assignment = submission.Assignment,
+                            StudentId = submission.StudentId,
+                            Status = SubmissionStatus.NotSubmitted
+                        };
+
+                        if (iterationsCount < count)
+                        {
+                            iterationsCount++;
+                        }
+
+                        _submissions.Add(newSubmission);
+                        newSubmissions.Add(newSubmission);
                     }
-
-                    _submissions.Add(newSubmission);
-                    newSubmissions.Add(newSubmission);
-                }
-                else if (submission.Status == SubmissionStatus.SubmittedLate)
-                {
-                    submission.Status = submission.Assignment.UploadAfterDeadline
-                        ? SubmissionStatus.SubmittedLate
-                        : SubmissionStatus.Submitted;
+                    else if (submission.Status == SubmissionStatus.SubmittedLate)
+                    {
+                        submission.Status = submission.Assignment.UploadAfterDeadline
+                            ? SubmissionStatus.SubmittedLate
+                            : SubmissionStatus.Submitted;
+                    }
                 }
 
                 submission.StudentNote = GenerateValidStudentNote(submission);

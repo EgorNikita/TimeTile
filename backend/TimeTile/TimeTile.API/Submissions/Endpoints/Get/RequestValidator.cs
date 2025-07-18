@@ -51,6 +51,17 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                     });
                 });
 
+            // CourseIds
+            RuleFor(x => x.CourseIds)
+                .MustBeValidOptionalListOfIds()
+                .DependentRules(() =>
+                {
+                    When(x => x.CourseIds != null, () => {
+                        RuleFor(x => x.CourseIds!)
+                            .MustBeValidInstitutionEntityIdsList<GetSubmissionsEndpoint.Request, Course>(db, institutionId);
+                    });
+                });
+
             // Statuses
             RuleFor(x => x.Statuses)
                 .Must(statuses => statuses == null || statuses.All(t =>

@@ -6,6 +6,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -19,7 +20,8 @@ namespace TimeTile.API.Assignments.Endpoints.Get
             return app
                  .MapGet("/", Handle)
                  .WithSummary("Returns a page of assignments")
-                 .WithRequestValidation<Request>();
+                 .WithRequestValidation<Request>()
+                 .RequireAuthorization(Permissions.Assignments.Get);
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
@@ -32,6 +34,7 @@ namespace TimeTile.API.Assignments.Endpoints.Get
 
             // Form a final paged list
             var lessons = await BuildFilteredQuery(request, institutionId, db)
+                .Include(a => a.Lesson)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
@@ -44,6 +47,7 @@ namespace TimeTile.API.Assignments.Endpoints.Get
                     x.PublishedAt,
                     x.Deadline,
                     x.UploadAfterDeadline,
+                    x.Lesson.CourseId,
                     db.AssignmentsFiles.Any(f => f.AssignmentId == x.Id)
                 ))
                 .ToPagedListAsync(request, cancellationToken);
@@ -90,6 +94,7 @@ namespace TimeTile.API.Assignments.Endpoints.Get
             DateTimeOffset PublishedAt,
             DateTimeOffset Deadline,
             bool UploadAfterDeadline,
+            int CourseId,
             bool HasAttachments
         );
     }

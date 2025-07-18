@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
@@ -19,20 +22,24 @@ namespace TimeTile.API.Submissions.Endpoints.Get
             return app
                  .MapGet("/", Handle)
                  .WithSummary("Returns a page of submissions")
-                 .WithRequestValidation<Request>();
+                 .WithRequestValidation<Request>()
+                 .RequireAuthorization(Permissions.Submissions.Get);
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
             [AsParameters] Request request,
+            IInstitutionProvider institutionProvider,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
+            var institutionId = institutionProvider.GetInstitutionId();
+
+            var baseQuery = BuildFilteredQuery(request, institutionId, db);
+
+            baseQuery = ApplySorting(baseQuery, request.SortBy, request.Descending);
+
             // Form a final paged list
-            var grades = await BuildFilteredQuery(request, db)
-                .ApplySorting(
-                    request.SortBy,
-                    request.Descending
-                )
+            var grades = await baseQuery
                 .Select(x => new Response(
                     x.Id,
                     x.AssignmentId,
@@ -51,10 +58,11 @@ namespace TimeTile.API.Submissions.Endpoints.Get
             return TypedResults.Ok(result);
         }
 
-        private static IQueryable<Submission> BuildFilteredQuery(Request request, TimetileDbContext db)
+        private static IQueryable<Submission> BuildFilteredQuery(Request request, int institutionId, TimetileDbContext db)
         {
             var baseQuery = db.Submissions
-                .AsNoTracking();
+                .AsNoTracking()
+                .Where(s => s.Assignment.Lesson.Course.InstitutionId == institutionId);
 
             if (request.Statuses is not null && request.Statuses.Any())
             {
@@ -77,12 +85,35 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                     request.StudentIds.Contains(s.StudentId)
                 );
 
+            if (request.CourseIds is not null && request.CourseIds.Any())
+                baseQuery = baseQuery.Where(s =>
+                    request.CourseIds.Contains(s.Assignment.Lesson.CourseId)
+                );
+
             return baseQuery;
+        }
+
+        private static IQueryable<Submission> ApplySorting(IQueryable<Submission> query, string? sortBy, bool descending)
+        {
+            if (!sortBy.IsNullOrEmpty())
+            {
+                return query.ApplySorting(
+                    sortBy,
+                    descending
+                );
+            }
+           
+            return descending
+                ? query.OrderByDescending(s =>
+                    s.Assignment.Deadline)
+                : query.OrderBy(s =>
+                    s.Assignment.Deadline);
         }
 
         public sealed record Request(
             int[]? StudentIds = null,
             int[]? AssignmentIds = null,
+            int[]? CourseIds = null,
             string[]? Statuses = null,
             int? Page = 1,
             int? PageSize = 10,

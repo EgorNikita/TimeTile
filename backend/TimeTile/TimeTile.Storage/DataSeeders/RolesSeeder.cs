@@ -17,7 +17,6 @@ namespace TimeTile.Storage.DataSeeders
     {
         private static readonly List<string> _studentPermissions =
         [
-            Permissions.Schedule.Get,
             Permissions.Groups.GetOwn
         ];
 

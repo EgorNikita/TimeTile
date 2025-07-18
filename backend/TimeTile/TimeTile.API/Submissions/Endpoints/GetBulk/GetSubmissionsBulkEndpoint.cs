@@ -2,18 +2,19 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Assignments.Endpoints.GetBulk
+namespace TimeTile.API.Submissions.Endpoints.GetBulk
 {
-    public class GetAssignmentsBulkEndpoint : IEndpoint
+    public class GetSubmissionsBulkEndpoint : IEndpoint
     {
         public static IEndpointConventionBuilder Map(IEndpointRouteBuilder app)
         {
             return app
                 .MapGet("/bulk", Handle)
-                .WithSummary("Returns assignments by passed ids")
+                .WithSummary("Returns submissions by passed ids")
                 .WithRequestValidation<Request>();
         }
 
@@ -23,24 +24,23 @@ namespace TimeTile.API.Assignments.Endpoints.GetBulk
             CancellationToken cancellationToken)
         {
             // Form a final paged list
-            var assignments = await db.Assignments
+            var submissions = await db.Submissions
                 .AsNoTracking()
-                .Include(a => a.Lesson)
-                .Where(a => request.Ids.Contains(a.Id))
-                .Select(x => new Response
-                (
+                .Where(s => request.Ids.Contains(s.Id))
+                .Select(x => new Response(
                     x.Id,
-                    x.Title,
-                    x.Description,
-                    x.PublishedAt,
-                    x.Deadline,
-                    x.UploadAfterDeadline,
-                    x.Lesson.CourseId,
-                    db.AssignmentsFiles.Any(af => af.AssignmentId == x.Id)
+                    x.AssignmentId,
+                    x.StudentId,
+                    x.GradeId,
+                    x.Status.ToString(),
+                    x.StudentNote,
+                    x.Feedback,
+                    x.SubmittedAt,
+                    db.SubmissionsFiles.Any(sf => sf.SubmissionId == x.Id)
                 ))
                 .ToListAsync(cancellationToken);
 
-            var result = Result.Success(assignments);
+            var result = Result.Success(submissions);
 
             return TypedResults.Ok(result);
         }
@@ -51,12 +51,13 @@ namespace TimeTile.API.Assignments.Endpoints.GetBulk
 
         private sealed record Response(
             int Id,
-            string Title,
-            string Description,
-            DateTimeOffset PublishedAt,
-            DateTimeOffset Deadline,
-            bool UploadAfterDeadline,
-            int CourseId,
+            int AssignmentId,
+            int StudentId,
+            int? GradeId,
+            string Status,
+            string? StudentNote,
+            string? Feedback,
+            DateTimeOffset? SubmittedAt,
             bool HasAttachments
         );
     }

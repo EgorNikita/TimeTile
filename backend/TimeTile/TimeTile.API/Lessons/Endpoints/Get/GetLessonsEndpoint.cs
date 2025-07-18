@@ -6,6 +6,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -19,7 +20,8 @@ namespace TimeTile.API.Lessons.Endpoints.Get
             return app
                 .MapGet("/", Handle)
                 .WithSummary("Returns a page of lessons")
-                .WithRequestValidation<Request>();
+                .WithRequestValidation<Request>()
+                .RequireAuthorization(Permissions.Lessons.Get);
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(

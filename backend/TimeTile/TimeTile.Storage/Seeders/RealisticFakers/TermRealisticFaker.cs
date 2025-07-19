@@ -10,8 +10,8 @@ namespace TimeTile.Storage.Seeders.RealisticFakers
     internal class TermRealisticFaker
     {
         // Constants for realistic dates generation
-        public readonly static DateOnly START_DATE = new(2025, 1, 1);   // 01.01.2025
-        public readonly static DateOnly END_DATE = new(2025, 12, 31);   // 31.12.2025
+        public readonly static DateOnly START_DATE = new(2025, 4, 1);   // 01.05.2025
+        public readonly static DateOnly END_DATE = new(2025, 8, 31);   // 31.8.2025
 
         public static List<Term> Generate(List<Institution> institutions)
         {

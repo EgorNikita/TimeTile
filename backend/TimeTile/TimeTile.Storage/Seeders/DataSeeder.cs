@@ -17,23 +17,23 @@ namespace TimeTile.Storage.Seeders
 
 
         // Influence Generation's volume
-        private const int INSTITUTIONS_COUNT = 2;
-        private const int CLASSROOM_TYPES_COUNT = 5;
+        private const int INSTITUTIONS_COUNT = 1;
+        private const int CLASSROOM_TYPES_COUNT = 2;
         private const int TIMETABLE_UNITS_COUNT = 16;
         private const int SUBJECTS_COUNT = 20;
         private const int TERMS_COUNT = 4;
-        private const int ROLES_COUNT = 20;
-        private const int GROUPS_COUNT = 10;
+        private const int ROLES_COUNT = 2;
+        private const int GROUPS_COUNT = 1;
         private const int ADMINS_COUNT = 2;
         private const int CLASSROOMS_COUNT = 12;
-        private const int ROLES_TO_PERMISSIONS_COUNT = 100;
-        private const int STUDENTS_COUNT = 200;
+        private const int ROLES_TO_PERMISSIONS_COUNT = 0;
+        private const int STUDENTS_COUNT = 1;
         private const int INSTITUTION_MEMBERS_COUNT = 20;
-        private const int INSTITUTION_MEMBERS_TO_GROUPS_COUNT = 25;
+        private const int INSTITUTION_MEMBERS_TO_GROUPS_COUNT = 2;
         private const int TEACHERS_TO_SUBJECTS_COUNT = 35;
-        private const int COURSES_COUNT = 70;
-        private const int COURSES_TO_STUDENTS_COUNT = 1000;
-        private const int LESSONS_COUNT = 3000;
+        private const int COURSES_COUNT = 20;
+        private const int COURSES_TO_STUDENTS_COUNT = 20;
+        private const int LESSONS_COUNT = 400;
         private const int SUBMISSIONS_COUNT = 5000;
 
         private readonly TimetileDbContext _context;

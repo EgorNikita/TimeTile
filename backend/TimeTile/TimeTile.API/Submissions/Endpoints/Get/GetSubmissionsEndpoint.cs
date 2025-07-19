@@ -39,7 +39,7 @@ namespace TimeTile.API.Submissions.Endpoints.Get
             baseQuery = ApplySorting(baseQuery, request.SortBy, request.Descending);
 
             // Form a final paged list
-            var grades = await baseQuery
+            var submissions = await baseQuery
                 .Select(x => new Response(
                     x.Id,
                     x.AssignmentId,
@@ -53,7 +53,7 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                 ))
                 .ToPagedListAsync(request, cancellationToken);
 
-            var result = Result.Success(grades);
+            var result = Result.Success(submissions);
 
             return TypedResults.Ok(result);
         }

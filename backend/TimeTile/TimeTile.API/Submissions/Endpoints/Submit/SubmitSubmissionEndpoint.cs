@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog.Parsing;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
@@ -22,6 +23,7 @@ namespace TimeTile.API.Submissions.Endpoints.Submit
                 .RequireUserId()
                 .WithRequestValidation<RequestParameters>()
                 .WithRequestValidation<RequestBody>()
+                .RequireAuthorization(Permissions.Submissions.Submit)
                 .DisableAntiforgery();
         }
 

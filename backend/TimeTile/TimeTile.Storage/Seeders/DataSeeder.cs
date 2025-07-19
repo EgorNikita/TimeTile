@@ -26,7 +26,7 @@ namespace TimeTile.Storage.Seeders
         private const int GROUPS_COUNT = 1;
         private const int ADMINS_COUNT = 2;
         private const int CLASSROOMS_COUNT = 12;
-        private const int ROLES_TO_PERMISSIONS_COUNT = 0;
+        private const int ROLES_TO_PERMISSIONS_COUNT = 15;
         private const int STUDENTS_COUNT = 1;
         private const int INSTITUTION_MEMBERS_COUNT = 20;
         private const int INSTITUTION_MEMBERS_TO_GROUPS_COUNT = 2;

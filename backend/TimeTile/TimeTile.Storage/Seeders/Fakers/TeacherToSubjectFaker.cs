@@ -40,7 +40,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
 
             var suitableTeachers = teachers
-                .Where(t => commonInstitutionsIds.Contains((int)t.InstitutionId));
+                .Where(t => commonInstitutionsIds.Contains(t.InstitutionId!.Value));
 
             if (suitableTeachers.Count() == 0)
                 throw new InvalidOperationException("There are no associations between teachers and subjects.");
@@ -57,7 +57,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             HashSet<int> teachersInstitutionsIds = new();
             foreach (var teacher in teachers)
-                teachersInstitutionsIds.Add((int)teacher.InstitutionId);
+                teachersInstitutionsIds.Add(teacher.InstitutionId!.Value);
 
             HashSet<int> subjectsInstitutionsIds = new();
             foreach (var subject in subjects)

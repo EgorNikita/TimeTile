@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,7 +56,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 .Where(c => commonInstitutionsIds.Contains(c.InstitutionId));
 
             var suitableStudents = students
-                .Where(s => commonInstitutionsIds.Contains((int) s.InstitutionId));
+                .Where(s => commonInstitutionsIds.Contains(s.InstitutionId!.Value));
 
             AddAllPossibleCombinations(suitableCourses, suitableStudents);
         }
@@ -69,7 +69,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             HashSet<int> studentsInstitutionsIds = new();
             foreach (var student in students)
-                studentsInstitutionsIds.Add((int) student.InstitutionId);
+                studentsInstitutionsIds.Add(student.InstitutionId!.Value);
 
             return coursesInstitutionsIds.Intersect(studentsInstitutionsIds);
         }

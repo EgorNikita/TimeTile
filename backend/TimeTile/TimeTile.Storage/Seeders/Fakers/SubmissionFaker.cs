@@ -32,7 +32,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             var submissions = lessons
                 .Where(l => l.AssignmentId != null)
-                .Select(l => l.Assignment)
+                .Select(l => l.Assignment!)
                 .SelectMany(a => a.Submissions);
 
             _submissions = submissions.OrderBy(_ => Guid.NewGuid()).ToList();

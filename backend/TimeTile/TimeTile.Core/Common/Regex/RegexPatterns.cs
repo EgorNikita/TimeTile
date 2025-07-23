@@ -26,7 +26,7 @@ public static class RegexPatterns
 
         [Pattern.Email] = 
             (new System.Text.RegularExpressions.Regex(@"^(?!\.)[A-Za-z0-9._%+-]+(?<!\.)@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$", RegexOptions.Compiled),
-            new System.Text.RegularExpressions.Regex(@"^(?!\.)[A-Za-z0-9._%+-]+(?<!\.)@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$", RegexOptions.Compiled), 
+            new System.Text.RegularExpressions.Regex(@"^[A-Za-z0-9][A-Za-z0-9._%+-]*[A-Za-z0-9]@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$", RegexOptions.Compiled), 
             100, 
             "Must be a valid email format like user@example.com."),
 
@@ -44,7 +44,7 @@ public static class RegexPatterns
 
         [Pattern.Description] = 
             (new System.Text.RegularExpressions.Regex(@"^[\p{L}\d\s.,!?]+$", RegexOptions.Compiled),
-            new System.Text.RegularExpressions.Regex(@"^[[:alpha:]\d\s.,!?]+$", RegexOptions.Compiled), 
+            new System.Text.RegularExpressions.Regex(@"^[[:alpha:][:digit:][:space:].,!?:-]+$", RegexOptions.Compiled), 
             250, 
             "Descriptions may include letters, numbers, spaces, and punctuation like .,!?"),
     };

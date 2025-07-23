@@ -68,7 +68,7 @@ namespace TimeTile.API.Grades.Endpoints.GetBulk
 
         private sealed record Response(
             int Id,
-            short Value,
+            float Value,
             float Weight,
             string Type,
             DateTimeOffset Date,

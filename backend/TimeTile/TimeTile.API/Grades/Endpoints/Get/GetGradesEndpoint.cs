@@ -167,7 +167,7 @@ namespace TimeTile.API.Grades.Endpoints.Get
 
         private sealed record Response(
             int Id,
-            short Value,
+            float Value,
             float Weight,
             string Type,
             DateTimeOffset Date,

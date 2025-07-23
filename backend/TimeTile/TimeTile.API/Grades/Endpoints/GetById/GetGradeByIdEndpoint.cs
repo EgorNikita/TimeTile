@@ -46,7 +46,7 @@ namespace TimeTile.API.Grades.Endpoints.GetById
 
         private sealed record Response(
             int Id,
-            short Value,
+            float Value,
             float Weight,
             string Type
         );

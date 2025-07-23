@@ -285,7 +285,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidDescription(Faker faker)
         {
-            var rawDescriptionGenerator = () => $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
+            var rawDescriptionGenerator = faker.Company.CatchPhrase;
 
             return GenerateValidValue(rawDescriptionGenerator, RegexPatterns.Pattern.Description);
         }

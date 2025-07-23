@@ -12,10 +12,6 @@ namespace TimeTile.Storage.Configurations
             builder.ToTable("courses_students", t =>
             {
                 t.HasCheckConstraint(
-                    "CK_CoursesStudents_HasExam_ExamGrade",
-                    "\"has_exam\" = TRUE OR \"exam_grade_id\" IS NULL"
-                );
-                t.HasCheckConstraint(
                     "CK_CoursesStudents_PositionX_Positive",
                     "\"position_x\" >= 0"
                 );
@@ -38,10 +34,9 @@ namespace TimeTile.Storage.Configurations
                 .HasColumnName("id");
             builder.Property(e => e.CourseId).HasColumnName("course_id");
             builder.Property(e => e.StudentId).HasColumnName("student_id");
-            builder.Property(e => e.ExamGradeId)
-                .HasColumnName("exam_grade_id")
+            builder.Property(e => e.GradeId)
+                .HasColumnName("grade_id")
                 .IsRequired(false);
-            builder.Property(e => e.HasExam).HasColumnName("has_exam");
             builder.Property(e => e.PositionX).HasColumnName("position_x");
             builder.Property(e => e.PositionY).HasColumnName("position_y");
 
@@ -58,7 +53,7 @@ namespace TimeTile.Storage.Configurations
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("courses_students_student_id_fkey");
 
-            builder.HasOne(d => d.ExamGrade)
+            builder.HasOne(d => d.Grade)
                 .WithOne(p => p.CourseToStudent)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("courses_students_exam_grade_id_fkey");

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,17 +10,11 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class CourseToStudentFaker : BaseFaker<CourseToStudent>
     {
-        // HasExam constraints
-        private const float EXAM_PRESENCE = 0.6f;
-
-        // ExamGrade constraints
-        private const float GRADE_PRESENCE = 0.7f;
-
         // Pre-generate all pairs logic
         private readonly List<(int CourseId, int StudentId)> _possiblePairs = new();
         private int _actualIndex = 0;
 
-        private GradeFaker _gradeFaker = new GradeFaker(GradeType.Exam);
+        private GradeFaker _gradeFaker = new GradeFaker(GradeType.TermMark);
 
         public CourseToStudentFaker(List<Course> courses, List<Student> students)
         {
@@ -33,25 +27,19 @@ namespace TimeTile.Storage.Seeders.Fakers
                 {
                     (int, int) element = _possiblePairs.ElementAt(_actualIndex);
 
-                    entity.CourseId = element.Item1;
+                    entity.Course = courses.First(c => c.Id == element.Item1);
                     entity.StudentId = element.Item2;
 
                     _actualIndex++;
                 })
-                .RuleFor(cs => cs.HasExam, f => f.Random.Bool(EXAM_PRESENCE))
-                .RuleFor(cs => cs.ExamGrade, (f, cs) =>
+                .RuleFor(cs => cs.Grade, (f, cs) =>
                 {
-                    if (! cs.HasExam)
+                    if (cs.Course.Term.EndDate > DateTime.UtcNow)
                     {
                         return null;
                     }
 
-                    if (f.Random.Bool(GRADE_PRESENCE))
-                    {
-                        return _gradeFaker.Generate(1).First();
-                    }
-
-                    return null;
+                    return _gradeFaker.Generate(1).First();
                 })
                 .RuleFor(cs => cs.PositionX, (short)0)                 // TODO: real positions
                 .RuleFor(cs => cs.PositionY, (short)0);

@@ -52,8 +52,7 @@ namespace TimeTile.API.Courses.Endpoints.UpdateStudents
                         cs.Student.GroupId,
                         cs.Student.Avatar.FileGuid.ToString()
                     ),
-                    cs.ExamGradeId,
-                    cs.HasExam,
+                    cs.GradeId,
                     cs.PositionX,
                     cs.PositionY
                 ))
@@ -120,8 +119,7 @@ namespace TimeTile.API.Courses.Endpoints.UpdateStudents
         private sealed record Response(
             int StudentId,
             StudentInfo Student,
-            int? ExamGradeId,
-            bool HasExam,
+            int? GradeId,
             short PositionX,
             short PositionY
         );

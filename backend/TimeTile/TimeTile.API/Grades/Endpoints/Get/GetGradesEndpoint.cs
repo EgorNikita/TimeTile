@@ -113,7 +113,7 @@ namespace TimeTile.API.Grades.Endpoints.Get
                 .Where(g =>
                     (g.Type == GradeType.Classwork && g.LessonToStudent!.Student.InstitutionId == institutionId) ||
                     (g.Type == GradeType.Homework && g.Submission!.Student.InstitutionId == institutionId) ||
-                    (g.Type == GradeType.Exam && g.CourseToStudent!.Course.InstitutionId == institutionId)
+                    (g.Type == GradeType.TermMark && g.CourseToStudent!.Course.InstitutionId == institutionId)
                 );
 
             if (request.Types is not null && request.Types.Any())

@@ -31,7 +31,7 @@ namespace TimeTile.API.Grades.Endpoints.GetBulk
                                         .AnyAsync(g =>
                                                 (g.Type == GradeType.Classwork && g.LessonToStudent!.Student.InstitutionId != institutionId) ||
                                                 (g.Type == GradeType.Homework && g.Submission!.Student.InstitutionId != institutionId) ||
-                                                (g.Type == GradeType.Exam && g.CourseToStudent!.Course.InstitutionId != institutionId),
+                                                (g.Type == GradeType.TermMark && g.CourseToStudent!.Course.InstitutionId != institutionId),
                                             cancellationToken);
 
                                     return !invalidGradeExists;

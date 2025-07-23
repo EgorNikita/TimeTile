@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
@@ -26,16 +27,16 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            var relationsQuery = BuildFilteredQuery(request, request.Id, db)
+            var baseQuery = BuildFilteredQuery(request, request.Id, db)
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.Course)
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.LessonToTimetableUnits)
-                .Where(cs => cs.StudentId == request.Id)
-                .ApplySorting(
-                    request.SortBy,
-                    request.Descending
-                )
+                .Where(cs => cs.StudentId == request.Id);
+
+            baseQuery = ApplySorting(baseQuery, request.SortBy, request.Descending);
+
+            var relationsQuery = baseQuery
                 .Select(ls => new Response(
                     ls.LessonId,
                     new LessonInfo(
@@ -74,6 +75,21 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             var result = Result.Success(relations);
 
             return TypedResults.Ok(result);
+        }
+
+        private static IQueryable<LessonToStudent> ApplySorting(IQueryable<LessonToStudent> query, string? sortBy, bool descending)
+        {
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                return query.ApplySorting(
+                    sortBy,
+                    descending
+                );
+            }
+
+            return descending
+                ? query.OrderByDescending(ls => ls.Lesson.Date)
+                : query.OrderBy(ls => ls.Lesson.Date);
         }
 
         private static IQueryable<LessonToStudent> BuildFilteredQuery(Request request, int studentId, TimetileDbContext db)

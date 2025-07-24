@@ -36,7 +36,7 @@ namespace TimeTile.Storage.Seeders
         private const int COURSES_TO_STUDENTS_COUNT = 20;
         private const int LESSONS_COUNT = 400;
         private const int SUBMISSIONS_COUNT = 5000;
-        private const int MESSAGES_COUNT = 10000;
+        private const int MESSAGES_COUNT = 2000;
 
         private readonly TimetileDbContext _context;
         private readonly IUserService _userService;

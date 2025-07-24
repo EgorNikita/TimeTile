@@ -11,14 +11,17 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class TimetableUnitFaker : BaseFaker<TimetableUnit>
     {
+        // For generating unique values
+        private static readonly HashSet<string> _usedTitles = new();
+
         // Title constraints
-        private const int MAX_LESSON_NUMBER = 10;
+        private const int MAX_LESSON_NUMBER = 16;
 
         // LessonTime's logic
         private const int MIN_UNIT_DURATION_MINUTES = 35;
         private const int MAX_UNIT_DURATION_MINUTES = 60;
 
-        private readonly Dictionary<int, List<KeyValuePair<TimeOnly, TimeOnly>>> _institutionsToLessonTime = new();
+        private static readonly Dictionary<int, List<KeyValuePair<TimeOnly, TimeOnly>>> _institutionsToLessonTime = new();
 
         public TimetableUnitFaker(List<Institution> institutions)
         {
@@ -31,8 +34,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidTitle(Faker faker)
         {
-            int lessonNumber = faker.Random.Int(1, MAX_LESSON_NUMBER);
-            return MakeUniqueValue($"Lesson {lessonNumber}");
+            Func<string> generator = () => $"Lesson {faker.Random.Int(1, MAX_LESSON_NUMBER)}";
+
+            return MakeUniqueValue(generator, _usedTitles);
         }
 
         private DateTimeOffset GenerateValidStartTime(Faker faker, int institutionId)

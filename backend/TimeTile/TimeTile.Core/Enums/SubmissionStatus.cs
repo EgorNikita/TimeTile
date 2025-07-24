@@ -13,6 +13,7 @@ namespace TimeTile.Core.Enums
         SubmittedLate,
         Accepted,
         Rejected,
+        Expired
     }
 
 }

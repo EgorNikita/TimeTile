@@ -25,7 +25,8 @@ namespace TimeTile.Storage.Seeders.Fakers
         // Password constraints
         private const int PASSWORD_MAX_LENGTH = 256;
 
-        private HashSet<string> _usedLogins = new();
+        // For generating unique values
+        private static readonly HashSet<string> _usedLogins = new();
 
         // For saving passwords
         public List<LoginCredential> LoginData { get; } = new();
@@ -60,19 +61,10 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         public string GenerateValidLogin(Faker faker)
         {
-            Func<string> generator = () => faker.Internet.Email();
+            Func<string> rawLoginGenerator = () => faker.Internet.Email();
+            Func<string> generator = () => GenerateValidValue(rawLoginGenerator, RegexPatterns.Pattern.Email);
 
-            while (true)
-            {
-                string login = GenerateValidValue(generator, RegexPatterns.Pattern.Email);
-
-                if (!_usedLogins.Contains(login))
-                {
-                    _usedLogins.Add(login);
-
-                    return login;
-                }
-            }
+            return MakeUniqueValue(generator, _usedLogins);
         }
 
         public string GenerateValidPassword(Faker faker, User user)

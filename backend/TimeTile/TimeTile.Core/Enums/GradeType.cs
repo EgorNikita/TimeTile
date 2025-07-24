@@ -10,6 +10,6 @@ namespace TimeTile.Core.Enums
     {
         Classwork,
         Homework,
-        Exam
+        TermMark
     }
 }

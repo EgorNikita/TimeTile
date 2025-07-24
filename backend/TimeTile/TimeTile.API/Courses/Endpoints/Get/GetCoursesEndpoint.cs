@@ -6,6 +6,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Pagination.PagedRequest;
 using TimeTile.API.Common.Api.Requests;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
@@ -20,7 +21,8 @@ namespace TimeTile.API.Courses.Endpoints.Get
             return app
                 .MapGet("/", Handle)
                 .WithSummary("Returns a page of courses")
-                .WithRequestValidation<Request>();
+                .WithRequestValidation<Request>()
+                .RequireAuthorization(Permissions.Courses.Get);
         }
 
         private static async Task<Ok<Result<PagedList<Response>>>> Handle(
@@ -62,6 +64,13 @@ namespace TimeTile.API.Courses.Endpoints.Get
                 .AsNoTracking()
                 .Where(c => c.InstitutionId == institutionId);
 
+            if (request.IsActive is not null)
+            {
+                baseQuery = baseQuery.Where(c =>
+                    (c.Term.EndDate > DateTime.UtcNow && c.Term.StartDate <= DateTime.UtcNow) == request.IsActive.Value
+                );
+            }
+
             if (request.SubjectIds is not null && request.SubjectIds.Any())
                 baseQuery = baseQuery.Where(c =>
                     request.SubjectIds.Contains(c.SubjectId)
@@ -99,6 +108,7 @@ namespace TimeTile.API.Courses.Endpoints.Get
             int[]? TermIds = null,
             int[]? StudentIds = null,
             int[]? GroupIds = null,
+            bool? IsActive = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

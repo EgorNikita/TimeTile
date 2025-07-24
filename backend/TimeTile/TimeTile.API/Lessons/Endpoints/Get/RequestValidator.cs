@@ -75,7 +75,7 @@ namespace TimeTile.API.Lessons.Endpoints.Get
                 {
                     When(x => x.LessonStatusIds != null, () => {
                         RuleFor(x => x.LessonStatusIds!)
-                            .MustBeValidInstitutionEntityIdsList<GetLessonsEndpoint.Request, LessonStatus>(db, institutionId);
+                            .MustBeValidEntityIdsList<GetLessonsEndpoint.Request, LessonStatus>(db);
                     });
                 });
 

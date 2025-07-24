@@ -47,8 +47,7 @@ namespace TimeTile.API.Courses.Endpoints.GetStudents
                         cs.Student.GroupId,
                         cs.Student.Avatar.FileGuid.ToString()
                     ),
-                    cs.ExamGradeId,
-                    cs.HasExam,
+                    cs.GradeId,
                     cs.PositionX,
                     cs.PositionY
                 ))
@@ -70,8 +69,7 @@ namespace TimeTile.API.Courses.Endpoints.GetStudents
         private sealed record Response(
             int StudentId,
             StudentInfo Student,
-            int? ExamGradeId,
-            bool HasExam,
+            int? GradeId,
             short PositionX,
             short PositionY
         );

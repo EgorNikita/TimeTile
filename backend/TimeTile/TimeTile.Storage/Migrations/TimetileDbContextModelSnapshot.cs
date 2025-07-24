@@ -82,7 +82,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_Assignment_Deadline_Valid", "\"deadline\"  > \"published_at\"");
 
-                            t.HasCheckConstraint("CHK_Assignment_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
+                            t.HasCheckConstraint("CHK_Assignment_Description_Valid", "\"description\"  ~ '^[[:alpha:][:digit:][:space:].,!?:-]+$'");
 
                             t.HasCheckConstraint("CHK_Assignment_Title_Valid", "\"title\"  ~ '^[A-Za-z0-9\\s\\-.,_&()]+$'");
                         });
@@ -354,13 +354,9 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<int?>("ExamGradeId")
+                    b.Property<int?>("GradeId")
                         .HasColumnType("integer")
-                        .HasColumnName("exam_grade_id");
-
-                    b.Property<bool>("HasExam")
-                        .HasColumnType("boolean")
-                        .HasColumnName("has_exam");
+                        .HasColumnName("grade_id");
 
                     b.Property<short>("PositionX")
                         .HasColumnType("smallint")
@@ -382,7 +378,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExamGradeId")
+                    b.HasIndex("GradeId")
                         .IsUnique();
 
                     b.HasIndex("StudentId");
@@ -395,8 +391,6 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("courses_students", null, t =>
                         {
-                            t.HasCheckConstraint("CK_CoursesStudents_HasExam_ExamGrade", "\"has_exam\" = TRUE OR \"exam_grade_id\" IS NULL");
-
                             t.HasCheckConstraint("CK_CoursesStudents_PositionX_Positive", "\"position_x\" >= 0");
 
                             t.HasCheckConstraint("CK_CoursesStudents_PositionY_Positive", "\"position_y\" >= 0");
@@ -505,8 +499,8 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<short>("Value")
-                        .HasColumnType("smallint")
+                    b.Property<float>("Value")
+                        .HasColumnType("real")
                         .HasColumnName("value");
 
                     b.Property<float>("Weight")
@@ -519,7 +513,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("grades", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Grade_Type_Valid", "LOWER(\"type\") IN ('classwork', 'homework', 'exam')");
+                            t.HasCheckConstraint("CHK_Grade_Type_Valid", "LOWER(\"type\") IN ('classwork', 'homework', 'termmark')");
 
                             t.HasCheckConstraint("CHK_Grade_Value_Positive", "\"value\" > 0");
 
@@ -657,7 +651,7 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_Institution_Domain_Valid", "\"domain\" ~ '^(?:[[:alpha:]0-9-]{1,63}\\.)+[A-Za-z]{2,}$'");
 
-                            t.HasCheckConstraint("CHK_Institution_Email_Valid", "\"email\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_Institution_Email_Valid", "\"email\" ~ '^[A-Za-z0-9][A-Za-z0-9._%+-]*[A-Za-z0-9]@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
                             t.HasCheckConstraint("CHK_Institution_Phone_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
 
@@ -785,10 +779,6 @@ namespace TimeTile.Storage.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ArgbColor")
-                        .HasColumnType("integer")
-                        .HasColumnName("argb_color");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -805,10 +795,6 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("character varying(250)")
                         .HasColumnName("description");
 
-                    b.Property<int>("InstitutionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("institution_id");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -817,17 +803,15 @@ namespace TimeTile.Storage.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InstitutionId");
-
-                    b.HasIndex("Description", "InstitutionId", "DeletedAt")
+                    b.HasIndex("Description", "DeletedAt")
                         .IsUnique()
-                        .HasDatabaseName("lesson_statuses_description_institution_deleted_at_key");
+                        .HasDatabaseName("lesson_statuses_description_deleted_at_key");
 
-                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Description", "InstitutionId", "DeletedAt"), false);
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Description", "DeletedAt"), false);
 
                     b.ToTable("lesson_statuses", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
+                            t.HasCheckConstraint("CHK_LessonStatus_Description_Valid", "\"description\"  ~ '^[[:alpha:][:digit:][:space:].,!?:-]+$'");
                         });
                 });
 
@@ -1089,7 +1073,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.ToTable("permissions", null, t =>
                         {
-                            t.HasCheckConstraint("CHK_Permission_Description_Valid", "\"description\"  ~ '^[[:alpha:]\\d\\s.,!?]+$'");
+                            t.HasCheckConstraint("CHK_Permission_Description_Valid", "\"description\"  ~ '^[[:alpha:][:digit:][:space:].,!?:-]+$'");
                         });
                 });
 
@@ -1344,6 +1328,10 @@ namespace TimeTile.Storage.Migrations
                         .HasColumnType("text")
                         .HasColumnName("student_note");
 
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1363,7 +1351,7 @@ namespace TimeTile.Storage.Migrations
                         {
                             t.HasCheckConstraint("CHK_Submission_Grade_Valid", "\"grade_id\" IS NULL OR LOWER(\"status\") = LOWER('Accepted')");
 
-                            t.HasCheckConstraint("CHK_Submission_Status_Valid", "LOWER(\"status\") IN ('notsubmitted', 'submitted', 'submittedlate', 'accepted', 'rejected')");
+                            t.HasCheckConstraint("CHK_Submission_Status_Valid", "LOWER(\"status\") IN ('notsubmitted', 'submitted', 'submittedlate', 'accepted', 'rejected', 'expired')");
                         });
                 });
 
@@ -1691,7 +1679,7 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[A-Za-z0-9][A-Za-z0-9._%+-]*[A-Za-z0-9]@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
                             t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
                         });
@@ -1723,7 +1711,7 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[A-Za-z0-9][A-Za-z0-9._%+-]*[A-Za-z0-9]@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
                             t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
 
@@ -1751,7 +1739,7 @@ namespace TimeTile.Storage.Migrations
 
                             t.HasCheckConstraint("CHK_User_Lastname_Valid", "\"lastname\" ~ '^[[:alpha:]]+(?:[\\s''-][[:alpha:]]+)*$'");
 
-                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^(?!\\.)[A-Za-z0-9._%+-]+(?<!\\.)@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
+                            t.HasCheckConstraint("CHK_User_Login_Valid", "\"login\" ~ '^[A-Za-z0-9][A-Za-z0-9._%+-]*[A-Za-z0-9]@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$'");
 
                             t.HasCheckConstraint("CHK_User_PhoneNumber_Valid", "\"phone_number\" ~ '^\\+[1-9]\\d{6,14}$'");
                         });
@@ -1876,9 +1864,9 @@ namespace TimeTile.Storage.Migrations
                         .IsRequired()
                         .HasConstraintName("courses_students_course_id_fkey");
 
-                    b.HasOne("TimeTile.Core.Models.Grade", "ExamGrade")
+                    b.HasOne("TimeTile.Core.Models.Grade", "Grade")
                         .WithOne("CourseToStudent")
-                        .HasForeignKey("TimeTile.Core.Models.CourseToStudent", "ExamGradeId")
+                        .HasForeignKey("TimeTile.Core.Models.CourseToStudent", "GradeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("courses_students_exam_grade_id_fkey");
 
@@ -1891,7 +1879,7 @@ namespace TimeTile.Storage.Migrations
 
                     b.Navigation("Course");
 
-                    b.Navigation("ExamGrade");
+                    b.Navigation("Grade");
 
                     b.Navigation("Student");
                 });
@@ -1965,18 +1953,6 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("LessonStatus");
-                });
-
-            modelBuilder.Entity("TimeTile.Core.Models.LessonStatus", b =>
-                {
-                    b.HasOne("TimeTile.Core.Models.Institution", "Institution")
-                        .WithMany("LessonStatuses")
-                        .HasForeignKey("InstitutionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired()
-                        .HasConstraintName("lesson_statuses_institution_id_fkey");
-
-                    b.Navigation("Institution");
                 });
 
             modelBuilder.Entity("TimeTile.Core.Models.LessonToStudent", b =>
@@ -2364,8 +2340,6 @@ namespace TimeTile.Storage.Migrations
                     b.Navigation("Courses");
 
                     b.Navigation("Groups");
-
-                    b.Navigation("LessonStatuses");
 
                     b.Navigation("Roles");
 

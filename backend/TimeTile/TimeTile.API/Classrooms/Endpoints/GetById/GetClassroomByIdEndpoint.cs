@@ -1,14 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using TimeTile.API.Authentication;
-using TimeTile.API.ClassroomTypes.Services;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
-using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 
 namespace TimeTile.API.Classrooms.Endpoints.GetById
@@ -25,19 +20,26 @@ namespace TimeTile.API.Classrooms.Endpoints.GetById
 
         private static async Task<Ok<Result<Response>>> Handle(
             [AsParameters] Request request,
+            IClassroomTypeService classroomTypeService,
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
             // Find Classroom
             var classroom = await db.Classrooms
                 .AsNoTracking()
+                .Include(c => c.ClassroomType)
+                    .ThenInclude(t => t.Icon)
                 .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
             var response = new Response(
                 classroom.Id,
                 classroom.Title,
                 classroom.Capacity,
-                classroom.ClassroomTypeId
+                new ClassroomTypeInfo(
+                    classroom.ClassroomType.Id,
+                    classroom.ClassroomType.Description,
+                    classroomTypeService.GetIconUrl(classroom.ClassroomType)
+                )
             );
 
             var result = Result.Success(response);
@@ -53,7 +55,13 @@ namespace TimeTile.API.Classrooms.Endpoints.GetById
             int Id,
             string Title,
             int Capacity,
-            int ClassroomTypeId
+            ClassroomTypeInfo ClassroomType
+        );
+
+        private sealed record ClassroomTypeInfo(
+            int Id,
+            string Description,
+            string? IconUrl
         );
     }
 }

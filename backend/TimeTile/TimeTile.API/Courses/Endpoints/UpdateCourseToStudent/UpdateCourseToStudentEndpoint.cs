@@ -34,7 +34,7 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
             var courseStudent = await db.CoursesStudents
                 .Include(cs => cs.Student)
                     .ThenInclude(s => s.Avatar)
-                .Include(cs => cs.ExamGrade)
+                .Include(cs => cs.Grade)
                 .FirstAsync(cs =>
                     cs.StudentId == parameters.StudentId &&
                     cs.CourseId == parameters.CourseId, cancellationToken
@@ -57,8 +57,7 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
                     courseStudent.Student.GroupId,
                     courseStudent.Student.Avatar.FileGuid.ToString()
                 ),
-                courseStudent.ExamGradeId,
-                courseStudent.HasExam,
+                courseStudent.GradeId,
                 courseStudent.PositionX,
                 courseStudent.PositionY
             );
@@ -77,16 +76,16 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
             // If user included Grade to request's body
             if (request.Grade.WasProvided)
             {
-                if (courseStudent.ExamGrade is not null)
+                if (courseStudent.Grade is not null)
                 {
-                    db.Grades.Remove(courseStudent.ExamGrade);
+                    db.Grades.Remove(courseStudent.Grade);
                 }
 
                 var grade = request.Grade.Value;
 
                 if (grade is null)
                 {
-                    courseStudent.ExamGrade = null;
+                    courseStudent.Grade = null;
                 }
                 else
                 {
@@ -94,17 +93,14 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
                     {
                         Value = grade.Value,
                         Weight = grade.Weight,
-                        Type = GradeType.Exam
+                        Type = GradeType.TermMark
                     };
 
                     await db.Grades.AddAsync(gradeToAdd, cancellationToken);
 
-                    courseStudent.ExamGrade = gradeToAdd;
+                    courseStudent.Grade = gradeToAdd;
                 }
             }
-
-            if (request.HasExam is not null)
-                courseStudent.HasExam = request.HasExam.Value;
 
             if (request.PositionX is not null)
                 courseStudent.PositionX = request.PositionX.Value;
@@ -119,7 +115,6 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
         );
 
         public sealed record RequestBody(
-            bool? HasExam,
             short? PositionX,
             short? PositionY,
             PatchOptionalProperty<GradeInfo?> Grade
@@ -133,8 +128,7 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
         private sealed record Response(
             int StudentId,
             StudentInfo Student,
-            int? ExamGradeId,
-            bool HasExam,
+            int? GradeId,
             short PositionX,
             short PositionY
         );

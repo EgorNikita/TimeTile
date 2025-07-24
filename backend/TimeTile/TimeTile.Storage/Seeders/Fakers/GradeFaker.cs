@@ -24,7 +24,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         public GradeFaker(GradeType gradeType)
         {
             _faker
-                .RuleFor(g => g.Value, f => (short)f.Random.Int(MIN_VALUE, MAX_VALUE))
+                .RuleFor(g => g.Value, f => f.Random.Int(MIN_VALUE, MAX_VALUE))
                 .RuleFor(g => g.Weight, f =>
                 {
                     if (f.Random.Bool(DEFAULT_WEIGHT_POSSIBILITY))

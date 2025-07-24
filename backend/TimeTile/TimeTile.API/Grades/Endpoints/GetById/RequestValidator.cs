@@ -39,7 +39,7 @@ namespace TimeTile.API.Grades.Endpoints.GetById
                             {
                                 GradeType.Classwork => grade.LessonToStudent!.Student.InstitutionId == institutionId,
                                 GradeType.Homework => grade.Submission!.Student.InstitutionId == institutionId,
-                                GradeType.Exam => grade.CourseToStudent!.Course.InstitutionId == institutionId,
+                                GradeType.TermMark => grade.CourseToStudent!.Course.InstitutionId == institutionId,
                                 _ => false,
                             };
                         })

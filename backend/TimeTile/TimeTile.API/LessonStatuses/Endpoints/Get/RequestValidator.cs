@@ -1,9 +1,9 @@
-﻿using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Common.Api.Pagination.PagedRequest;
+﻿using FluentValidation;
+using TimeTile.API.Common.Api.Extensions;
 
 namespace TimeTile.API.LessonStatuses.Endpoints.Get
 {
-    public class RequestValidator : PagedRequestValidator<GetLessonStatusesEndpoint.Request>
+    public class RequestValidator : AbstractValidator<GetLessonStatusesEndpoint.Request>
     {
         public RequestValidator()
         {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Pagination;
@@ -26,16 +27,16 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
             TimetileDbContext db,
             CancellationToken cancellationToken)
         {
-            var relations = await BuildFilteredQuery(request, request.Id, db)
+            var baseQuery = BuildFilteredQuery(request, request.Id, db)
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.Course)
                 .Include(ls => ls.Lesson)
                     .ThenInclude(l => l.LessonToTimetableUnits)
-                .Where(cs => cs.StudentId == request.Id)
-                .ApplySorting(
-                    request.SortBy,
-                    request.Descending
-                )
+                .Where(cs => cs.StudentId == request.Id);
+
+            baseQuery = ApplySorting(baseQuery, request.SortBy, request.Descending);
+
+            var relationsQuery = baseQuery
                 .Select(ls => new Response(
                     ls.LessonId,
                     new LessonInfo(
@@ -53,12 +54,42 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                     ls.CameAt,
                     ls.LeftAt,
                     ls.GradeId
-                ))
-                .ToPagedListAsync(request, cancellationToken);
+                ));
+
+            PagedList<Response> relations;
+
+            if (request.FetchAll.HasValue && request.FetchAll.Value)
+            {
+                var count = await relationsQuery.CountAsync(cancellationToken);
+                relations = new PagedList<Response>(
+                    await relationsQuery.ToListAsync(cancellationToken),
+                    1, count, 1, count
+                );
+            } 
+            else
+            {
+                relations = await relationsQuery
+                    .ToPagedListAsync(request, cancellationToken);
+            }
 
             var result = Result.Success(relations);
 
             return TypedResults.Ok(result);
+        }
+
+        private static IQueryable<LessonToStudent> ApplySorting(IQueryable<LessonToStudent> query, string? sortBy, bool descending)
+        {
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                return query.ApplySorting(
+                    sortBy,
+                    descending
+                );
+            }
+
+            return descending
+                ? query.OrderByDescending(ls => ls.Lesson.Date)
+                : query.OrderBy(ls => ls.Lesson.Date);
         }
 
         private static IQueryable<LessonToStudent> BuildFilteredQuery(Request request, int studentId, TimetileDbContext db)
@@ -67,6 +98,18 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
                 .AsNoTracking()
                 .Where(ls => ls.StudentId == studentId);
 
+            // Date
+            if (request.From is not null)
+                baseQuery = baseQuery.Where(ls =>
+                    ls.Lesson.Date >= request.From.Value.ToUniversalTime()
+                );
+
+            if (request.Until is not null)
+                baseQuery = baseQuery.Where(ls =>
+                    ls.Lesson.Date <= request.Until.Value.ToUniversalTime()
+                );
+
+            // FKs
             if (request.CourseIds is not null && request.CourseIds.Any())
                 baseQuery = baseQuery.Where(ls =>
                     request.CourseIds.Contains(ls.Lesson.CourseId)
@@ -78,6 +121,9 @@ namespace TimeTile.API.Students.Endpoints.GetLessons
         public sealed record Request(
             int Id,
             int[]? CourseIds,
+            DateTimeOffset? From = null,
+            DateTimeOffset? Until = null,
+            bool? FetchAll = null,
             int? Page = 1,
             int? PageSize = 10,
             string? SortBy = null,

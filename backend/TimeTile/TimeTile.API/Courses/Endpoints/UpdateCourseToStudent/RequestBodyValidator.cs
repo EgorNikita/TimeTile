@@ -7,12 +7,6 @@ namespace TimeTile.API.Courses.Endpoints.UpdateCourseToStudent
     {
         public RequestBodyValidator()
         {
-            RuleFor(x => x)
-                .Must(request =>
-                    request.HasExam != false || !request.Grade.HasValue
-                )
-                .WithMessage("ExamGradeId must be null or omitted if HasExam is false");
-
             RuleFor(x => x.PositionX)
                 .Must(posX => posX == null || posX >= 0)
                 .WithMessage("PositionX cannot be negative");

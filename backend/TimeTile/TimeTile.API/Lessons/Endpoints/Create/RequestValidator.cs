@@ -37,14 +37,17 @@ namespace TimeTile.API.Lessons.Endpoints.Create
                         .MustBeValidInstitutionEntityId<CreateLessonEndpoint.Request, Classroom>(db, institutionId);
                 });
 
-            RuleFor(x => x.LessonStatusId)
-                .MustBeValidId()
-                .DependentRules(() =>
-                {
-                    RuleFor(x => x.LessonStatusId)
-                        .MustBeValidInstitutionEntityId<CreateLessonEndpoint.Request, LessonStatus>(db, institutionId);
-                });
-
+            When(x => x.LessonStatusId.HasValue, () =>
+            {
+                RuleFor(x => x.LessonStatusId!.Value)
+                    .MustBeValidId()
+                    .DependentRules(() =>
+                    {
+                        RuleFor(x => x.LessonStatusId!.Value)
+                            .MustBeValidEntityId<CreateLessonEndpoint.Request, LessonStatus>(db);
+                    });
+            });
+            
             RuleFor(x => x.Date)
                 .Must(date => date >= DateTimeOffset.UtcNow)
                 .WithMessage("Date should be from future");

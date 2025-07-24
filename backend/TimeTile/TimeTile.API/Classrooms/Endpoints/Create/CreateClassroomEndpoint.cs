@@ -27,6 +27,7 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
 
         private static async Task<Created<Result<Response>>> Handle(
             Request request,
+            IClassroomTypeService classroomTypeService,
             TimetileDbContext db,
             IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
@@ -46,12 +47,21 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
             await db.Classrooms.AddAsync(classroom, cancellationToken);
             await db.SaveChangesAsync(cancellationToken);
 
+            var classroomType = await db.ClassroomTypes
+                .AsNoTracking()
+                .Include(t => t.Icon)
+                .FirstAsync(x => x.Id == classroom.ClassroomTypeId, cancellationToken);
+
             // Return result
             var response = new Response(
                 classroom.Id,
                 classroom.Title,
                 classroom.Capacity,
-                classroom.ClassroomTypeId
+                new ClassroomTypeInfo(
+                    classroomType.Id,
+                    classroomType.Description,
+                    classroomTypeService.GetIconUrl(classroomType)
+                )
             );
 
             var result = Result.Success(response);
@@ -69,7 +79,13 @@ namespace TimeTile.API.Classrooms.Endpoints.Create
             int Id,
             string Title,
             int Capacity,
-            int ClassroomTypeId
+            ClassroomTypeInfo ClassroomType
+        );
+
+        private sealed record ClassroomTypeInfo(
+            int Id,
+            string Description,
+            string? IconUrl
         );
     }
 }

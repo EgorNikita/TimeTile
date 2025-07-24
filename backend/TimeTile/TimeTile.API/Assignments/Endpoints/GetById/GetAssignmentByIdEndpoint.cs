@@ -27,6 +27,7 @@ namespace TimeTile.API.Assignments.Endpoints.GetById
             // Find Assignment
             var assignment = await db.Assignments
                 .AsNoTracking()
+                .Include(a => a.Lesson)
                 .Include(a => a.AssignmentToFiles)
                 .FirstAsync(x => x.Id == request.Id, cancellationToken);
 
@@ -37,6 +38,7 @@ namespace TimeTile.API.Assignments.Endpoints.GetById
                 assignment.PublishedAt,
                 assignment.Deadline,
                 assignment.UploadAfterDeadline,
+                assignment.Lesson.CourseId,
                 assignment.AssignmentToFiles.Any()
             );
 
@@ -56,6 +58,7 @@ namespace TimeTile.API.Assignments.Endpoints.GetById
             DateTimeOffset PublishedAt,
             DateTimeOffset Deadline,
             bool UploadAfterDeadline,
+            int CourseId,
             bool HasAttachments
         );
     }

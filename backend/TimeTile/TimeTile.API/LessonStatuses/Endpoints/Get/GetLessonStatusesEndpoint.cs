@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using System.Security.Claims;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Common.Api.Pagination.PagedRequest;
-using TimeTile.API.Common.Api.Pagination;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 using Microsoft.EntityFrameworkCore;
-using TimeTile.API.Common.Api.Http;
 
 namespace TimeTile.API.LessonStatuses.Endpoints.Get
 {
@@ -18,32 +14,26 @@ namespace TimeTile.API.LessonStatuses.Endpoints.Get
         {
             return app
                .MapGet("/", Handle)
-               .WithSummary("Returns a page of lesson statuses")
+               .WithSummary("Returns lesson statuses")
                .WithRequestValidation<Request>();
         }
 
-        private static async Task<Ok<Result<PagedList<Response>>>> Handle(
+        private static async Task<Ok<Result<List<Response>>>> Handle(
             [AsParameters] Request request,
             TimetileDbContext db,
-            IInstitutionProvider institutionProvider,
             CancellationToken cancellationToken)
         {
-            // Extracts institutionId
-            var institutionId = institutionProvider.GetInstitutionId();
-
             var lessonStatuses = await db.LessonStatuses
                 .AsNoTracking()
-                .Where(c => c.InstitutionId == institutionId)
                 .ApplySorting(
                     request.SortBy,
                     request.Descending
                 )
                 .Select(x => new Response(
                     x.Id,
-                    x.Description,
-                    x.ArgbColor
+                    x.Description
                 ))
-                .ToPagedListAsync(request, cancellationToken);
+                .ToListAsync(cancellationToken);
 
             var result = Result.Success(lessonStatuses);
 
@@ -51,16 +41,13 @@ namespace TimeTile.API.LessonStatuses.Endpoints.Get
         }
 
         public sealed record Request(
-            int? Page = 1,
-            int? PageSize = 10,
             string? SortBy = null,
             bool Descending = false
-        ) : IPagedRequest, ISortRequest;
+        ) : ISortRequest;
 
         private sealed record Response(
             int Id,
-            string Description,
-            int ArgbColor
+            string Description
         );
     }
 }

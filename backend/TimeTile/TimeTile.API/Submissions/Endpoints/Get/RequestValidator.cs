@@ -34,7 +34,7 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                 .MustBeValidOptionalListOfIds()
                 .DependentRules(() =>
                 {
-                    When(x => x.AssignmentIds != null, () => {
+                    When(x => x.AssignmentIds != null && x.AssignmentIds.Any(), () => {
                         RuleFor(x => x.AssignmentIds!)
                             .MustBeValidEntityIdsList<GetSubmissionsEndpoint.Request, Assignment>(db)
                             .DependentRules(() =>
@@ -48,6 +48,17 @@ namespace TimeTile.API.Submissions.Endpoints.Get
                                     })
                                     .WithMessage("Some AssignmentIds are invalid");
                             });
+                    });
+                });
+
+            // CourseIds
+            RuleFor(x => x.CourseIds)
+                .MustBeValidOptionalListOfIds()
+                .DependentRules(() =>
+                {
+                    When(x => x.CourseIds != null, () => {
+                        RuleFor(x => x.CourseIds!)
+                            .MustBeValidInstitutionEntityIdsList<GetSubmissionsEndpoint.Request, Course>(db, institutionId);
                     });
                 });
 

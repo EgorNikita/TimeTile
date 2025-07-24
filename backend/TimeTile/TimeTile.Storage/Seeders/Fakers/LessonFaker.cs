@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Regex;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Enums;
@@ -16,6 +17,7 @@ namespace TimeTile.Storage.Seeders.Fakers
     {
         // Lesson constraints
         private const float TWO_LESSONS_IN_A_ROW_POSSIBILITY = 0.8f;
+        private const float LESSON_SCHEDULED_POSSIBILITY = 0.9f;
 
         // Assignment constraints
         private const float ASSIGNMENT_PRESENCE_POSSIBILITY = 0.6f;
@@ -23,18 +25,18 @@ namespace TimeTile.Storage.Seeders.Fakers
         private const float UPLOAD_AFTER_DEADLINE_POSSIBILITY = 0.8f;
 
         // Cashing for optimization
-        private readonly Dictionary<int, List<LessonStatus>> _institutionLessonStatuses = new();
-
-        private readonly Dictionary<int, IEnumerable<Course>> _institutionCourses = new();
-        private readonly Dictionary<int, IEnumerable<Classroom>> _institutionClassrooms = new();
-        private readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
+        private static readonly Dictionary<int, IEnumerable<Course>> _institutionCourses = new();
+        private static readonly Dictionary<int, IEnumerable<Classroom>> _institutionClassrooms = new();
+        private static readonly Dictionary<int, IEnumerable<TimetableUnit>> _institutionTimetableUnits = new();
 
         // Maintain uniqueness of rows
-        private readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
-        private readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
+        private static readonly Dictionary<(int TimatableUnitId, DateTimeOffset Date), List<int>> _usedStudents = new();
+        private static readonly HashSet<(int ClassroomId, int TimatableUnitId, DateTimeOffset Date)> _usedClassrooms = new();
+        private static readonly HashSet<(int TeacherId, int TimatableUnitId, DateTimeOffset Date)> _usedTeachers = new();
 
         // Extra fakers
         private readonly LessonToStudentFaker _lessonToStudentFaker = new();
+        private readonly AssignmentFaker _assignmentFaker = new();
 
         public LessonFaker(List<Institution> institutions, List<Classroom> classrooms, List<Course> courses, List<LessonStatus> lessonStatuses, List<TimetableUnit> timetableUnits)
         {
@@ -42,28 +44,30 @@ namespace TimeTile.Storage.Seeders.Fakers
                 .Where(i =>
                     classrooms.Any(c => c.InstitutionId == i.Id) &&
                     courses.Any(c => c.InstitutionId == i.Id) &&
-                    lessonStatuses.Any(s => s.InstitutionId == i.Id) &&
                     timetableUnits.Any(u => u.InstitutionId == i.Id))
                 .ToList();
 
             if (suitableInstitutions.Count == 0)
-                throw new InvalidOperationException("There are no associations between classrooms, courses, lesson statuses and timetable units.");
+                throw new InvalidOperationException("There are no associations between classrooms, courses and timetable units.");
 
             _faker
+                .RuleFor(l => l.Description, GenerateValidDescription)
                 .Rules((faker, lesson) =>
                 {
                     foreach (var institution in institutions.OrderBy(_ => Guid.NewGuid()))
                     {
                         int institutionId = institution.Id;
 
-                        lesson.LessonStatus = PickAssociatedEntity(
-                            faker,
-                            institutionId,
-                            lessonStatuses,
-                            _institutionLessonStatuses,
-                            s => s.InstitutionId == institutionId
-                        );
+                        // LessonStatus
+                        var scheduledLessonStatus = lessonStatuses
+                            .First(ls => ls.Description == LessonStatuses.Scheduled);
 
+                        if (faker.Random.Bool(LESSON_SCHEDULED_POSSIBILITY))
+                            lesson.LessonStatus = scheduledLessonStatus;
+                        else
+                            lesson.LessonStatus = faker.PickRandom(lessonStatuses.Except([scheduledLessonStatus]));
+
+                        // Other FKs
                         var suitableTimetableUnits = _institutionTimetableUnits.ContainsKey(institutionId) 
                             ? _institutionTimetableUnits[institutionId]
                             : timetableUnits.Where(u => u.InstitutionId == institutionId);
@@ -89,7 +93,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                         var combination = result.Data;
 
-                        lesson.CourseId = combination.courseId;
+                        lesson.Course = suitableCourses.First(c => c.Id == combination.courseId);
                         lesson.ClassroomId = combination.classroomId;
                         lesson.LessonToTimetableUnits = suitableTimetableUnits
                             .Where(u => combination.timetableUnitIds.Contains(u.Id))
@@ -100,9 +104,11 @@ namespace TimeTile.Storage.Seeders.Fakers
                             .ToList();
                         lesson.Date = combination.date;
                         
-                        AddAssociationsWithStudents(lesson, suitableCourses, combination.courseId);
+                        // LessonsToStudents
+                        AddAssociationsWithStudents(lesson, lesson.Course);
 
-                        if (faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
+                        // Assignment
+                        if (lesson.Date <= DateTimeOffset.UtcNow && faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
                         {
                             AddAssignment(faker, lesson, combination.date);
                         }
@@ -111,8 +117,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                     }
 
                     throw new ArgumentException("It is impossible to find combination for all dependencies: classroom, course, timetableUnit and date");
-                })
-                .RuleFor(l => l.Description, GenerateValidDescription);
+                });
         }
 
         private Result<(int CourseId, int ClassroomId, int[] TimetableUnitIds, DateTimeOffset Date)> FindPossibleCombinationOfDependencies(Faker faker, IEnumerable<Course> suitableCourses, IEnumerable<TimetableUnit> suitableTimetableUnits, IEnumerable<Classroom> classrooms)
@@ -126,8 +131,24 @@ namespace TimeTile.Storage.Seeders.Fakers
                     DateTimeOffset currentDate = course.Term.StartDate;
                     DateTimeOffset endDate = course.Term.EndDate;
 
-                    while (currentDate <= endDate)
+                    while (currentDate  <= endDate)
                     {
+                        var dayOfWeek = currentDate.UtcDateTime.Date.DayOfWeek;
+                        if (dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday)
+                        {
+                            currentDate = currentDate.AddDays(1);
+                            continue;
+                        }
+
+                        if (_usedStudents.TryGetValue((timetableUnit.Id, currentDate), out List<int>? studentIds))
+                        {
+                            if (course.CoursesToStudents.Any(cs => studentIds.Contains(cs.StudentId)))
+                            {
+                                currentDate = currentDate.AddDays(1);
+                                continue;
+                            }
+                        }
+
                         var teacherActivityInfo = (course.TeacherId, timetableUnit.Id, currentDate);
                         if (!_usedTeachers.Contains(teacherActivityInfo))
                         {
@@ -140,12 +161,40 @@ namespace TimeTile.Storage.Seeders.Fakers
                                     _usedTeachers.Add(teacherActivityInfo);
                                     _usedClassrooms.Add(classroomUsageInfo);
 
+                                    var studentIdsFromCourse = course.CoursesToStudents.Select(cs => cs.StudentId).ToList();
+
+                                    if (studentIds is not null)
+                                    {
+                                        var newStudentIds = studentIdsFromCourse.Except(studentIds);
+
+                                        studentIds.AddRange(newStudentIds);
+                                    }
+                                    else
+                                    {
+                                        studentIds = studentIdsFromCourse;
+                                    }
+                                    _usedStudents[(timetableUnit.Id, currentDate)] = studentIds;
+
                                     if (faker.Random.Bool(TWO_LESSONS_IN_A_ROW_POSSIBILITY))
                                     {
                                         var nextTimetableUnit = suitableTimetableUnits.ElementAtOrDefault(i + 1);
 
                                         if (nextTimetableUnit is not null)
                                         {
+                                            if (_usedStudents.TryGetValue((nextTimetableUnit.Id, currentDate), out List<int>? studentIdsFromNextLesson))
+                                            {
+                                                if (course.CoursesToStudents.Any(cs => studentIdsFromNextLesson.Contains(cs.StudentId)))
+                                                {
+                                                    return Result.Success((course.Id, classroom.Id, new[] { timetableUnit.Id }, currentDate));
+                                                }
+                                            }
+
+                                            if (timetableUnit.EndTime != nextTimetableUnit.StartTime)
+                                            {
+                                                // Skip if the next unit does not follow the current one
+                                                return Result.Success((course.Id, classroom.Id, new[] { timetableUnit.Id }, currentDate));
+                                            }
+
                                             // If it is possible to have second lesson with the same data in a row
                                             var nextTeacherActivityInfo = (course.TeacherId, nextTimetableUnit.Id, currentDate);
                                             var nextClassroomUsageInfo = (classroom.Id, nextTimetableUnit.Id, currentDate);
@@ -154,6 +203,18 @@ namespace TimeTile.Storage.Seeders.Fakers
                                             {
                                                 _usedTeachers.Add(nextTeacherActivityInfo);
                                                 _usedClassrooms.Add(nextClassroomUsageInfo);
+
+                                                if (studentIdsFromNextLesson is not null)
+                                                {
+                                                    var newStudentIds = studentIdsFromCourse.Except(studentIdsFromNextLesson);
+
+                                                    studentIdsFromNextLesson.AddRange(newStudentIds);
+                                                }
+                                                else
+                                                {
+                                                    studentIdsFromNextLesson = studentIdsFromCourse;
+                                                }
+                                                _usedStudents[(nextTimetableUnit.Id, currentDate)] = studentIdsFromNextLesson;
 
                                                 return Result.Success((course.Id, classroom.Id, new[] { timetableUnit.Id, nextTimetableUnit.Id }, currentDate));
                                             }
@@ -168,6 +229,9 @@ namespace TimeTile.Storage.Seeders.Fakers
                         currentDate = currentDate.AddDays(1);
                     }
                 }
+
+                suitableTimetableUnits = suitableTimetableUnits.Except([timetableUnit]);
+                --i;
             }
 
             var error = Error.From("Unable to find combination.");
@@ -175,10 +239,8 @@ namespace TimeTile.Storage.Seeders.Fakers
             return Result.Failure<(int, int, int[], DateTimeOffset)>(error);
         }
 
-        private void AddAssociationsWithStudents(Lesson lesson, IEnumerable<Course> courses, int courseId)
+        private void AddAssociationsWithStudents(Lesson lesson, Course course)
         {
-            var course = courses.First(c => c.Id == courseId);
-
             lesson.LessonsToStudents = course.CoursesToStudents.Select(cs =>
             {
                 var lessonToStudent = new LessonToStudent
@@ -206,6 +268,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             lesson.Assignment = GenerateValidAssignment(
                 faker,
+                lesson,
                 date,
                 lesson.EndTime
             );
@@ -222,17 +285,15 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidDescription(Faker faker)
         {
-            string description = $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
+            var rawDescriptionGenerator = faker.Company.CatchPhrase;
 
-            int maxLength = RegexPatterns.Patterns[RegexPatterns.Pattern.Description].MaxLength;
-
-            return TruncateToMaxLength(description, maxLength);
+            return GenerateValidValue(rawDescriptionGenerator, RegexPatterns.Pattern.Description);
         }
 
-        private Assignment GenerateValidAssignment(Faker faker, DateTimeOffset date, DateTimeOffset endTime)
+        private Assignment GenerateValidAssignment(Faker faker, Lesson lesson, DateTimeOffset date, DateTimeOffset endTime)
         {
-            string title = faker.Lorem.Sentence(3, 5);
-            string description = faker.Lorem.Sentences(3);
+            string title = _assignmentFaker.GenerateValidTitle(lesson);
+            string description = _assignmentFaker.GenerateValidDescription(faker, lesson);
             DateTimeOffset publishedAt = new DateTimeOffset(date.UtcDateTime.Date + endTime.UtcDateTime.TimeOfDay);
             DateTimeOffset deadline = publishedAt.AddDays(DEADLINE_DAYS);
             bool uploadAfterDeadline = faker.Random.Bool(UPLOAD_AFTER_DEADLINE_POSSIBILITY);

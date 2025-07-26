@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
+using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
@@ -27,6 +28,7 @@ namespace TimeTile.API.Users.Endpoints.GetById
             var user = await db.Users
                 .AsNoTracking()
                 .Include(u => u.Avatar)
+                .Include(u => u.Role)
                 .FirstAsync(u => u.Id == request.Id, cancellationToken);
 
             var response = new Response(
@@ -37,6 +39,8 @@ namespace TimeTile.API.Users.Endpoints.GetById
                 user.PhoneNumber,
                 user.BirthDate,
                 user.Login,
+                user.RoleId,
+                user.Role.Title == GeneralRoles.Student,
                 user.Avatar.FileGuid.ToString()
             );
 
@@ -57,6 +61,8 @@ namespace TimeTile.API.Users.Endpoints.GetById
             string PhoneNumber,
             DateOnly BirthDate,
             string Login,
+            int RoleId,
+            bool IsStudent,
             string AvatarUrl
         );
     }

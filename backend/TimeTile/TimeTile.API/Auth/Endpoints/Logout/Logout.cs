@@ -5,7 +5,7 @@ using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 
-namespace TimeTile.API.Authentication.Endpoints.Logout;
+namespace TimeTile.API.Auth.Endpoints.Logout;
 
 
 public class Logout : IEndpoint
@@ -21,22 +21,22 @@ public class Logout : IEndpoint
     
     private static async Task<Results<Ok<Result<Response>>, BadRequest<Result>>> Handle(
         Request request,
-        IAuthService authService,
+        ITokenHandlerService authService,
         IUserProvider userProvider,
         CancellationToken cancellationToken)
     {
-        var ipAddress = userProvider.GetUserIp();
-        var success = await authService.RevokeToken(request.RefreshToken, ipAddress, cancellationToken);
-
-        if (!success)
-        {
-            var error = Error.From(
-                "Invalid refresh token", 
-                "INVALID_REFRESH_TOKEN"
-            );
-
-            return TypedResults.BadRequest(Result.Failure(error));
-        }
+        // var ipAddress = userProvider.GetUserIp();
+        // var success = await authService.RevokeToken(request.RefreshToken, ipAddress, cancellationToken);
+        //
+        // if (!success)
+        // {
+        //     var error = Error.From(
+        //         "Invalid refresh token", 
+        //         "INVALID_REFRESH_TOKEN"
+        //     );
+        //
+        //     return TypedResults.BadRequest(Result.Failure(error));
+        // }
 
         var response = Result.Success(new Response("Successfully logged out."));
         return TypedResults.Ok(response);

@@ -13,7 +13,8 @@
         {
             var context = _httpContextAccessor.HttpContext;
 
-            return context!.GetInstitutionId();
+            return context!.GetCurrentUser()?.InstitutionId
+                   ?? throw new InvalidOperationException("Current user is not set in the HTTP context.");
         }
     }
 }

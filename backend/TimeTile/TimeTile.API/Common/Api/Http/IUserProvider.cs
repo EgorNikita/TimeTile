@@ -1,7 +1,8 @@
-﻿namespace TimeTile.API.Common.Api.Http;
+﻿using TimeTile.Core.Models;
+
+namespace TimeTile.API.Common.Api.Http;
 
 public interface IUserProvider
 {
-    int GetUserId();
-    string? GetUserIp();
+    User GetUser();
 }

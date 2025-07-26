@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace TimeTile.API.Common.Api;
+namespace TimeTile.API.Auth.Authorization;
 
 public class PermissionRequirement : IAuthorizationRequirement
 {

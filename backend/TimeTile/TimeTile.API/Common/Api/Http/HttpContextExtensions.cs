@@ -1,22 +1,13 @@
 ﻿using TimeTile.API.Common.Constants;
+using TimeTile.Core.Models;
 
 namespace TimeTile.API.Common.Api.Http
 {
     public static class HttpContextExtensions
     {
-        public static int GetInstitutionId(this HttpContext context)
+        public static User? GetCurrentUser(this HttpContext context)
         {
-            return (int)context.Items[HttpContextItemKeys.InstitutionId]!;
-        }
-        
-        public static int GetUserId(this HttpContext context)
-        {
-            return (int)context.Items[HttpContextItemKeys.UserId]!;
-        }
-        
-        public static string? GetUserIp(this HttpContext context)
-        {
-            return context.Connection.RemoteIpAddress?.ToString();
+            return context.Items[HttpContextItemKeys.CurrentUser]! as User;
         }
     }
 }

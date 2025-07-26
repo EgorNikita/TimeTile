@@ -12,7 +12,7 @@ namespace TimeTile.API.Submissions.Endpoints.Review
         public RequestParametersValidator(TimetileDbContext db, IInstitutionProvider institutionProvider, IUserProvider userProvider)
         {
             var institutionId = institutionProvider.GetInstitutionId();
-            var userId = userProvider.GetUserId();
+            var userId = userProvider.GetUser().Id;
 
             RuleFor(x => x.Id)
                 .MustBeValidId()

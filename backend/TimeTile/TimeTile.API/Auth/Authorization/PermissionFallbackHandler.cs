@@ -1,16 +1,14 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Serilog;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
+using Serilog;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Requests;
 using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.Constants;
-using TimeTile.Core.Models;
 
-namespace TimeTile.API.Authentication.Authorization
+namespace TimeTile.API.Auth.Authorization
 {
     public class PermissionFallbackHandler
     {

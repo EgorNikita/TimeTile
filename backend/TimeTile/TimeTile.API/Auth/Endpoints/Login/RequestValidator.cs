@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using TimeTile.API.Common.Api.Extensions;
 
-namespace TimeTile.API.Authentication.Endpoints.Login;
+namespace TimeTile.API.Auth.Endpoints.Login;
 
-public class RequestValidator : AbstractValidator<Login.Request>
+public class RequestValidator : AbstractValidator<Auth.Endpoints.Login.Login.Request>
 {
     public RequestValidator()
     {

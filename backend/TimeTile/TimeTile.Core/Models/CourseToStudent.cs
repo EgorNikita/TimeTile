@@ -10,9 +10,7 @@ public partial class CourseToStudent : AuditableEntity, IEntity
 
     public int StudentId { get; set; }
 
-    public int? ExamGradeId { get; set; }
-    
-    public bool HasExam { get; set; }
+    public int? GradeId { get; set; }
 
     public short PositionX { get; set; }
 
@@ -22,5 +20,5 @@ public partial class CourseToStudent : AuditableEntity, IEntity
 
     public virtual Student Student { get; set; } = null!;
     
-    public virtual Grade? ExamGrade { get; set; }
+    public virtual Grade? Grade { get; set; }
 }

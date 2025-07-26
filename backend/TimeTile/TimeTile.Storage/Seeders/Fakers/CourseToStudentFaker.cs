@@ -10,17 +10,9 @@ namespace TimeTile.Storage.Seeders.Fakers
 {
     internal class CourseToStudentFaker : BaseFaker<CourseToStudent>
     {
-        // HasExam constraints
-        private const float EXAM_PRESENCE = 0.6f;
-
-        // ExamGrade constraints
-        private const float GRADE_PRESENCE = 0.7f;
-
         // Pre-generate all pairs logic
         private readonly List<(int CourseId, int StudentId)> _possiblePairs = new();
         private int _actualIndex = 0;
-
-        private GradeFaker _gradeFaker = new GradeFaker(GradeType.Exam);
 
         public CourseToStudentFaker(List<Course> courses, List<Student> students)
         {
@@ -38,21 +30,6 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                     _actualIndex++;
                 })
-                .RuleFor(cs => cs.HasExam, f => f.Random.Bool(EXAM_PRESENCE))
-                .RuleFor(cs => cs.ExamGrade, (f, cs) =>
-                {
-                    if (! cs.HasExam)
-                    {
-                        return null;
-                    }
-
-                    if (f.Random.Bool(GRADE_PRESENCE))
-                    {
-                        return _gradeFaker.Generate(1).First();
-                    }
-
-                    return null;
-                })
                 .RuleFor(cs => cs.PositionX, (short)0)                 // TODO: real positions
                 .RuleFor(cs => cs.PositionY, (short)0);
         }
@@ -68,7 +45,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 .Where(c => commonInstitutionsIds.Contains(c.InstitutionId));
 
             var suitableStudents = students
-                .Where(s => commonInstitutionsIds.Contains((int) s.InstitutionId));
+                .Where(s => commonInstitutionsIds.Contains(s.InstitutionId!.Value));
 
             AddAllPossibleCombinations(suitableCourses, suitableStudents);
         }
@@ -81,7 +58,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
             HashSet<int> studentsInstitutionsIds = new();
             foreach (var student in students)
-                studentsInstitutionsIds.Add((int) student.InstitutionId);
+                studentsInstitutionsIds.Add(student.InstitutionId!.Value);
 
             return coursesInstitutionsIds.Intersect(studentsInstitutionsIds);
         }

@@ -36,6 +36,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         // Extra fakers
         private readonly LessonToStudentFaker _lessonToStudentFaker = new();
+        private readonly AssignmentFaker _assignmentFaker = new();
 
         public LessonFaker(List<Institution> institutions, List<Classroom> classrooms, List<Course> courses, List<LessonStatus> lessonStatuses, List<TimetableUnit> timetableUnits)
         {
@@ -50,6 +51,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                 throw new InvalidOperationException("There are no associations between classrooms, courses and timetable units.");
 
             _faker
+                .RuleFor(l => l.Description, GenerateValidDescription)
                 .Rules((faker, lesson) =>
                 {
                     foreach (var institution in institutions.OrderBy(_ => Guid.NewGuid()))
@@ -91,7 +93,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
                         var combination = result.Data;
 
-                        lesson.CourseId = combination.courseId;
+                        lesson.Course = suitableCourses.First(c => c.Id == combination.courseId);
                         lesson.ClassroomId = combination.classroomId;
                         lesson.LessonToTimetableUnits = suitableTimetableUnits
                             .Where(u => combination.timetableUnitIds.Contains(u.Id))
@@ -103,7 +105,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                         lesson.Date = combination.date;
                         
                         // LessonsToStudents
-                        AddAssociationsWithStudents(lesson, suitableCourses, combination.courseId);
+                        AddAssociationsWithStudents(lesson, lesson.Course);
 
                         // Assignment
                         if (lesson.Date <= DateTimeOffset.UtcNow && faker.Random.Bool(ASSIGNMENT_PRESENCE_POSSIBILITY))
@@ -115,8 +117,7 @@ namespace TimeTile.Storage.Seeders.Fakers
                     }
 
                     throw new ArgumentException("It is impossible to find combination for all dependencies: classroom, course, timetableUnit and date");
-                })
-                .RuleFor(l => l.Description, GenerateValidDescription);
+                });
         }
 
         private Result<(int CourseId, int ClassroomId, int[] TimetableUnitIds, DateTimeOffset Date)> FindPossibleCombinationOfDependencies(Faker faker, IEnumerable<Course> suitableCourses, IEnumerable<TimetableUnit> suitableTimetableUnits, IEnumerable<Classroom> classrooms)
@@ -238,10 +239,8 @@ namespace TimeTile.Storage.Seeders.Fakers
             return Result.Failure<(int, int, int[], DateTimeOffset)>(error);
         }
 
-        private void AddAssociationsWithStudents(Lesson lesson, IEnumerable<Course> courses, int courseId)
+        private void AddAssociationsWithStudents(Lesson lesson, Course course)
         {
-            var course = courses.First(c => c.Id == courseId);
-
             lesson.LessonsToStudents = course.CoursesToStudents.Select(cs =>
             {
                 var lessonToStudent = new LessonToStudent
@@ -269,6 +268,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             lesson.Assignment = GenerateValidAssignment(
                 faker,
+                lesson,
                 date,
                 lesson.EndTime
             );
@@ -285,15 +285,15 @@ namespace TimeTile.Storage.Seeders.Fakers
 
         private string GenerateValidDescription(Faker faker)
         {
-            var rawDescriptionGenerator = () => $"{faker.Commerce.ProductAdjective()} {faker.Company.CatchPhrase()}. {faker.Lorem.Sentence()}";
+            var rawDescriptionGenerator = faker.Company.CatchPhrase;
 
             return GenerateValidValue(rawDescriptionGenerator, RegexPatterns.Pattern.Description);
         }
 
-        private Assignment GenerateValidAssignment(Faker faker, DateTimeOffset date, DateTimeOffset endTime)
+        private Assignment GenerateValidAssignment(Faker faker, Lesson lesson, DateTimeOffset date, DateTimeOffset endTime)
         {
-            string title = faker.Lorem.Sentence(3, 5);
-            string description = faker.Lorem.Sentences(3);
+            string title = _assignmentFaker.GenerateValidTitle(lesson);
+            string description = _assignmentFaker.GenerateValidDescription(faker, lesson);
             DateTimeOffset publishedAt = new DateTimeOffset(date.UtcDateTime.Date + endTime.UtcDateTime.TimeOfDay);
             DateTimeOffset deadline = publishedAt.AddDays(DEADLINE_DAYS);
             bool uploadAfterDeadline = faker.Random.Bool(UPLOAD_AFTER_DEADLINE_POSSIBILITY);

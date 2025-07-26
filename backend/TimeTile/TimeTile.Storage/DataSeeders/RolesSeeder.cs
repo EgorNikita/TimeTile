@@ -17,7 +17,7 @@ namespace TimeTile.Storage.DataSeeders
     {
         private static readonly List<string> _studentPermissions =
         [
-            Permissions.Groups.GetOwn
+            Permissions.Submissions.Submit
         ];
 
         public static async Task SeedRequiredRoles(

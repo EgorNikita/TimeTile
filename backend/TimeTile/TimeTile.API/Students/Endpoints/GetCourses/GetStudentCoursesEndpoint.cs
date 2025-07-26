@@ -38,8 +38,7 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
                 .Select(cs => new {
                     cs.CourseId,
                     cs.Course,
-                    cs.ExamGradeId,
-                    cs.HasExam,
+                    cs.GradeId,
                     cs.PositionX,
                     cs.PositionY
                 })
@@ -62,8 +61,7 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
                         item.Course.TermId,
                         courseService.GetIconUrl(item.Course)
                     ),
-                    item.ExamGradeId,
-                    item.HasExam,
+                    item.GradeId,
                     item.PositionX,
                     item.PositionY,
                     averageGrade
@@ -134,8 +132,7 @@ namespace TimeTile.API.Students.Endpoints.GetCourses
         private sealed record Response(
             int CourseId,
             CourseInfo Course,
-            int? ExamGradeId,
-            bool HasExam,
+            int? GradeId,
             short PositionX,
             short PositionY,
             float AverageGrade

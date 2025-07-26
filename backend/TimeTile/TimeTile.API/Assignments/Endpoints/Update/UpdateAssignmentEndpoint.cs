@@ -113,7 +113,7 @@ namespace TimeTile.API.Assignments.Endpoints.Update
             }
         }
 
-        private static async Task UpdateEntity(
+        private static Task UpdateEntity(
             Assignment assignment,
             RequestBody request)
         {
@@ -141,6 +141,8 @@ namespace TimeTile.API.Assignments.Endpoints.Update
             {
                 assignment.UploadAfterDeadline = request.UploadAfterDeadline.Value;
             }
+
+            return Task.CompletedTask;
         }
 
         public sealed record RequestParameters(

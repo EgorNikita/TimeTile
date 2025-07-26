@@ -2,6 +2,7 @@ using Bogus;
 using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Services;
+using TimeTile.Core.Enums;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
 using TimeTile.Storage.Seeders.Config;
@@ -26,7 +27,7 @@ namespace TimeTile.Storage.Seeders
         private const int GROUPS_COUNT = 1;
         private const int ADMINS_COUNT = 2;
         private const int CLASSROOMS_COUNT = 12;
-        private const int ROLES_TO_PERMISSIONS_COUNT = 0;
+        private const int ROLES_TO_PERMISSIONS_COUNT = 15;
         private const int STUDENTS_COUNT = 1;
         private const int INSTITUTION_MEMBERS_COUNT = 20;
         private const int INSTITUTION_MEMBERS_TO_GROUPS_COUNT = 2;
@@ -152,6 +153,10 @@ namespace TimeTile.Storage.Seeders
             await _context.Submissions.AddRangeAsync(submissions, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            await GenerateTermMarks(coursesToStudents, _context, cancellationToken);
+
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         private static async Task ClearAllTxtFiles(CancellationToken cancellationToken)
@@ -166,6 +171,58 @@ namespace TimeTile.Storage.Seeders
             foreach (var path in filesPaths)
             {
                 await System.IO.File.WriteAllTextAsync(path, string.Empty, cancellationToken);
+            }
+        }
+
+        private static async Task GenerateTermMarks(
+            List<CourseToStudent> coursesToStudents, 
+            TimetileDbContext _context, 
+            CancellationToken cancellationToken)
+        {
+            const float FINAL_GRADE_RANGE = 2f;
+            var rand = new Random();
+
+            foreach (var courseToStudent in coursesToStudents)
+            {
+                if (courseToStudent.Course.Term.EndDate > DateTime.UtcNow)
+                    continue;
+
+                var submissionGradeIds = courseToStudent.Student.Submissions
+                    .Where(s => s.Assignment.Lesson.CourseId == courseToStudent.CourseId)
+                    .Where(s => s.GradeId != null)
+                    .Select(s => s.GradeId!.Value)
+                    .ToList();
+
+                var classworkGradeIds = courseToStudent.Course.Lessons
+                    .SelectMany(l => l.LessonsToStudents)
+                    .Where(ls => ls.StudentId == courseToStudent.StudentId)
+                    .Where(ls => ls.GradeId != null)
+                    .Select(ls => ls.GradeId!.Value)
+                    .ToList();
+
+                var combinedGradeIds = submissionGradeIds.Union(classworkGradeIds);
+
+                if (combinedGradeIds.Any())
+                {
+                    var weightedGrades = await _context.Grades
+                        .Where(g => combinedGradeIds.Contains(g.Id))
+                        .Select(g => new { g.Value, g.Weight })
+                        .ToListAsync(cancellationToken);
+
+                    var totalWeight = weightedGrades.Sum(g => g.Weight);
+
+                    var averageValue = weightedGrades.Sum(g => g.Value * g.Weight) / totalWeight;
+
+                    // finalValue can be within a range of 2
+                    var finalValue = (float)(rand.NextDouble() * FINAL_GRADE_RANGE * 2 + (averageValue - FINAL_GRADE_RANGE));
+
+                    courseToStudent.Grade = new Grade
+                    {
+                        Value = finalValue,
+                        Weight = totalWeight,
+                        Type = GradeType.TermMark
+                    };
+                }
             }
         }
     }

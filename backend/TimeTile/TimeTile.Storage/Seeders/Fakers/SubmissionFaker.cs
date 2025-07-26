@@ -13,7 +13,7 @@ namespace TimeTile.Storage.Seeders.Fakers
     internal class SubmissionFaker : BaseFaker<Submission>
     {
         // Status constants
-        private const float STATUS_ACCEPTED_POSSIBILITY = 0.7f;
+        private const float STATUS_ACCEPTED_POSSIBILITY = 0.6f;
 
         // StudentNote constants
         private const float STUDENT_NOTE_PRESENCE_POSSIBILITY = 0.3f;
@@ -32,7 +32,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             var submissions = lessons
                 .Where(l => l.AssignmentId != null)
-                .Select(l => l.Assignment)
+                .Select(l => l.Assignment!)
                 .SelectMany(a => a.Submissions);
 
             _submissions = submissions.OrderBy(_ => Guid.NewGuid()).ToList();
@@ -153,9 +153,14 @@ namespace TimeTile.Storage.Seeders.Fakers
                 SubmissionStatus.SubmittedLate => DateTimeOffset.Now,
                 SubmissionStatus.Submitted => assignment.Deadline,
                 _ => assignment.UploadAfterDeadline 
-                    ? DateTimeOffset.Now
+                    ? DateTimeOffset.UtcNow
                     : assignment.Deadline
             };
+
+            if (end > DateTimeOffset.UtcNow)
+            {
+                end = DateTimeOffset.UtcNow;
+            }
 
             return _faker.Date.BetweenOffset(start, end);
         }

@@ -40,7 +40,7 @@ namespace TimeTile.Storage.Seeders.Fakers
 
 
             var suitableInstitutionMembers = institutionMembers
-                .Where(m => commonInstitutionsIds.Contains((int) m.InstitutionId));
+                .Where(m => commonInstitutionsIds.Contains(m.InstitutionId!.Value));
 
             if (suitableInstitutionMembers.Count() == 0)
                 throw new InvalidOperationException("There are no associations between institution members and groups.");
@@ -57,7 +57,7 @@ namespace TimeTile.Storage.Seeders.Fakers
         {
             HashSet<int> institutionMembersInstitutionsIds = new();
             foreach (var member in institutionMembers)
-                institutionMembersInstitutionsIds.Add((int)member.InstitutionId);
+                institutionMembersInstitutionsIds.Add(member.InstitutionId!.Value);
 
             HashSet<int> groupsInstitutionsIds = new();
             foreach (var group in groups)

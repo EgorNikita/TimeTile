@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
@@ -70,10 +71,10 @@ namespace TimeTile.API.Messages.Endpoints.Create
                 message.Content,
                 message.SentAt,
                 message.EditedAt,
-                db.MessagesFiles
+                await db.MessagesFiles
                     .Where(mf => mf.MessageId == message.Id)
                     .Select(mf => mf.File.FileGuid.ToString())
-                    .ToArray()
+                    .ToArrayAsync(cancellationToken)
             );
 
             var result = Result.Success(response);

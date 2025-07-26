@@ -13,12 +13,12 @@ namespace TimeTile.API.Messages.Services
         private const string MESSAGE_EDITED_EVENT = "MessageEdited";
 
         private readonly IHubContext<MessagesHub> _hubContext;
-        private readonly TimetileDbContext _db;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public MessageNotificationService(IHubContext<MessagesHub> hubContext, TimetileDbContext db)
+        public MessageNotificationService(IHubContext<MessagesHub> hubContext, IServiceScopeFactory scopeFactory)
         {
             _hubContext = hubContext;
-            _db = db;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task NotifyMessageCreated(Message message, CancellationToken cancellationToken = default)
@@ -43,10 +43,13 @@ namespace TimeTile.API.Messages.Services
 
         private async Task<Response> MapToResponse(Message message, CancellationToken cancellationToken = default)
         {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<TimetileDbContext>();
+
             return new Response(
                 message.Id,
                 message.UserId,
-                await _db.Users
+                await db.Users
                     .Include(u => u.Avatar)
                     .Where(u => u.Id == message.UserId)
                     .Select(u => new UserInfo(
@@ -64,7 +67,7 @@ namespace TimeTile.API.Messages.Services
                 message.Content,
                 message.SentAt,
                 message.EditedAt,
-                await _db.MessagesFiles
+                await db.MessagesFiles
                     .Where(mf => mf.MessageId == message.Id)
                     .Select(mf => mf.File.FileGuid.ToString())
                     .ToArrayAsync(cancellationToken)

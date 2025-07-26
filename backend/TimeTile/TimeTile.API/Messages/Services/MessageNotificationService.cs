@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using TimeTile.API.Messages.Hubs;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
@@ -22,7 +23,7 @@ namespace TimeTile.API.Messages.Services
 
         public async Task NotifyMessageCreated(Message message, CancellationToken cancellationToken = default)
         {
-            var response = MapToResponse(message);
+            var response = await MapToResponse(message, cancellationToken);
             var groupName = MessagesHub.GetGroupName(response.CourseId);
 
             await _hubContext.Clients
@@ -32,7 +33,7 @@ namespace TimeTile.API.Messages.Services
 
         public async Task NotifyMessageEdited(Message message, CancellationToken cancellationToken = default)
         {
-            var response = MapToResponse(message);
+            var response = await MapToResponse(message, cancellationToken);
             var groupName = MessagesHub.GetGroupName(response.CourseId);
 
             await _hubContext.Clients
@@ -40,30 +41,57 @@ namespace TimeTile.API.Messages.Services
                 .SendAsync(MESSAGE_EDITED_EVENT, response, cancellationToken);
         }
 
-        private Response MapToResponse(Message message)
+        private async Task<Response> MapToResponse(Message message, CancellationToken cancellationToken = default)
         {
             return new Response(
                 message.Id,
                 message.UserId,
+                await _db.Users
+                    .Include(u => u.Avatar)
+                    .Where(u => u.Id == message.UserId)
+                    .Select(u => new UserInfo(
+                        u.Id,
+                        u.Firstname,
+                        u.Lastname,
+                        u.HomeAddress,
+                        u.PhoneNumber,
+                        u.BirthDate,
+                        u.Login,
+                        u.RoleId,
+                        u.Avatar.FileGuid.ToString()
+                    )).FirstAsync(cancellationToken),
                 message.CourseId,
                 message.Content,
                 message.SentAt,
                 message.EditedAt,
-                _db.MessagesFiles
+                await _db.MessagesFiles
                     .Where(mf => mf.MessageId == message.Id)
                     .Select(mf => mf.File.FileGuid.ToString())
-                    .ToArray()
+                    .ToArrayAsync(cancellationToken)
             );
         }
 
         public sealed record Response(
             int Id,
             int UserId,
+            UserInfo User,
             int CourseId,
             string? Content,
             DateTimeOffset SentAt,
             DateTimeOffset? EditedAt,
             string[] FileUrls
+        );
+
+        public sealed record UserInfo(
+            int Id,
+            string Firstname,
+            string Lastname,
+            string HomeAddress,
+            string PhoneNumber,
+            DateOnly BirthDate,
+            string Login,
+            int RoleId,
+            string AvatarUrl
         );
     }
 }

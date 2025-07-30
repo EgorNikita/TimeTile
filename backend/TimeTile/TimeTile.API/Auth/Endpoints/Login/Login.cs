@@ -12,7 +12,7 @@ public class Login : IEndpoint
     {
         return app
             .MapPost("/login", Handle)
-            .WithSummary("Authenticates a user and returns a JWT token with roles and institution claims")
+            .WithSummary("Logs in user and returns user data")
             .WithRequestValidation<Request>();
     }
 

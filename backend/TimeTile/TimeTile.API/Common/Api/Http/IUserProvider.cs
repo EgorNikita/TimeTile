@@ -1,8 +1,9 @@
-﻿using TimeTile.Core.Models;
+﻿using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
 
 namespace TimeTile.API.Common.Api.Http;
 
 public interface IUserProvider
 {
-    User GetUser();
+    Result<User> GetUser();
 }

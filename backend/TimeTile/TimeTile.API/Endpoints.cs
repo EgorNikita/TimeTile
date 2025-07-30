@@ -72,6 +72,7 @@ using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 using TimeTile.API.Grades.Endpoints.GetBulk;
 using TimeTile.API.Submissions.Endpoints.GetBulk;
 using TimeTile.API.Assignments.Endpoints.GetBulk;
+using TimeTile.API.Auth.Endpoints.CheckAuth;
 using TimeTile.API.Auth.Endpoints.Login;
 using TimeTile.API.Auth.Endpoints.Logout;
 using TimeTile.API.Courses.Endpoints.GetBulk;
@@ -174,6 +175,7 @@ public static class Endpoints
             .RequireRateLimiting(RateLimits.Auth);
 
         protectedEndpoints
+            .MapEndpoint<CheckAuth>()
             .MapEndpoint<Logout>();
     }
 

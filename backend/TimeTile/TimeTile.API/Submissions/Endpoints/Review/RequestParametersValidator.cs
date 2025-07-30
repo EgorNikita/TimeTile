@@ -12,7 +12,10 @@ namespace TimeTile.API.Submissions.Endpoints.Review
         public RequestParametersValidator(TimetileDbContext db, IInstitutionProvider institutionProvider, IUserProvider userProvider)
         {
             var institutionId = institutionProvider.GetInstitutionId();
-            var userId = userProvider.GetUser().Id;
+            var userResult = userProvider.GetUser();
+            if (!userResult.IsSuccess || userResult.Data == null)
+                throw new UnauthorizedAccessException("Current user is not available.");
+            var userId = userResult.Data.Id;
 
             RuleFor(x => x.Id)
                 .MustBeValidId()

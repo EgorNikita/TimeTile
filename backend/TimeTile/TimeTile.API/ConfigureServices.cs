@@ -88,7 +88,8 @@ public static class ConfigureServices
                 policy.WithOrigins("http://localhost:3000") // Vue dev server
                       .AllowAnyMethod()
                       .AllowAnyHeader()
-                      .AllowCredentials();
+                      .AllowCredentials()
+                      .WithExposedHeaders("Content-Disposition");
             });
         });
     }

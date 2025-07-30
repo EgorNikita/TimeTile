@@ -58,7 +58,8 @@ namespace TimeTile.API.Messages.Endpoints.Update
                 message.Content,
                 message.SentAt,
                 message.EditedAt,
-                message.MessageToFiles
+                db.MessagesFiles
+                    .Where(mf => mf.MessageId == message.Id)
                     .Select(mf => mf.File.FileGuid.ToString())
                     .ToArray()
             );
@@ -133,13 +134,15 @@ namespace TimeTile.API.Messages.Endpoints.Update
 
         private static async Task<Result<int>> RemoveFiles(
            Message message,
-           List<int> fileIds,
+           List<string> fileUrls,
            IFileService fileService,
            TimetileDbContext db,
            CancellationToken cancellationToken)
         {
+            List<Guid> fileGuids = fileUrls.Select(Guid.Parse).ToList();
+
             var relations = message.MessageToFiles
-                .Where(mf => fileIds.Contains(mf.FileId))
+                .Where(mf => fileGuids.Contains(mf.File.FileGuid))
                 .ToList();
 
             if (relations.Count == message.MessageToFiles.Count && message.Content == null)
@@ -166,7 +169,7 @@ namespace TimeTile.API.Messages.Endpoints.Update
         {
             public string? Content { get; set; }
             public IFormFileCollection? FilesToAdd { get; set; }
-            public List<int>? FilesToRemove { get; set; }
+            public List<string>? FilesToRemove { get; set; }
         }
 
         private sealed record Response(

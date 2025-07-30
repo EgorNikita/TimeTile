@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Storage.Contexts;
-using TimeTile.Core.Models;
-using File = TimeTile.Core.Models.File;
+using Microsoft.EntityFrameworkCore;
 
 namespace TimeTile.API.Messages.Endpoints.Update
 {
@@ -16,16 +15,24 @@ namespace TimeTile.API.Messages.Endpoints.Update
                     .MustBeValidString();
             });
 
-            RuleFor(x => x.FilesToRemove)
-                .MustBeValidOptionalListOfIds()
-                .DependentRules(() =>
-                {
-                    When(x => x.FilesToRemove != null, () =>
+            When(x => x.FilesToRemove != null, () =>
+            {
+                RuleFor(x => x.FilesToRemove!)
+                    .MustAsync(async (fileGuids, cancellationToken) =>
                     {
-                        RuleFor(x => x.FilesToRemove!)
-                            .MustBeValidEntityIdsList<UpdateMessageEndpoint.RequestBody, File>(db);
-                    });
-                });
+                        foreach (var fileGuid in fileGuids)
+                        {
+                            Guid guid = Guid.Parse(fileGuid);
+                            if (await db.Files.AnyAsync(f => f.FileGuid == guid, cancellationToken))
+                                continue;
+
+                            return false;
+                        }
+
+                        return true;
+                    })
+                    .WithMessage("Some Guids are invalid.");
+            });
         }
     }
 }

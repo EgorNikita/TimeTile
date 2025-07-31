@@ -1,4 +1,6 @@
-﻿using TimeTile.Core.Common.UnifiedResponse;
+﻿using Microsoft.AspNetCore.Http.Features;
+using TimeTile.API.Common.Constants;
+using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Common.Interfaces.Services;
 
 namespace TimeTile.API.Common.Api.Filters;
@@ -25,7 +27,7 @@ public class UserContextFilter : IEndpointFilter
             );
         }
         
-        context.HttpContext.Items["CurrentUser"] = userResult.Data;
+        context.HttpContext.Items[HttpContextItemKeys.CurrentUser] = userResult.Data;
 
         return await next(context);
     }

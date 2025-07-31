@@ -60,10 +60,9 @@ public class TokenHandlerService : ITokenHandlerService
         return Result.Success(user);
     }
     
-    public async Task<bool> Logout()
+    public async Task Logout()
     {
         await _httpContextAccessor.HttpContext!.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return true;
     }
 
     public async Task<Result<User>> GetCurrentUser()

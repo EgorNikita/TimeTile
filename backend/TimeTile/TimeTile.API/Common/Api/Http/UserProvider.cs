@@ -18,7 +18,7 @@ public class UserProvider : IUserProvider
         var user = context?.GetCurrentUser();
 
         return user == null 
-            ? Result.Failure<User>(Error.From("Current user is not set in the HTTP context.", "ANAUTHORIZED")) 
+            ? Result.Failure<User>(Error.From("Current user is not set in the HTTP context.", "UNAUTHORIZED")) 
             : Result.Success(user);
     }
     

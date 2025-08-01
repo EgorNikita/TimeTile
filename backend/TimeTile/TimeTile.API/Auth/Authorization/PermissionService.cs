@@ -1,9 +1,8 @@
-﻿using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Authentication.Services;
+namespace TimeTile.API.Auth.Authorization;
 
 public class PermissionService : IPermissionService
 {

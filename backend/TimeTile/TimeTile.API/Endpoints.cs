@@ -1,7 +1,3 @@
-using TimeTile.API.Authentication.Endpoints.Login;
-using TimeTile.API.Authentication.Endpoints.Logout;
-using TimeTile.API.Authentication.Endpoints.LogoutAll;
-using TimeTile.API.Authentication.Endpoints.RefreshToken;
 using TimeTile.API.Classrooms.Endpoints.Create;
 using TimeTile.API.Classrooms.Endpoints.Get;
 using TimeTile.API.Classrooms.Endpoints.GetById;
@@ -76,6 +72,9 @@ using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 using TimeTile.API.Grades.Endpoints.GetBulk;
 using TimeTile.API.Submissions.Endpoints.GetBulk;
 using TimeTile.API.Assignments.Endpoints.GetBulk;
+using TimeTile.API.Auth.Endpoints.CheckAuth;
+using TimeTile.API.Auth.Endpoints.Login;
+using TimeTile.API.Auth.Endpoints.Logout;
 using TimeTile.API.Courses.Endpoints.GetBulk;
 using TimeTile.API.InstitutionMembers.Endpoints.GetBulk;
 using TimeTile.API.Classrooms.Endpoints.GetBulk;
@@ -168,17 +167,16 @@ public static class Endpoints
             .RequireRateLimiting(RateLimits.Auth);
 
         publicEndpoints.MapPublicGroup()
-            .MapEndpoint<Login>()
-            .MapEndpoint<RefreshToken>();
+            .MapEndpoint<Login>();
         
         var protectedEndpoints = app.MapGroup(Routes.Auth)
             .WithTags(Tags.Authentication)
-            .RequireUserId()
+            .RequireUserContext()
             .RequireRateLimiting(RateLimits.Auth);
 
         protectedEndpoints
-            .MapEndpoint<Logout>()
-            .MapEndpoint<LogoutAll>();
+            .MapEndpoint<CheckAuth>()
+            .MapEndpoint<Logout>();
     }
 
     private static void MapClassroomTypesEndpoints(this IEndpointRouteBuilder app)
@@ -399,7 +397,7 @@ public static class Endpoints
     {
         return app.MapGroup(route)
             .WithTags(tag)
-            .RequireInstitution()
+            .RequireUserContext()
             .RequireRateLimiting(RateLimits.Default);
     }
     
@@ -409,21 +407,17 @@ public static class Endpoints
             .AllowAnonymous();
     }
 
-    private static RouteGroupBuilder RequireInstitution(this RouteGroupBuilder group)
+    private static RouteGroupBuilder RequireUserContext(this RouteGroupBuilder group)
     {
-        return group.AddEndpointFilter<RequireInstitutionFilter>();
+        return group.AddEndpointFilter<UserContextFilter>();
     }
 
-    private static RouteGroupBuilder RequireUserId(this RouteGroupBuilder group)
+    public static RouteHandlerBuilder RequireUserContext(this RouteHandlerBuilder builder)
     {
-        return group.AddEndpointFilter<RequireUserIdFilter>();
+        return builder.AddEndpointFilter<UserContextFilter>();
     }
-
-    public static RouteHandlerBuilder RequireUserId(this RouteHandlerBuilder builder)
-    {
-        return builder.AddEndpointFilter<RequireUserIdFilter>();
-    }
-
+    
+    
     private static RouteGroupBuilder MapEndpoint<TEndpoint>(this RouteGroupBuilder group)
         where TEndpoint : IEndpoint
     {

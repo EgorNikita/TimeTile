@@ -6,6 +6,8 @@
 # uploads
 uploads/
 
+# keys
+keys/
 
 # User-specific files
 *.rsuser

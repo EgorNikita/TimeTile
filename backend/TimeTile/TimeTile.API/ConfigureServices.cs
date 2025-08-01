@@ -1,16 +1,12 @@
 using System.Threading.RateLimiting;
 using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using TimeTile.API.Authentication;
-using TimeTile.API.Authentication.Services;
+using TimeTile.API.Auth.Authetication;
+using TimeTile.API.Auth.Authorization;
 using TimeTile.API.ClassroomTypes.Services;
-using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.BackgroundServices;
 using TimeTile.API.Common.Api.Filters;
 using TimeTile.API.Common.Api.Http;
@@ -20,7 +16,6 @@ using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
 using TimeTile.API.Submissions.Services;
 using TimeTile.API.Users.Services;
-using TimeTile.Core.Common.Constants;
 using TimeTile.Core.Common.Interfaces.Repositories;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
@@ -38,8 +33,8 @@ public static class ConfigureServices
         builder.AddSwagger();
         builder.AddDatabase();
         builder.AddSerilog();
-        builder.AddJwtAuthentication();
-        builder.AddAuthorization();
+        builder.AddTokenHandlerAuthentication();
+        builder.AddPermissionHandlerAuthorization();
         builder.AddRateLimiting();
         builder.AddCors();
 
@@ -52,10 +47,18 @@ public static class ConfigureServices
 
         builder.Services.AddValidatorsFromAssembly(typeof(ConfigureServices).Assembly);
 
+        builder.Services.AddHttpClient("ProtectedApiClient", client =>
+        {
+            var apiBaseUrl = builder.Configuration["ProtectedApi:BaseUrl"];
+            if (!string.IsNullOrEmpty(apiBaseUrl))
+            {
+                client.BaseAddress = new Uri(apiBaseUrl);
+            }
+        });
+        
         builder.Services.AddScoped<IInstitutionProvider, InstitutionProvider>();
         builder.Services.AddScoped<IUserProvider, UserProvider>();
-        builder.Services.AddScoped<RequireInstitutionFilter>();
-        builder.Services.AddScoped<RequireUserIdFilter>();
+        builder.Services.AddScoped<UserContextFilter>();
         builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<IUserService, UserService>();
@@ -65,6 +68,8 @@ public static class ConfigureServices
         builder.Services.AddScoped<IClassroomTypeService, ClassroomTypeService>();
         builder.Services.AddScoped<ICourseService, CourseService>();
         builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+        builder.Services.AddScoped<ITokenHandlerService, TokenHandlerService>();
+        builder.Services.AddScoped<IPermissionService, PermissionService>();
 
         // Background services
         builder.Services.AddHostedService<SubmissionExpirationService>();
@@ -79,9 +84,12 @@ public static class ConfigureServices
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
+                policy
+                    .WithOrigins("http://localhost:3000", "https://localhost:3000")
+                    .AllowCredentials()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("Content-Disposition", "Content-Type", "Content-Length");
             });
         });
     }

@@ -19,7 +19,6 @@ namespace TimeTile.API.Submissions.Endpoints.Review
             return app
                 .MapPatch("/{Id:int}/review", Handle)
                 .WithSummary("Review Submission")
-                .RequireUserId()
                 .WithRequestValidation<RequestParameters>()
                 .WithRequestValidation<RequestBody>();
         }

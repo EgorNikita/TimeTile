@@ -13,7 +13,7 @@ namespace TimeTile.API.Submissions.Endpoints.Review
         {
             var institutionId = institutionProvider.GetInstitutionId();
             var userResult = userProvider.GetUser();
-            if (!userResult.IsSuccess || userResult.Data == null)
+            if (userResult.IsFailure || userResult.Data == null)
                 throw new UnauthorizedAccessException("Current user is not available.");
             var userId = userResult.Data.Id;
 

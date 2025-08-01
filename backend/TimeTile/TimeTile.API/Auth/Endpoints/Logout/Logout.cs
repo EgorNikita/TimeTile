@@ -16,7 +16,6 @@ public class Logout : IEndpoint
     
     private static async Task<Results<Ok<Result<Response>>, BadRequest<Result>>> Handle(
         ITokenHandlerService tokenHandlerService,
-        IUserProvider userProvider,
         CancellationToken cancellationToken)
     {
         await tokenHandlerService.Logout();

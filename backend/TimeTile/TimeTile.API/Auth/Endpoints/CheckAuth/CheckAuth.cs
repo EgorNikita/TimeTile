@@ -15,17 +15,13 @@ public class CheckAuth : IEndpoint
             .MapGet("/check", Handle);
     }
 
-    private static Task<
-        Results<                       
-            Ok<Result<Response>>,
-            UnauthorizedHttpResult,
-            NotFound<Result>>>
-        Handle(
-            [FromServices] IUserProvider userProvider,
-        CancellationToken cancellationToken)
+    private static Task<Results<Ok<Result<Response>>, UnauthorizedHttpResult, NotFound<Result>>> Handle(
+            IUserProvider userProvider, 
+            CancellationToken cancellationToken
+        )
     {
         var userResult = userProvider.GetUser();
-        if (!userResult.IsSuccess)
+        if (userResult.IsFailure)
             return Task.FromResult<Results<Ok<Result<Response>>, UnauthorizedHttpResult, NotFound<Result>>>
                 (TypedResults.Unauthorized());
         
@@ -38,9 +34,7 @@ public class CheckAuth : IEndpoint
         
         var user = userResult.Data;
         
-        var response = new Response(
-            user.Id,
-            user.Institution!.Id);
+        var response = new Response(user.Id,user.Institution!.Id);
         return Task.FromResult<Results<Ok<Result<Response>>, UnauthorizedHttpResult, NotFound<Result>>>
             (TypedResults.Ok(Result.Success(response)));
     }

@@ -167,7 +167,8 @@ public static class Endpoints
             .RequireRateLimiting(RateLimits.Auth);
 
         publicEndpoints.MapPublicGroup()
-            .MapEndpoint<Login>();
+            .MapEndpoint<Login>()
+            .MapEndpoint<CheckAuth>();
         
         var protectedEndpoints = app.MapGroup(Routes.Auth)
             .WithTags(Tags.Authentication)
@@ -175,7 +176,6 @@ public static class Endpoints
             .RequireRateLimiting(RateLimits.Auth);
 
         protectedEndpoints
-            .MapEndpoint<CheckAuth>()
             .MapEndpoint<Logout>();
     }
 

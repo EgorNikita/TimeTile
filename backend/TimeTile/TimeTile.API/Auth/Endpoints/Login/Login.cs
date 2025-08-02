@@ -16,11 +16,7 @@ public class Login : IEndpoint
             .WithRequestValidation<Request>();
     }
 
-    private static async Task<
-        Results<                       
-            Ok<Result<Response>>,
-            UnauthorizedHttpResult,
-            NotFound<Result>>>
+    private static async Task<Ok<Result<Response>>>
         Handle(
         Request request,
         ITokenHandlerService tokenHandlerService,
@@ -33,15 +29,10 @@ public class Login : IEndpoint
             request.RememberMe,
             httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString());
         
-        if (result.IsFailure)
+        if (result.IsFailure || result.Data == null)
         {
-            return TypedResults.Unauthorized();
-        }
-        
-        if (result.Data == null)
-        {
-           var error = Error.From("Login failed, user data is null.");
-            return TypedResults.NotFound(Result.Failure(error));
+            var error = Error.From("Unauthorized", "UNAUTHORIZED");
+            return TypedResults.Ok(Result.Failure<Response>(error));
         }
         
         var response = new Response(

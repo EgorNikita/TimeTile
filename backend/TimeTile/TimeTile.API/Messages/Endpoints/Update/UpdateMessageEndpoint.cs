@@ -18,7 +18,6 @@ namespace TimeTile.API.Messages.Endpoints.Update
             return app
                 .MapPatch("/{Id:int}", Handle)
                 .WithSummary("Partial update of Message")
-                .RequireUserId()
                 .WithRequestValidation<RequestParameters>()
                 .WithRequestValidation<RequestBody>()
                 .DisableAntiforgery();
@@ -58,10 +57,10 @@ namespace TimeTile.API.Messages.Endpoints.Update
                 message.Content,
                 message.SentAt,
                 message.EditedAt,
-                db.MessagesFiles
+                await db.MessagesFiles
                     .Where(mf => mf.MessageId == message.Id)
                     .Select(mf => mf.File.FileGuid.ToString())
-                    .ToArray()
+                    .ToArrayAsync(cancellationToken)
             );
 
             var result = Result.Success(response);

@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TimeTile.Core.Common.Constants;
 using TimeTile.API.Messages.Hubs;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;

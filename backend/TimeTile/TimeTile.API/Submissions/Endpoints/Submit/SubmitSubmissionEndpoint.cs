@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Serilog.Parsing;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.Core.Common.Constants;
@@ -20,7 +19,6 @@ namespace TimeTile.API.Submissions.Endpoints.Submit
             return app
                 .MapPatch("/{Id:int}/submit", Handle)
                 .WithSummary("Submits a Submission")
-                .RequireUserId()
                 .WithRequestValidation<RequestParameters>()
                 .WithRequestValidation<RequestBody>()
                 .RequireAuthorization(Permissions.Submissions.Submit)

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using TimeTile.API.Authentication;
+using TimeTile.API.Auth.Authorization;
 using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
@@ -19,7 +19,7 @@ namespace TimeTile.API.Common.Api.Hubs
         {
             get
             {
-                if (Context.Items.TryGetValue(HttpContextItemKeys.UserId, out var userId) && userId is int id)
+                if (Context.Items.TryGetValue(HubContextItemKeys.UserId, out var userId) && userId is int id)
                     return id;
                 throw new InvalidOperationException("User ID not found in context");
             }
@@ -29,7 +29,7 @@ namespace TimeTile.API.Common.Api.Hubs
         {
             get
             {
-                if (Context.Items.TryGetValue(HttpContextItemKeys.InstitutionId, out var institutionId) && institutionId is int id)
+                if (Context.Items.TryGetValue(HubContextItemKeys.InstitutionId, out var institutionId) && institutionId is int id)
                     return id;
                 throw new InvalidOperationException("Institution ID not found in context");
             }
@@ -72,8 +72,8 @@ namespace TimeTile.API.Common.Api.Hubs
                 return;
             }
 
-            Context.Items[HttpContextItemKeys.UserId] = userResult.Data;
-            Context.Items[HttpContextItemKeys.InstitutionId] = institutionResult.Data;
+            Context.Items[HubContextItemKeys.UserId] = userResult.Data;
+            Context.Items[HubContextItemKeys.InstitutionId] = institutionResult.Data;
 
             await base.OnConnectedAsync();
         }

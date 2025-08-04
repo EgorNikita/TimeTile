@@ -1,4 +1,7 @@
-﻿namespace TimeTile.API.Common.Api.Http;
+﻿using TimeTile.Core.Common.UnifiedResponse;
+using TimeTile.Core.Models;
+
+namespace TimeTile.API.Common.Api.Http;
 
 public class UserProvider : IUserProvider
 {
@@ -9,17 +12,14 @@ public class UserProvider : IUserProvider
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public int GetUserId()
+    public Result<User> GetUser()
     {
         var context = _httpContextAccessor.HttpContext;
+        var user = context?.GetCurrentUser();
 
-        return context!.GetUserId();
+        return user == null 
+            ? Result.Failure<User>(Error.From("Current user is not set in the HTTP context.", "UNAUTHORIZED")) 
+            : Result.Success(user);
     }
-
-    public string? GetUserIp()
-    {
-        var context = _httpContextAccessor.HttpContext;
-
-        return context!.GetUserIp();
-    }
+    
 }

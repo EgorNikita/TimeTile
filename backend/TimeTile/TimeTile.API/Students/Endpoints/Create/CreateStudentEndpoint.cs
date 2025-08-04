@@ -1,24 +1,15 @@
-using System.Security.Claims;
-using System.Threading;
-using Bogus.DataSets;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TimeTile.API.Authentication;
-using TimeTile.API.Authentication.Endpoints;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
 using TimeTile.API.Common.Api.Http;
 using TimeTile.API.Common.Constants;
-using TimeTile.API.Files.Services;
 using TimeTile.API.Users.Requests;
-using TimeTile.API.Users.Services;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
-using TimeTile.Storage.DataSeeders;
 
 namespace TimeTile.API.Students.Endpoints.Create;
 

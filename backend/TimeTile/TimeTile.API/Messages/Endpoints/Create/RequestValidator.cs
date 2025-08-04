@@ -12,7 +12,10 @@ namespace TimeTile.API.Messages.Endpoints.Create
         public RequestValidator(TimetileDbContext db, IInstitutionProvider institutionProvider, IUserProvider userProvider)
         {
             var institutionId = institutionProvider.GetInstitutionId();
-            var userId = userProvider.GetUserId();
+            var userResult = userProvider.GetUser();
+            if (userResult.IsFailure || userResult.Data == null)
+                throw new UnauthorizedAccessException("Current user is not available.");
+            var userId = userResult.Data.Id;
 
             RuleFor(x => x.CourseId)
                 .MustBeValidId()

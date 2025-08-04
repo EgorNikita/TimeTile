@@ -5,7 +5,7 @@ using TimeTile.API.Common.Constants;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
-namespace TimeTile.API.Authentication;
+namespace TimeTile.API.Auth.Authorization;
 
 public static class ClaimsPrincipalExtensions
 {

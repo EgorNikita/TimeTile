@@ -19,7 +19,6 @@ namespace TimeTile.API.Messages.Endpoints.Create
             return app
                 .MapPost("/", Handle)
                 .WithSummary("Adds a new Message")
-                .RequireUserId()
                 .WithRequestValidation<Request>()
                 .DisableAntiforgery();
         }
@@ -32,7 +31,8 @@ namespace TimeTile.API.Messages.Endpoints.Create
             IMessageNotificationService messageNotificationService,
             CancellationToken cancellationToken)
         {
-            var userId = userProvider.GetUserId();
+            // If there is no User in Context, Validator will throw error
+            var userId = userProvider.GetUser().Data!.Id;
 
             var message = new Message
             {

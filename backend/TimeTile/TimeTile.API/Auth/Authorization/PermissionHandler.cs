@@ -4,7 +4,7 @@ using Serilog;
 using TimeTile.API.Common.Api;
 using TimeTile.Core.Common.Interfaces.Services;
 
-namespace TimeTile.API.Authentication.Authorization;
+namespace TimeTile.API.Auth.Authorization;
 
 public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
 {

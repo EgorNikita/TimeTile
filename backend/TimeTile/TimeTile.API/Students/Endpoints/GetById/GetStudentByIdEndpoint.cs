@@ -1,10 +1,7 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using TimeTile.API.Authentication;
 using TimeTile.API.Common.Api;
 using TimeTile.API.Common.Api.Extensions;
-using TimeTile.API.Common.Api.Http;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
@@ -29,7 +26,7 @@ public class GetStudentByIdEndpoint : IEndpoint
     {
         // Find Student
         var student = await db.Students
-            .AsNoTracking()
+            .AsNoTracking().Include(user => user.Avatar)
             .FirstAsync(s => s.Id == request.Id, cancellationToken);
 
         var response = new Response(

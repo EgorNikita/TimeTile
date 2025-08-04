@@ -17,10 +17,16 @@ namespace TimeTile.API.Messages.Hubs
 
         private readonly IMessageNotificationService _messageNotificationService;
         private readonly IMessagesHubValidator _messagesHubValidator;
+        private readonly TimetileDbContext _db;
 
-        public MessagesHub(TimetileDbContext db, IMessageNotificationService messageNotificationService, IMessagesHubValidator messagesHubValidator)
-            : base(db)
+        public MessagesHub(
+            TimetileDbContext db, 
+            IMessageNotificationService messageNotificationService, 
+            IMessagesHubValidator messagesHubValidator, 
+            ITokenHandlerService tokenHandlerService
+        ) : base(tokenHandlerService)
         {
+            _db = db;
             _messageNotificationService = messageNotificationService;
             _messagesHubValidator = messagesHubValidator;
         }

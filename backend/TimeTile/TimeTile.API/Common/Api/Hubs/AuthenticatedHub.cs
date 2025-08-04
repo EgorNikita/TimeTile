@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using TimeTile.API.Auth.Authorization;
 using TimeTile.API.Common.Constants;
+using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Common.UnifiedResponse;
 using TimeTile.Storage.Contexts;
 
@@ -8,11 +9,11 @@ namespace TimeTile.API.Common.Api.Hubs
 {
     public class AuthenticatedHub : Hub
     {
-        protected readonly TimetileDbContext _db;
+        private readonly ITokenHandlerService _tokenHandlerService;
 
-        public AuthenticatedHub(TimetileDbContext db)
+        public AuthenticatedHub(ITokenHandlerService tokenHandlerService)
         {
-            _db = db;
+            _tokenHandlerService = tokenHandlerService;
         }
 
         protected int UserId
@@ -35,45 +36,19 @@ namespace TimeTile.API.Common.Api.Hubs
             }
         }
 
-        protected async Task<Result<int>> GetValidatedUserIdAsync()
-        {
-            if (!Context.User?.Identity?.IsAuthenticated == true)
-            {
-                return Result.Failure<int>("User not authorized");
-            }
-
-            var userResult = await Context.User!.GetValidatedUserIdAsync(_db, Context.ConnectionAborted);
-
-            return userResult;
-        }
-
-        protected async Task<Result<int>> GetValidatedInstitutionIdAsync()
-        {
-            var institutionResult = await Context.User!.GetValidatedInstitutionIdAsync(_db, Context.ConnectionAborted);
-
-            return institutionResult;
-        }
-
         public override async Task OnConnectedAsync()
         {
-            var userResult = await GetValidatedUserIdAsync();
-            if (userResult.IsFailure)
+            var userResult = await _tokenHandlerService.GetCurrentUser();
+
+            if (userResult.IsFailure || userResult.Data == null)
             {
                 await Clients.Caller.SendAsync("Error", userResult.Error);
                 Context.Abort();
                 return;
             }
 
-            var institutionResult = await GetValidatedInstitutionIdAsync();
-            if (institutionResult.IsFailure)
-            {
-                await Clients.Caller.SendAsync("Error", institutionResult.Error);
-                Context.Abort();
-                return;
-            }
-
-            Context.Items[HubContextItemKeys.UserId] = userResult.Data;
-            Context.Items[HubContextItemKeys.InstitutionId] = institutionResult.Data;
+            Context.Items[HubContextItemKeys.UserId] = userResult.Data!.Id;
+            Context.Items[HubContextItemKeys.InstitutionId] = userResult.Data!.InstitutionId;
 
             await base.OnConnectedAsync();
         }

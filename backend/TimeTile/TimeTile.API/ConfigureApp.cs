@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using TimeTile.API.Messages.Hubs;
 using TimeTile.Core.Common.Interfaces.Services;
 using TimeTile.Core.Models;
 using TimeTile.Storage.Contexts;
@@ -45,7 +46,9 @@ public static class ConfigureApp
         app.UseHttpsRedirection();
 
         app.UseCors();
-        
+
+        app.MapHub<MessagesHub>(MessagesHub.HUB_PATH);
+
         app.MapEndpoints();
 
         await app.EnsureDatabaseCreated();

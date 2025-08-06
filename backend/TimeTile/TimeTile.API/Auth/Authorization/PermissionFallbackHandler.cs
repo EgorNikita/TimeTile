@@ -45,6 +45,12 @@ namespace TimeTile.API.Auth.Authorization
                         return;
                     }
                 }
+
+                if (TryToUpdateQueryForUser(userId, httpContext, methodInfo.GetParameters()))
+                {
+                    context.Succeed(requirement);
+                    return;
+                }
             }
 
             Log.Information($"Permission {requirement.Permission} denied for user: {userId}");
@@ -93,6 +99,23 @@ namespace TimeTile.API.Auth.Authorization
             }
 
             return isRequestFilteredByTeachers;
+        }
+
+        private static bool TryToUpdateQueryForUser(
+            int userId,
+            HttpContext httpContext,
+            ParameterInfo[] parameters)
+        {
+            // Find parameter that implements IFilterByUsersRequest
+            var isRequestFilteredByUsers = parameters.Any(p =>
+                typeof(IFilterByUsersRequest).IsAssignableFrom(p.ParameterType));
+
+            if (isRequestFilteredByUsers)
+            {
+                httpContext.Request.QueryString = UpdateQueryParameters(userId, QueryParameters.UserIds, httpContext.Request.Query);
+            }
+
+            return isRequestFilteredByUsers;
         }
 
         private static QueryString UpdateQueryParameters(int userId, string ignoredParameter, IQueryCollection queryPairs)

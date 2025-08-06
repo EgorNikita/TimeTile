@@ -70,6 +70,10 @@ using TimeTile.API.Submissions.Endpoints.Submit;
 using TimeTile.API.Submissions.Endpoints.Review;
 using TimeTile.API.Students.Endpoints.GetAttendanceCount;
 using TimeTile.API.Grades.Endpoints.GetBulk;
+using TimeTile.API.Messages.Endpoints.Get;
+using TimeTile.API.Messages.Endpoints.GetById;
+using TimeTile.API.Messages.Endpoints.Create;
+using TimeTile.API.Messages.Endpoints.Update;
 using TimeTile.API.Submissions.Endpoints.GetBulk;
 using TimeTile.API.Assignments.Endpoints.GetBulk;
 using TimeTile.API.Auth.Endpoints.CheckAuth;
@@ -80,6 +84,7 @@ using TimeTile.API.InstitutionMembers.Endpoints.GetBulk;
 using TimeTile.API.Classrooms.Endpoints.GetBulk;
 using TimeTile.API.LessonStatuses.Endpoints.GetBulk;
 using TimeTile.API.Users.Endpoints.GetById;
+using TimeTile.API.Users.Endpoints.GetBulk;
 
 namespace TimeTile.API;
 
@@ -106,6 +111,7 @@ public static class Endpoints
         public const string Groups = "Groups";
         public const string Lessons = "Lessons";
         public const string Courses = "Courses";
+        public const string Messages = "Messages";
     }
 
     public static class Routes
@@ -129,6 +135,7 @@ public static class Endpoints
         public const string Groups = "/groups";
         public const string Lessons = "/lessons";
         public const string Courses = "/courses";
+        public const string Messages = "/messages";
     }
 
     private static class RateLimits
@@ -158,6 +165,7 @@ public static class Endpoints
         app.MapCoursesEndpoints();
         app.MapAssignmentsEndpoints();
         app.MapSubmissionsEndpoints();
+        app.MapMessagesEndpoints();
     }
 
     private static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
@@ -295,7 +303,8 @@ public static class Endpoints
         var endpoints = app.CreateInstitutionGroup(Routes.Users, Tags.Users);
 
         endpoints.MapEndpoint<GetUserPermissionsEndpoint>()
-            .MapEndpoint<GetUserByIdEndpoint>();
+            .MapEndpoint<GetUserByIdEndpoint>()
+            .MapEndpoint<GetUsersBulkEndpoint>();
     }
 
     private static void MapInstitutionMembersEndpoints(this IEndpointRouteBuilder app)
@@ -388,6 +397,16 @@ public static class Endpoints
             .MapEndpoint<SubmitSubmissionEndpoint>()
             .MapEndpoint<ReviewSubmissionEndpoint>()
             .MapEndpoint<GetSubmissionsBulkEndpoint>();
+    }
+
+    private static void MapMessagesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var endpoints = app.CreateInstitutionGroup(Routes.Messages, Tags.Messages);
+
+        endpoints.MapEndpoint<GetMessagesEndpoint>()
+            .MapEndpoint<GetMessageByIdEndpoint>()
+            .MapEndpoint<CreateMessageEndpoint>()
+            .MapEndpoint<UpdateMessageEndpoint>();
     }
 
 

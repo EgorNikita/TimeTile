@@ -33,4 +33,6 @@ public partial class User : AuditableEntity, IOptionalInstitutionEntity
     public virtual Role Role { get; set; } = null!;
     
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new HashSet<RefreshToken>();
+
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 }

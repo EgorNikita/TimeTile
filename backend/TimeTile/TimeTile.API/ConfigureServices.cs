@@ -14,6 +14,8 @@ using TimeTile.API.Common.Api.Json;
 using TimeTile.API.Courses.Services;
 using TimeTile.API.Files.Repositories;
 using TimeTile.API.Files.Services;
+using TimeTile.API.Messages.Hubs.Validators;
+using TimeTile.API.Messages.Services;
 using TimeTile.API.Submissions.Services;
 using TimeTile.API.Users.Services;
 using TimeTile.Core.Common.Interfaces.Repositories;
@@ -38,6 +40,8 @@ public static class ConfigureServices
         builder.AddRateLimiting();
         builder.AddCors();
 
+        builder.Services.AddSignalR();
+
         builder.Services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(new PatchPropertyConverterFactory());
@@ -61,12 +65,14 @@ public static class ConfigureServices
         builder.Services.AddScoped<UserContextFilter>();
         builder.Services.AddScoped<DataSeeder>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+        builder.Services.AddScoped<IMessagesHubValidator, MessagesHubValidator>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IFileService, FileService>();
         builder.Services.AddScoped<IAvatarService, AvatarService>();
         builder.Services.AddScoped<IFileRepository, FileRepository>();
         builder.Services.AddScoped<IClassroomTypeService, ClassroomTypeService>();
         builder.Services.AddScoped<ICourseService, CourseService>();
+        builder.Services.AddScoped<IMessageNotificationService, MessageNotificationService>();
         builder.Services.AddScoped<ISubmissionService, SubmissionService>();
         builder.Services.AddScoped<ITokenHandlerService, TokenHandlerService>();
         builder.Services.AddScoped<IPermissionService, PermissionService>();

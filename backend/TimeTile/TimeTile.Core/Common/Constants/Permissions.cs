@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 namespace TimeTile.Core.Common.Constants;
 
@@ -36,14 +36,6 @@ public static class Permissions
         public const string Get = "GetGrades";
     }
 
-    public static class Courses
-    {
-        public const string Get = "GetCourses";
-        public const string Create = "CreateCourse";
-        public const string UpdateStudents = "UpdateStudentsOfCourse";
-        public const string UpdateCourseToStudent = "UpdateCourseToStudent";
-    }
-
     public static class Lessons
     {
         public const string Get = "GetLessons";
@@ -62,6 +54,21 @@ public static class Permissions
     public static class Assignments
     {
         public const string Get = "GetAssignments";
+    }
+
+    public static class Courses
+    {
+        public const string Get = "GetCourses";
+        public const string Create = "CreateCourse";
+        public const string AddStudent = "AddStudentToCourse";
+        public const string RemoveStudent = "RemoveStudentFromCourse";
+        public const string UpdateTeacher = "UpdateTeacher";
+        public const string UpdateCourseToStudent = "UpdateCourseToStudent";
+    }
+
+    public static class Messages
+    {
+        public const string Get = "GetMessages";
     }
 
     private static readonly Lazy<IReadOnlyList<string>> _allPermissions = new(() => 
